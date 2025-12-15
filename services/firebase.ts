@@ -1,7 +1,7 @@
 // @ts-ignore
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as firebaseSignOut } from "firebase/auth";
-import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, setDoc, getDocs, where } from "firebase/firestore";
+import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, setDoc, getDocs, where, getDoc } from "firebase/firestore";
 // import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage"; // 暫時停用 Firebase Storage
 import { Memory, CategoryNode, Comment } from "../types";
 
@@ -166,7 +166,8 @@ export const saveCategoriesToFirestore = async (categories: CategoryNode[]) => {
 export const initCategoriesIfEmpty = async (defaultCategories: CategoryNode[]) => {
     try {
         const docRef = doc(db, "settings", "global_categories");
-        const docSnap = await import("firebase/firestore").then(m => m.getDoc(docRef));
+        // 修正：使用靜態引用的 getDoc，避免 Vite 建置時的動態引用警告
+        const docSnap = await getDoc(docRef);
         
         if (!docSnap.exists()) {
             await setDoc(docRef, { data: defaultCategories });
