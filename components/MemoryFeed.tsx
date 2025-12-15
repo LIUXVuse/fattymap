@@ -105,15 +105,17 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
           return (
             <div className="relative w-full h-56 shrink-0 group overflow-hidden bg-gray-900">
                 {/* 
-                   如果您有特定的圖片檔案 (例如: 1kofgjk.jpg)，
-                   請將 src 改為 "/1kofgjk.jpg" (需放在 public 資料夾) 
-                   或是將圖片上傳到圖床後填入網址。
-                   目前使用 Unsplash 作為示意圖。
+                   使用用戶指定的圖片 1kofgjk.jpg
+                   請確保該圖片已放入 public 資料夾中
                 */}
                 <img 
-                    src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2021&auto=format&fit=crop" 
+                    src="/1kofgjk.jpg" 
                     alt="Travel Banner" 
                     className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 opacity-90"
+                    onError={(e) => {
+                        // 避免圖片未載入時一片黑，提供備用圖
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2021&auto=format&fit=crop";
+                    }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/30 to-transparent flex flex-col justify-end p-6">
                     <div className="flex items-center gap-2 mb-2">
