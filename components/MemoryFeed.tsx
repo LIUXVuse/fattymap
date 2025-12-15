@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Memory } from '../types';
-import { MapPin, Image as ImageIcon, ChevronRight, ArrowLeft, Globe, List, Building2, Edit2, Trash2, MessageCircle, Map as MapIcon } from 'lucide-react';
+import { MapPin, Image as ImageIcon, ChevronRight, ArrowLeft, Globe, List, Building2, Edit2, Trash2, MessageCircle, Map as MapIcon, Dices } from 'lucide-react';
 
 interface MemoryFeedProps {
   memories: Memory[];
@@ -99,37 +99,69 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
       }
   };
 
+  // 隨機探索功能
+  const handleRandomExplore = () => {
+      if (memories.length === 0) {
+          alert("目前地圖上還沒有任何回憶喔！");
+          return;
+      }
+
+      // 1. 隨機選取一個回憶
+      const randomIndex = Math.floor(Math.random() * memories.length);
+      const randomMemory = memories[randomIndex];
+
+      // 2. 移動地圖
+      onFocusLocation(randomMemory.location.lat, randomMemory.location.lng);
+
+      // 3. 強制切換側邊欄狀態，進入該文章所在的列表
+      setSelectedCountry(randomMemory.region.country || "其他");
+      setSelectedArea(randomMemory.region.area || "未知區域");
+      setSelectedCategory(randomMemory.category.main);
+      setViewMode('posts');
+  };
+
   // Header Rendering
   const renderHeader = () => {
       if (viewMode === 'countries') {
           return (
-            <div className="relative w-full h-56 shrink-0 group overflow-hidden bg-gray-900">
+            <div 
+                className="relative w-full h-56 shrink-0 group overflow-hidden bg-gray-900 cursor-pointer"
+                onClick={handleRandomExplore}
+                title="點擊隨機探索一個回憶"
+            >
                 {/* 
-                   使用用戶指定的圖片 1kofgjk.jpg
-                   請確保該圖片已放入 public 資料夾中
+                   使用根目錄下的檔案 1kofgjk
+                   如果您的檔案有副檔名 (如 .jpg)，瀏覽器可能會自動識別，
+                   如果不顯示，請嘗試在檔案列表將其重新命名為 1kofgjk.jpg 並修改此處。
                 */}
                 <img 
-                    src="/1kofgjk.jpg" 
+                    src="/1kofgjk" 
                     alt="Travel Banner" 
-                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 opacity-90"
+                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 opacity-90 group-hover:opacity-100"
                     onError={(e) => {
-                        // 避免圖片未載入時一片黑，提供備用圖
+                        // 備用圖片，防止檔案讀取失敗
                         e.currentTarget.src = "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2021&auto=format&fit=crop";
                     }}
                 />
+                
+                {/* 隨機探索提示 (Hover 時顯示更明顯) */}
+                <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-md border border-white/30 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-2 group-hover:translate-y-0">
+                    <Dices size={14} /> 隨機傳送
+                </div>
+
                 <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/30 to-transparent flex flex-col justify-end p-6">
                     <div className="flex items-center gap-2 mb-2">
                          <div className="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm">
                              Interactive Map
                          </div>
                     </div>
-                    <h1 className="text-2xl font-black text-white leading-tight drop-shadow-lg tracking-tight">
+                    <h1 className="text-2xl font-black text-white leading-tight drop-shadow-lg tracking-tight group-hover:scale-[1.02] transition-transform origin-bottom-left">
                     肥宅老司機<br/>
                     <span className="text-blue-300">前進世界地圖</span>
                     </h1>
                     <p className="text-gray-200 text-xs mt-2 font-medium drop-shadow-md flex items-center gap-1.5 opacity-90">
-                        <MapIcon size={14} className="text-blue-300" />
-                        紀錄足跡，分享感動
+                        <Dices size={14} className="text-blue-300 animate-pulse" />
+                        點擊圖片開始隨機冒險
                     </p>
                 </div>
             </div>
