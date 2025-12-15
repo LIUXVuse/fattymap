@@ -16,6 +16,9 @@ interface MemoryModalProps {
   onAddCategory: (name: string, parentId: string | null) => void;
   onDeleteCategory: (id: string) => void;
   currentUser: User | null; 
+  // 新增 props 用於記憶用戶身分
+  defaultCustomName?: string;
+  defaultCustomAvatar?: string;
 }
 
 // 靜態分類定義
@@ -42,7 +45,9 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
     onSubmit,
     onAddCategory,
     onDeleteCategory,
-    currentUser
+    currentUser,
+    defaultCustomName,
+    defaultCustomAvatar
 }) => {
   // Identity State
   const [identityType, setIdentityType] = useState<IdentityType>('google');
@@ -74,10 +79,10 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
   const [isLoadingDetails, setIsLoadingDetails] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 初始化資料 (編輯模式)
+  // 初始化資料 (編輯模式 或 新增模式)
   useEffect(() => {
     if (initialData) {
-        // 設定身分狀態
+        // 編輯模式
         if (initialData.isAnonymous) {
             setIdentityType('anonymous');
         } else if (currentUser && initialData.author === currentUser.displayName && initialData.authorAvatar === currentUser.photoURL) {
@@ -113,10 +118,20 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
         }
         setIsLoadingDetails(false);
     } else {
-        // 新增模式預設值
-        if (!currentUser) setIdentityType('anonymous');
+        // 新增模式：設定預設身分
+        if (currentUser) {
+            setIdentityType('google');
+        } else if (defaultCustomName) {
+            // 如果有記憶的自訂身分
+            setIdentityType('custom');
+            setCustomName(defaultCustomName);
+            if (defaultCustomAvatar) setCustomAvatarPreview(defaultCustomAvatar);
+        } else {
+            // 完全沒資料，預設匿名 (會讓用戶手動切換去自訂)
+            setIdentityType('custom'); // 為了讓用戶有機會輸入，預設切到 custom 比較好，anonymous 太隱晦
+        }
     }
-  }, [initialData, categories, currentUser]);
+  }, [initialData, categories, currentUser, defaultCustomName, defaultCustomAvatar]);
 
   // 自動抓取地點資訊 (非編輯模式)
   useEffect(() => {
@@ -233,7 +248,7 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
         } else if (identityType === 'custom') {
             finalAuthor = customName || '老司機';
             // Avatar file will be handled by parent component or service via callback
-            // We pass the file, and if there is an existing preview URL (from edit mode), we pass it as initial
+            // We pass the file, and if there is an existing preview URL (from edit mode or default), we pass it as initial
             finalAvatar = customAvatarPreview; 
         } else {
             finalIsAnonymous = true;

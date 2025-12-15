@@ -47,6 +47,17 @@ export interface Memory {
   region: RegionInfo; 
 }
 
+export interface Comment {
+    id: string;
+    memoryId: string;
+    author: string;
+    authorAvatar?: string;
+    content: string;
+    imageUrl?: string;
+    timestamp: number;
+    userId?: string; // 如果是登入用戶
+}
+
 export interface PlaceSearchResult {
   lat: number;
   lng: number;

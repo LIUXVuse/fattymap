@@ -161,8 +161,9 @@ const SolidMapPin = ({ color }: { color: string }) => (
 // ----------------------------------------------------------------------
 const iconCache: Record<string, L.DivIcon> = {};
 
-const createCustomMarker = (color: string, iconType: MarkerIconType = 'default', isDraggable: boolean = false) => {
-    const cacheKey = `${color}-${iconType}-${isDraggable}`;
+const createCustomMarker = (color: string, iconType: MarkerIconType = 'default', isDraggable: boolean = false, avatarUrl?: string) => {
+    // Cache Key 需要包含 avatarUrl，因為每個人的頭像不同
+    const cacheKey = `${color}-${iconType}-${isDraggable}-${avatarUrl || 'no-avatar'}`;
 
     if (iconCache[cacheKey]) {
         return iconCache[cacheKey];
@@ -176,9 +177,17 @@ const createCustomMarker = (color: string, iconType: MarkerIconType = 'default',
                  <SolidMapPin color={color} />
              </div>
              
-             <div style={{ position: 'relative', zIndex: 10, marginTop: '-5px', color: 'white', display: 'flex' }}>
-                <IconComponent size={18} strokeWidth={2.5} />
-             </div>
+             {avatarUrl ? (
+                 // 如果有頭像，顯示圓形頭像
+                 <div style={{ position: 'relative', zIndex: 10, marginTop: '-5px', width: '20px', height: '20px', borderRadius: '50%', overflow: 'hidden', border: '1px solid white' }}>
+                     <img src={avatarUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="avatar" />
+                 </div>
+             ) : (
+                 // 否則顯示圖示
+                 <div style={{ position: 'relative', zIndex: 10, marginTop: '-5px', color: 'white', display: 'flex' }}>
+                    <IconComponent size={18} strokeWidth={2.5} />
+                 </div>
+             )}
         </div>
     );
 
@@ -203,6 +212,7 @@ interface MapContainerProps {
   isRoutingMode: boolean;
   isDraggablePinMode: boolean; 
   onDragEnd: (lat: number, lng: number) => void; 
+  onViewComments: (memoryId: string) => void; // 新增：點擊查看留言
 }
 
 // Map Events Handler (Click)
@@ -283,13 +293,17 @@ interface MemoryMarkerProps {
     isSelectedInRoute: boolean;
     hasRoutePoints: boolean;
     onMarkerClick?: (memoryId: string) => void;
+    onViewComments: (memoryId: string) => void;
 }
 
-const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, hasRoutePoints, onMarkerClick }: MemoryMarkerProps) => {
+const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, hasRoutePoints, onMarkerClick, onViewComments }: MemoryMarkerProps) => {
     
+    // 優先檢查是否有頭像，且不是匿名
+    const avatarToDisplay = (memory.isAnonymous || !memory.authorAvatar) ? undefined : memory.authorAvatar;
+
     const icon = useMemo(() => 
-        createCustomMarker(memory.markerColor || '#3b82f6', memory.markerIcon || 'default'), 
-        [memory.markerColor, memory.markerIcon]
+        createCustomMarker(memory.markerColor || '#3b82f6', memory.markerIcon || 'default', false, avatarToDisplay), 
+        [memory.markerColor, memory.markerIcon, avatarToDisplay]
     );
 
     const eventHandlers = useMemo(() => ({
@@ -329,10 +343,10 @@ const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, has
 
                         <div className="flex items-center gap-2 mb-2 pb-2 border-b border-gray-100">
                                 <div 
-                                className="w-8 h-8 rounded-full flex items-center justify-center text-xs text-white font-bold shadow-sm"
+                                className="w-8 h-8 rounded-full flex items-center justify-center text-xs text-white font-bold shadow-sm overflow-hidden"
                                 style={{ backgroundColor: memory.markerColor }}
                                 >
-                                {memory.isAnonymous ? '?' : memory.author.charAt(0)}
+                                {memory.isAnonymous ? '?' : (memory.authorAvatar ? <img src={memory.authorAvatar} className="w-full h-full object-cover"/> : memory.author.charAt(0))}
                                 </div>
                                 <div>
                                 <h3 className="font-bold text-gray-800 text-sm">
@@ -353,13 +367,21 @@ const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, has
                             </div>
                         )}
                         
-                        <a href={`https://www.google.com/maps/dir/?api=1&destination=${memory.location.lat},${memory.location.lng}`} 
-                            target="_blank" 
-                            rel="noreferrer"
-                            className="block text-center mt-3 text-xs bg-blue-50 text-blue-600 py-2 rounded-lg hover:bg-blue-100 font-bold transition-colors"
-                        >
-                            前進此地 (Google 導航)
-                        </a>
+                        <div className="flex gap-2 mt-3">
+                            <button
+                                onClick={() => onViewComments(memory.id)}
+                                className="flex-1 text-center text-xs bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200 font-bold transition-colors"
+                            >
+                                💬 留言板
+                            </button>
+                            <a href={`https://www.google.com/maps/dir/?api=1&destination=${memory.location.lat},${memory.location.lng}`} 
+                                target="_blank" 
+                                rel="noreferrer"
+                                className="flex-1 text-center text-xs bg-blue-50 text-blue-600 py-2 rounded-lg hover:bg-blue-100 font-bold transition-colors"
+                            >
+                                📍 導航
+                            </a>
+                        </div>
                     </div>
                 </Popup>
             )}
@@ -376,7 +398,8 @@ export const AppMap: React.FC<MapContainerProps> = ({
     onMarkerClick, 
     isRoutingMode,
     isDraggablePinMode,
-    onDragEnd
+    onDragEnd,
+    onViewComments
 }) => {
   
   const routePositions = useMemo(() => {
@@ -424,6 +447,7 @@ export const AppMap: React.FC<MapContainerProps> = ({
                 isSelectedInRoute={routePoints.includes(memory.id)}
                 hasRoutePoints={routePoints.length > 0}
                 onMarkerClick={onMarkerClick}
+                onViewComments={onViewComments}
             />
         ))}
 

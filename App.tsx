@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { AppMap } from './components/MapContainer';
 import { MemoryFeed } from './components/MemoryFeed';
 import { MemoryModal } from './components/MemoryModal';
+import { CommentModal } from './components/CommentModal';
 import { Memory, Location, MarkerColor, CategoryNode, RegionInfo, PlaceSearchResult, MarkerIconType } from './types';
 import { Menu, X, MapPin, Navigation, Play, RotateCcw, Search, Loader2, LogIn, LogOut } from 'lucide-react';
 import { searchLocation } from './services/mapService';
@@ -44,6 +45,9 @@ const App: React.FC = () => {
   const [tempLocation, setTempLocation] = useState<Location | null>(null);
   const [editingMemory, setEditingMemory] = useState<Memory | null>(null);
 
+  // Comment Modal State
+  const [activeMemoryIdForComments, setActiveMemoryIdForComments] = useState<string | null>(null);
+
   const [mapCenter, setMapCenter] = useState<[number, number]>([25.0330, 121.5654]);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   
@@ -58,10 +62,20 @@ const App: React.FC = () => {
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [isDraggablePinMode, setIsDraggablePinMode] = useState(false);
   
+  // User Identity Persistence (記憶自訂身分)
+  const [lastCustomName, setLastCustomName] = useState('');
+  const [lastCustomAvatar, setLastCustomAvatar] = useState('');
+
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
-  // 1. 初始化 Firebase 監聽
+  // 1. 初始化 Firebase 監聽與 LocalStorage
   useEffect(() => {
+    // 讀取上次的身分
+    const savedName = localStorage.getItem('lastCustomName');
+    const savedAvatar = localStorage.getItem('lastCustomAvatar');
+    if (savedName) setLastCustomName(savedName);
+    if (savedAvatar) setLastCustomAvatar(savedAvatar);
+
     // Auth Listener
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
         setUser(currentUser);
@@ -113,13 +127,9 @@ const App: React.FC = () => {
   const handleMapClick = (lat: number, lng: number) => {
     if (isRoutingMode || isDraggablePinMode) return; 
     
-    if (!user) {
-        if(confirm("請先登入才能標記地點！\n是否現在登入？")) {
-            signInWithGoogle();
-        }
-        return;
-    }
-
+    // 取消強制登入限制，允許訪客標記但受限
+    // if (!user) { ... } 
+    
     setTempLocation({ lat, lng });
     setEditingMemory(null);
     setIsModalOpen(true);
@@ -132,13 +142,14 @@ const App: React.FC = () => {
       customAvatarFile?: File
     ) => {
     
-    if (!user) return;
+    // 允許匿名發文，若沒登入給一個 Guest ID
+    const userId = user ? user.uid : 'guest_user';
 
     try {
         // 1. 上傳照片
         const photoUrls: string[] = [...data.photos]; // 保留既有照片
         for (const file of photoFiles) {
-            const path = `memories/${user.uid}/${Date.now()}_${file.name}`;
+            const path = `memories/${userId}/${Date.now()}_${file.name}`;
             const url = await uploadImage(file, path);
             photoUrls.push(url);
         }
@@ -146,8 +157,20 @@ const App: React.FC = () => {
         // 2. 上傳自訂頭像 (如果有)
         let avatarUrl = data.authorAvatar;
         if (customAvatarFile) {
-            const path = `avatars/${user.uid}/${Date.now()}_avatar`;
+            const path = `avatars/${userId}/${Date.now()}_avatar`;
             avatarUrl = await uploadImage(customAvatarFile, path);
+        }
+
+        // 3. 記憶自訂身分 (如果不是匿名且有自訂名字)
+        if (!data.isAnonymous && !user) {
+             if (data.author && data.author !== '匿名老司機') {
+                 localStorage.setItem('lastCustomName', data.author);
+                 setLastCustomName(data.author);
+             }
+             if (avatarUrl) {
+                 localStorage.setItem('lastCustomAvatar', avatarUrl);
+                 setLastCustomAvatar(avatarUrl);
+             }
         }
 
         const finalData = {
@@ -161,7 +184,7 @@ const App: React.FC = () => {
         } else {
             await addMemoryToFireStore({
                 ...finalData,
-                creatorId: user.uid,
+                creatorId: userId,
                 timestamp: Date.now(),
             });
         }
@@ -186,7 +209,7 @@ const App: React.FC = () => {
 
   const handleEditMemory = (memory: Memory) => {
       // 權限檢查在 MemoryFeed 已經做過一次 UI 隱藏，這裡做二次檢查
-      if (!isAdmin && (!user || memory.creatorId !== user.uid)) {
+      if (!isAdmin && (!user || memory.creatorId !== user.uid) && memory.creatorId !== 'guest_user') {
           alert("您沒有權限編輯此回憶");
           return;
       }
@@ -196,7 +219,7 @@ const App: React.FC = () => {
   };
 
   const handleAddCategory = async (name: string, parentId: string | null) => {
-      if (!user) return;
+      // if (!user) return; // 暫時允許訪客操作分類
       
       const newCategory: CategoryNode = {
           id: Date.now().toString(),
@@ -204,7 +227,7 @@ const App: React.FC = () => {
           parentId,
           children: [],
           isCustom: true,
-          creatorId: user.uid
+          creatorId: user?.uid || 'guest'
       };
 
       const newCategories = categories.map(cat => ({...cat})); // Deep copy slightly safer
@@ -222,7 +245,7 @@ const App: React.FC = () => {
   };
 
   const handleDeleteCategory = async (id: string) => {
-      if (!user) return;
+      // if (!user) return;
 
       const newCategories = categories.filter(c => c.id !== id).map(c => {
           if (c.children) {
@@ -262,6 +285,10 @@ const App: React.FC = () => {
               return [...prev, id];
           });
       }
+  };
+
+  const handleViewComments = (memoryId: string) => {
+      setActiveMemoryIdForComments(memoryId);
   };
 
   const handleSearchSubmit = async (e: React.FormEvent) => {
@@ -322,7 +349,10 @@ const App: React.FC = () => {
                        </div>
                    </div>
                ) : (
-                   <span className="text-sm font-bold text-gray-300">訪客模式 (僅瀏覽)</span>
+                   <div className="flex flex-col">
+                        <span className="text-sm font-bold text-gray-300">訪客模式</span>
+                        <span className="text-[10px] text-gray-500">{lastCustomName ? `以 ${lastCustomName} 發文` : '未設定身分'}</span>
+                   </div>
                )}
                
                {user ? (
@@ -343,6 +373,7 @@ const App: React.FC = () => {
             onDelete={handleDeleteMemory}
             currentUserId={user?.uid}
             isAdmin={isAdmin}
+            onViewComments={handleViewComments}
           />
           
           <button 
@@ -476,10 +507,11 @@ const App: React.FC = () => {
             isRoutingMode={isRoutingMode}
             isDraggablePinMode={isDraggablePinMode}
             onDragEnd={handlePinDragEnd}
+            onViewComments={handleViewComments}
          />
 
          {/* Helper Overlay */}
-         {!isModalOpen && !isRoutingMode && !isDraggablePinMode && (
+         {!isModalOpen && !isRoutingMode && !isDraggablePinMode && !activeMemoryIdForComments && (
             <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-[400] pointer-events-none">
                 <div className="bg-white/90 backdrop-blur-md text-gray-800 px-6 py-2.5 rounded-full text-sm font-bold border border-white/50 shadow-xl flex items-center gap-2 animate-in fade-in slide-in-from-bottom-4 duration-700">
                     <MapPin size={16} className="text-red-500 fill-current" />
@@ -502,7 +534,20 @@ const App: React.FC = () => {
           onAddCategory={handleAddCategory}
           onDeleteCategory={handleDeleteCategory}
           currentUser={user}
+          defaultCustomName={lastCustomName}
+          defaultCustomAvatar={lastCustomAvatar}
         />
+      )}
+
+      {activeMemoryIdForComments && (
+          <CommentModal
+              memoryId={activeMemoryIdForComments}
+              memoryTitle={memories.find(m => m.id === activeMemoryIdForComments)?.location.name || '回憶'}
+              currentUser={user}
+              onClose={() => setActiveMemoryIdForComments(null)}
+              defaultCustomName={lastCustomName}
+              defaultCustomAvatar={lastCustomAvatar}
+          />
       )}
     </div>
   );

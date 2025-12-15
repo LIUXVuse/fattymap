@@ -1,9 +1,9 @@
 // @ts-ignore
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as firebaseSignOut } from "firebase/auth";
-import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, setDoc, getDocs } from "firebase/firestore";
+import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, setDoc, getDocs, where } from "firebase/firestore";
 // import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage"; // 暫時停用 Firebase Storage
-import { Memory, CategoryNode } from "../types";
+import { Memory, CategoryNode, Comment } from "../types";
 
 // Workaround for missing types in current environment
 const env = (import.meta as any).env || {};
@@ -124,6 +124,25 @@ export const updateMemoryInFirestore = async (id: string, data: Partial<Memory>)
 
 export const deleteMemoryFromFirestore = async (id: string) => {
   await deleteDoc(doc(db, "memories", id));
+};
+
+// --- Firestore Services (Comments) ---
+export const subscribeToComments = (memoryId: string, callback: (comments: Comment[]) => void) => {
+    // 使用 sub-collection "comments"
+    const q = query(collection(db, "memories", memoryId, "comments"), orderBy("timestamp", "asc"));
+    return onSnapshot(q, (snapshot) => {
+        const comments = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        } as Comment));
+        callback(comments);
+    }, (error) => {
+        console.error("Comments subscription error:", error);
+    });
+};
+
+export const addCommentToFirestore = async (memoryId: string, comment: Omit<Comment, "id">) => {
+    await addDoc(collection(db, "memories", memoryId, "comments"), comment);
 };
 
 // --- Firestore Services (Categories) ---

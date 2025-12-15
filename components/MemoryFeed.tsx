@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Memory } from '../types';
-import { MapPin, Image as ImageIcon, ChevronRight, ArrowLeft, Globe, List, Building2, Edit2, Trash2 } from 'lucide-react';
+import { MapPin, Image as ImageIcon, ChevronRight, ArrowLeft, Globe, List, Building2, Edit2, Trash2, MessageCircle } from 'lucide-react';
 
 interface MemoryFeedProps {
   memories: Memory[];
@@ -9,11 +9,12 @@ interface MemoryFeedProps {
   onDelete?: (id: string) => void;
   currentUserId?: string;
   isAdmin?: boolean; // 新增 Admin 權限判斷
+  onViewComments: (memoryId: string) => void;
 }
 
 type ViewMode = 'countries' | 'areas' | 'categories' | 'posts';
 
-export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocation, onEdit, onDelete, currentUserId, isAdmin }) => {
+export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocation, onEdit, onDelete, currentUserId, isAdmin, onViewComments }) => {
   const [viewMode, setViewMode] = useState<ViewMode>('countries');
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
@@ -285,8 +286,9 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
                                     <span className="line-clamp-1">{memory.location.name || "未命名地點"}</span>
                                 </h4>
                                 
-                                {canEdit && (
-                                    <div className="flex items-center gap-2 shrink-0">
+                                <div className="flex items-center gap-2 shrink-0">
+                                    {canEdit && (
+                                        <>
                                         <button 
                                             onClick={(e) => { e.stopPropagation(); onEdit && onEdit(memory); }}
                                             className="text-[10px] text-blue-600 hover:text-blue-800 font-bold flex items-center gap-0.5"
@@ -300,8 +302,17 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
                                         >
                                             刪除
                                         </button>
-                                    </div>
-                                )}
+                                        <span className="text-gray-300 text-[10px]">|</span>
+                                        </>
+                                    )}
+                                    
+                                    <button 
+                                        onClick={(e) => { e.stopPropagation(); onViewComments(memory.id); }}
+                                        className="text-[10px] text-gray-500 hover:text-gray-800 font-bold flex items-center gap-0.5"
+                                    >
+                                        <MessageCircle size={12} /> 留言
+                                    </button>
+                                </div>
                             </div>
                             
                             <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">
