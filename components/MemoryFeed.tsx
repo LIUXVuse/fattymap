@@ -135,7 +135,7 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
                    如果圖片仍未顯示，請確認檔案已放置於 public 資料夾中。
                 */}
                 <img 
-                    src="/1kofgjk" 
+                    src="https://meee.com.tw/Xo1WINx" 
                     alt="Travel Banner" 
                     className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 opacity-90 group-hover:opacity-100"
                 />
