@@ -1,0 +1,1 @@
+// 此檔案已棄用，請使用 mapService.ts

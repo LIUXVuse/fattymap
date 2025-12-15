@@ -1,0 +1,9 @@
+{
+  "name": "肥宅老司機前進世界地圖",
+  "description": "一個基於地圖的互動日記應用。在地圖上標記地點，自行分類管理美食、景點與住宿資訊，並上傳照片來記錄您的故事。",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}
