@@ -10,7 +10,7 @@ import {
     Bus, Car, Plane, Bike, Ship, Anchor, Rocket, Fuel, Footprints, // Transport
     TreePine, Mountain, Flower, Leaf, Sun, CloudRain, Snowflake, Flame, Droplets, Wind, // Nature
     ShoppingCart, Gift, CreditCard, Banknote, Tag, Store, // Shop
-    Wifi, Bath, ParkingSquare, User, Hospital, Library, GraduationCap, // Amenity
+    Wifi, Bath, ParkingSquare, User, Stethoscope, Library, GraduationCap, // Amenity (Replaced Hospital with Stethoscope)
     Dumbbell, Trophy, Medal, Gamepad2, Music, Ticket, Palmtree, // Activity
     Building2, Briefcase, Landmark, Flag, Bell, Info, AlertTriangle, Ghost, // Other
     // New Icons
@@ -102,7 +102,7 @@ export const ICON_MAP: Record<string, React.ElementType> = {
     bath: Bath,
     parking: ParkingSquare,
     restroom: User,
-    hospital: Hospital,
+    hospital: Stethoscope, // Map 'hospital' string to Stethoscope icon
     library: Library,
     school: GraduationCap,
     key: Key,
