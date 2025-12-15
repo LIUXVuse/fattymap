@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { MapContainer as LeafletMap, TileLayer, Marker, Popup, useMapEvents, useMap, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import { Memory, MarkerIconType } from '../types';
@@ -10,13 +10,13 @@ import {
     Bus, Car, Plane, Bike, Ship, Anchor, Rocket, Fuel, Footprints, // Transport
     TreePine, Mountain, Flower, Leaf, Sun, CloudRain, Snowflake, Flame, Droplets, Wind, // Nature
     ShoppingCart, Gift, CreditCard, Banknote, Tag, Store, // Shop
-    Wifi, Bath, ParkingSquare, User, Stethoscope, Library, GraduationCap, // Amenity (Replaced Hospital with Stethoscope)
+    Wifi, Bath, ParkingSquare, User, Stethoscope, Library, GraduationCap, // Amenity
     Dumbbell, Trophy, Medal, Gamepad2, Music, Ticket, Palmtree, // Activity
     Building2, Briefcase, Landmark, Flag, Bell, Info, AlertTriangle, Ghost, // Other
     // New Icons
     Smile, Laugh, Frown, Meh, Baby, Users, UserPlus, Skull, // Faces/People
     Crown, Gem, Sparkles, Zap, PartyPopper, Bomb, Umbrella, Key, Lock, Unlock, Eye, Ear, Hand, // Misc
-    // More New Icons (Requested)
+    // More New Icons
     Martini, Megaphone, Mic, Sword, Shield, Waves, UserRound
 } from 'lucide-react';
 
@@ -30,7 +30,7 @@ export const ICON_MAP: Record<string, React.ElementType> = {
     
     // Faces & People
     user: User,
-    user_round: UserRound, // Girl/Boy neutral
+    user_round: UserRound,
     users: Users,
     user_plus: UserPlus,
     baby: Baby,
@@ -48,8 +48,8 @@ export const ICON_MAP: Record<string, React.ElementType> = {
     food: Utensils,
     coffee: Coffee,
     beer: Beer,
-    wine: Wine, // Wine Glass
-    martini: Martini, // Cocktail
+    wine: Wine,
+    martini: Martini,
     pizza: Pizza,
     cake: Cake,
     icecream: IceCream,
@@ -73,7 +73,7 @@ export const ICON_MAP: Record<string, React.ElementType> = {
     walk: Footprints,
 
     // Nature
-    camera: Camera, // Sightseeing
+    camera: Camera,
     tree: TreePine,
     mountain: Mountain,
     flower: Flower,
@@ -81,11 +81,11 @@ export const ICON_MAP: Record<string, React.ElementType> = {
     sun: Sun,
     rain: CloudRain,
     snow: Snowflake,
-    fire: Flame, // Dragon (Fire)
+    fire: Flame,
     water: Droplets,
     wind: Wind,
     umbrella: Umbrella,
-    waves: Waves, // Snake (Curvy line)
+    waves: Waves,
 
     // Shopping
     shopping: ShoppingBag,
@@ -102,7 +102,7 @@ export const ICON_MAP: Record<string, React.ElementType> = {
     bath: Bath,
     parking: ParkingSquare,
     restroom: User,
-    hospital: Stethoscope, // Map 'hospital' string to Stethoscope icon
+    hospital: Stethoscope,
     library: Library,
     school: GraduationCap,
     key: Key,
@@ -118,8 +118,8 @@ export const ICON_MAP: Record<string, React.ElementType> = {
     ticket: Ticket,
     beach: Palmtree,
     party: PartyPopper,
-    mic: Mic, // Singing/Lips related
-    megaphone: Megaphone, // Speaker
+    mic: Mic,
+    megaphone: Megaphone,
 
     // Admin / Misc
     office: Building2,
@@ -149,42 +149,53 @@ const SolidMapPin = ({ color }: { color: string }) => (
         strokeWidth="1" 
         strokeLinecap="round" 
         strokeLinejoin="round" 
-        // 使用 inline style 確保陰影效果
         style={{ filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.3))' }}
         xmlns="http://www.w3.org/2000/svg"
     >
-        {/* 標準 MapPin 路徑，但沒有中間的圓孔，填充後為實心 */}
         <path d="M20 10c0 6-9 13-9 13s-9-7-9-13a9 9 0 0 1 18 0Z" />
     </svg>
 );
 
-// Create a custom DivIcon with dynamic color SVG and Icon
+// ----------------------------------------------------------------------
+// 優化重點 1: Icon 快取 (Global Cache)
+// 避免每次 Render 都重新執行 renderToStaticMarkup
+// ----------------------------------------------------------------------
+const iconCache: Record<string, L.DivIcon> = {};
+
 const createCustomMarker = (color: string, iconType: MarkerIconType = 'default', isDraggable: boolean = false) => {
+    // 建立快取 Key
+    const cacheKey = `${color}-${iconType}-${isDraggable}`;
+
+    // 如果快取中有，直接回傳
+    if (iconCache[cacheKey]) {
+        return iconCache[cacheKey];
+    }
+
+    // 如果沒有，則生成並寫入快取
     const IconComponent = ICON_MAP[iconType] || MapPin;
 
-    // 改用 Inline Styles 以確保在 Leaflet DivIcon 中定位絕對正確
-    // 避免 Tailwind CSS 載入時序或權重問題導致 Icon 被遮擋
     const svgString = renderToStaticMarkup(
         <div style={{ position: 'relative', width: '40px', height: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center' }} className={isDraggable ? 'animate-bounce' : ''}>
-             {/* Background: 絕對定位在最底層 */}
              <div style={{ position: 'absolute', top: 0, left: 0, zIndex: 0 }}>
                  <SolidMapPin color={color} />
              </div>
              
-             {/* Inner Icon: 相對定位，層級較高，並微調垂直位置以視覺置中 */}
              <div style={{ position: 'relative', zIndex: 10, marginTop: '-5px', color: 'white', display: 'flex' }}>
                 <IconComponent size={18} strokeWidth={2.5} />
              </div>
         </div>
     );
 
-    return L.divIcon({
+    const newIcon = L.divIcon({
         className: 'custom-marker-icon', 
         html: svgString,
         iconSize: [40, 40],
         iconAnchor: [20, 40],
         popupAnchor: [0, -40]
     });
+
+    iconCache[cacheKey] = newIcon;
+    return newIcon;
 };
 
 interface MapContainerProps {
@@ -213,10 +224,16 @@ const MapEvents: React.FC<{ onClick: (lat: number, lng: number) => void, isRouti
 // Map View Updater
 const MapUpdater: React.FC<{ center: [number, number] }> = ({ center }) => {
   const map = useMap();
-  
+  // 使用 useRef 紀錄上次的 center，避免微小變動造成的重複呼叫
+  const lastCenter = useRef<string>('');
+
   useEffect(() => {
     if (center) {
-        map.flyTo(center, Math.max(map.getZoom(), 15), { duration: 1.5 });
+        const centerKey = `${center[0]},${center[1]}`;
+        if (lastCenter.current !== centerKey) {
+            map.flyTo(center, Math.max(map.getZoom(), 15), { duration: 1.5 });
+            lastCenter.current = centerKey;
+        }
     }
   }, [center, map]);
   
@@ -225,7 +242,8 @@ const MapUpdater: React.FC<{ center: [number, number] }> = ({ center }) => {
 
 // Draggable Pin Component
 const DraggablePin: React.FC<{ position: [number, number], onDragEnd: (lat: number, lng: number) => void }> = ({ position, onDragEnd }) => {
-    const markerRef = React.useRef<L.Marker>(null);
+    const markerRef = useRef<L.Marker>(null);
+    // 使用 useMemo 確保 icon 不會因為 re-render 而重新建立實例
     const icon = useMemo(() => createCustomMarker('#ef4444', 'default', true), []);
     
     const eventHandlers = useMemo(
@@ -253,6 +271,101 @@ const DraggablePin: React.FC<{ position: [number, number], onDragEnd: (lat: numb
     )
 }
 
+// ----------------------------------------------------------------------
+// 優化重點 2: 獨立的 Marker Component 並使用 React.memo
+// 這樣當地圖移動時，個別的 Marker 不會重新渲染，大幅降低 DOM 操作
+// ----------------------------------------------------------------------
+interface MemoryMarkerProps {
+    memory: Memory;
+    isRoutingMode: boolean;
+    isSelectedInRoute: boolean;
+    hasRoutePoints: boolean;
+    onMarkerClick?: (memoryId: string) => void;
+}
+
+const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, hasRoutePoints, onMarkerClick }: MemoryMarkerProps) => {
+    
+    // 從快取取得 icon，依賴項改變時才會重新計算 (雖然有 global cache，但 useMemo 確保 reference 穩定)
+    const icon = useMemo(() => 
+        createCustomMarker(memory.markerColor || '#3b82f6', memory.markerIcon || 'default'), 
+        [memory.markerColor, memory.markerIcon]
+    );
+
+    const eventHandlers = useMemo(() => ({
+        click: () => {
+            if (isRoutingMode && onMarkerClick) {
+                onMarkerClick(memory.id);
+            }
+        }
+    }), [isRoutingMode, onMarkerClick, memory.id]);
+
+    const opacity = isRoutingMode && !isSelectedInRoute && hasRoutePoints ? 0.5 : 1;
+
+    return (
+        <Marker 
+            position={[memory.location.lat, memory.location.lng]}
+            icon={icon}
+            eventHandlers={eventHandlers}
+            opacity={opacity}
+        >
+            {!isRoutingMode && (
+                <Popup className="custom-popup" minWidth={280}>
+                    <div className="p-1">
+                        {/* Category Badge */}
+                        <div className="flex gap-1 mb-2">
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold text-white shadow-sm" style={{ backgroundColor: memory.markerColor }}>
+                                {memory.category.main}
+                                </span>
+                                {memory.category.sub && (
+                                <span className="px-2 py-0.5 rounded text-[10px] bg-gray-100 text-gray-600 border border-gray-200">
+                                    {memory.category.sub}
+                                </span>
+                                )}
+                                <span className="px-2 py-0.5 rounded text-[10px] bg-gray-100 text-gray-600 border border-gray-200 ml-auto">
+                                {memory.region.country}
+                                </span>
+                        </div>
+
+                        <div className="flex items-center gap-2 mb-2 pb-2 border-b border-gray-100">
+                                <div 
+                                className="w-8 h-8 rounded-full flex items-center justify-center text-xs text-white font-bold shadow-sm"
+                                style={{ backgroundColor: memory.markerColor }}
+                                >
+                                {memory.isAnonymous ? '?' : memory.author.charAt(0)}
+                                </div>
+                                <div>
+                                <h3 className="font-bold text-gray-800 text-sm">
+                                    {memory.isAnonymous ? '匿名老司機' : memory.author}
+                                </h3>
+                                <div className="text-[10px] text-gray-500">{new Date(memory.timestamp).toLocaleDateString()}</div>
+                                </div>
+                        </div>
+                        
+                        <h4 className="font-bold text-gray-900 text-base mb-1">{memory.location.name}</h4>
+                        <p className="text-gray-500 text-xs mb-2">{memory.location.address}</p>
+
+                        <p className="text-gray-700 text-sm mb-3 leading-relaxed bg-gray-50 p-2 rounded">{memory.content}</p>
+                        
+                        {memory.photos.length > 0 && (
+                            <div className="rounded-lg overflow-hidden border border-gray-200 mb-2 shadow-sm">
+                                    <img src={memory.photos[0]} className="w-full h-32 object-cover" alt="story" />
+                            </div>
+                        )}
+                        
+                        <a href={`https://www.google.com/maps/dir/?api=1&destination=${memory.location.lat},${memory.location.lng}`} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            className="block text-center mt-3 text-xs bg-blue-50 text-blue-600 py-2 rounded-lg hover:bg-blue-100 font-bold transition-colors"
+                        >
+                            前進此地 (Google 導航)
+                        </a>
+                    </div>
+                </Popup>
+            )}
+        </Marker>
+    );
+});
+
 
 export const AppMap: React.FC<MapContainerProps> = ({ 
     memories, 
@@ -274,7 +387,8 @@ export const AppMap: React.FC<MapContainerProps> = ({
 
   return (
     <div className="h-full w-full z-0 bg-white">
-      <LeafletMap center={center} zoom={13} style={{ height: '100%', width: '100%' }} zoomControl={false}>
+      {/* 關閉 zoomControl 以獲得更乾淨的 UI，若有需要可開啟 */}
+      <LeafletMap center={center} zoom={13} style={{ height: '100%', width: '100%' }} zoomControl={false} preferCanvas={true}>
         
         {/* GOOGLE MAPS TILE LAYER */}
         <TileLayer
@@ -299,81 +413,18 @@ export const AppMap: React.FC<MapContainerProps> = ({
             <DraggablePin position={center} onDragEnd={onDragEnd} />
         )}
 
-        {memories.map((memory) => {
-            const isSelectedInRoute = routePoints.includes(memory.id);
-            const icon = createCustomMarker(memory.markerColor || '#3b82f6', memory.markerIcon || 'default');
+        {/* Render Memoized Markers */}
+        {memories.map((memory) => (
+            <MemoryMarker 
+                key={memory.id}
+                memory={memory}
+                isRoutingMode={isRoutingMode}
+                isSelectedInRoute={routePoints.includes(memory.id)}
+                hasRoutePoints={routePoints.length > 0}
+                onMarkerClick={onMarkerClick}
+            />
+        ))}
 
-            return (
-              <Marker 
-                key={memory.id} 
-                position={[memory.location.lat, memory.location.lng]}
-                icon={icon}
-                eventHandlers={{
-                    click: () => {
-                        if (isRoutingMode && onMarkerClick) {
-                            onMarkerClick(memory.id);
-                        }
-                    }
-                }}
-                opacity={isRoutingMode && !isSelectedInRoute && routePoints.length > 0 ? 0.5 : 1}
-              >
-                {!isRoutingMode && !isDraggablePinMode && (
-                    <Popup className="custom-popup" minWidth={280}>
-                      <div className="p-1">
-                         {/* Category Badge */}
-                        <div className="flex gap-1 mb-2">
-                             <span className="px-2 py-0.5 rounded text-[10px] font-bold text-white shadow-sm" style={{ backgroundColor: memory.markerColor }}>
-                                {memory.category.main}
-                             </span>
-                             {memory.category.sub && (
-                                <span className="px-2 py-0.5 rounded text-[10px] bg-gray-100 text-gray-600 border border-gray-200">
-                                    {memory.category.sub}
-                                </span>
-                             )}
-                             <span className="px-2 py-0.5 rounded text-[10px] bg-gray-100 text-gray-600 border border-gray-200 ml-auto">
-                                {memory.region.country}
-                             </span>
-                        </div>
-
-                        <div className="flex items-center gap-2 mb-2 pb-2 border-b border-gray-100">
-                             <div 
-                                className="w-8 h-8 rounded-full flex items-center justify-center text-xs text-white font-bold shadow-sm"
-                                style={{ backgroundColor: memory.markerColor }}
-                             >
-                                {memory.isAnonymous ? '?' : memory.author.charAt(0)}
-                             </div>
-                             <div>
-                                <h3 className="font-bold text-gray-800 text-sm">
-                                    {memory.isAnonymous ? '匿名老司機' : memory.author}
-                                </h3>
-                                <div className="text-[10px] text-gray-500">{new Date(memory.timestamp).toLocaleDateString()}</div>
-                             </div>
-                        </div>
-                        
-                        <h4 className="font-bold text-gray-900 text-base mb-1">{memory.location.name}</h4>
-                        <p className="text-gray-500 text-xs mb-2">{memory.location.address}</p>
-
-                        <p className="text-gray-700 text-sm mb-3 leading-relaxed bg-gray-50 p-2 rounded">{memory.content}</p>
-                        
-                        {memory.photos.length > 0 && (
-                            <div className="rounded-lg overflow-hidden border border-gray-200 mb-2 shadow-sm">
-                                 <img src={memory.photos[0]} className="w-full h-32 object-cover" alt="story" />
-                            </div>
-                        )}
-                        
-                        <a href={`https://www.google.com/maps/dir/?api=1&destination=${memory.location.lat},${memory.location.lng}`} 
-                           target="_blank" 
-                           rel="noreferrer"
-                           className="block text-center mt-3 text-xs bg-blue-50 text-blue-600 py-2 rounded-lg hover:bg-blue-100 font-bold transition-colors"
-                        >
-                            前進此地 (Google 導航)
-                        </a>
-                      </div>
-                    </Popup>
-                )}
-              </Marker>
-            );
-        })}
       </LeafletMap>
     </div>
   );
