@@ -161,9 +161,10 @@ const SolidMapPin = ({ color }: { color: string }) => (
 // ----------------------------------------------------------------------
 const iconCache: Record<string, L.DivIcon> = {};
 
-const createCustomMarker = (color: string, iconType: MarkerIconType = 'default', isDraggable: boolean = false, avatarUrl?: string) => {
-    // Cache Key 需要包含 avatarUrl，因為每個人的頭像不同
-    const cacheKey = `${color}-${iconType}-${isDraggable}-${avatarUrl || 'no-avatar'}`;
+// 修改：移除 avatarUrl 參數的邏輯，強制顯示 Icon
+const createCustomMarker = (color: string, iconType: MarkerIconType = 'default', isDraggable: boolean = false) => {
+    // Cache Key
+    const cacheKey = `${color}-${iconType}-${isDraggable}`;
 
     if (iconCache[cacheKey]) {
         return iconCache[cacheKey];
@@ -177,17 +178,10 @@ const createCustomMarker = (color: string, iconType: MarkerIconType = 'default',
                  <SolidMapPin color={color} />
              </div>
              
-             {avatarUrl ? (
-                 // 如果有頭像，顯示圓形頭像
-                 <div style={{ position: 'relative', zIndex: 10, marginTop: '-5px', width: '20px', height: '20px', borderRadius: '50%', overflow: 'hidden', border: '1px solid white' }}>
-                     <img src={avatarUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="avatar" />
-                 </div>
-             ) : (
-                 // 否則顯示圖示
-                 <div style={{ position: 'relative', zIndex: 10, marginTop: '-5px', color: 'white', display: 'flex' }}>
-                    <IconComponent size={18} strokeWidth={2.5} />
-                 </div>
-             )}
+             {/* 強制顯示圖示，忽略頭像 */}
+             <div style={{ position: 'relative', zIndex: 10, marginTop: '-5px', color: 'white', display: 'flex' }}>
+                <IconComponent size={18} strokeWidth={2.5} />
+             </div>
         </div>
     );
 
@@ -212,7 +206,7 @@ interface MapContainerProps {
   isRoutingMode: boolean;
   isDraggablePinMode: boolean; 
   onDragEnd: (lat: number, lng: number) => void; 
-  onViewComments: (memoryId: string) => void; // 新增：點擊查看留言
+  onViewComments: (memoryId: string) => void;
 }
 
 // Map Events Handler (Click)
@@ -228,14 +222,11 @@ const MapEvents: React.FC<{ onClick: (lat: number, lng: number) => void, isRouti
 };
 
 // Map View Updater
-// 這裡加入 map.invalidateSize() 修正地圖灰底問題
 const MapUpdater: React.FC<{ center: [number, number] }> = ({ center }) => {
   const map = useMap();
   const lastCenter = useRef<string>('');
 
   useEffect(() => {
-    // 解決地圖在 Flex 容器中初始化時，因高度計算延遲導致的灰底問題
-    // 強制地圖重新計算尺寸
     const timer = setTimeout(() => {
         map.invalidateSize();
     }, 200);
@@ -298,12 +289,10 @@ interface MemoryMarkerProps {
 
 const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, hasRoutePoints, onMarkerClick, onViewComments }: MemoryMarkerProps) => {
     
-    // 優先檢查是否有頭像，且不是匿名
-    const avatarToDisplay = (memory.isAnonymous || !memory.authorAvatar) ? undefined : memory.authorAvatar;
-
+    // 修改：不再傳入頭像資訊給 Marker Icon，只傳顏色與圖示
     const icon = useMemo(() => 
-        createCustomMarker(memory.markerColor || '#3b82f6', memory.markerIcon || 'default', false, avatarToDisplay), 
-        [memory.markerColor, memory.markerIcon, avatarToDisplay]
+        createCustomMarker(memory.markerColor || '#3b82f6', memory.markerIcon || 'default', false), 
+        [memory.markerColor, memory.markerIcon]
     );
 
     const eventHandlers = useMemo(() => ({
@@ -410,11 +399,9 @@ export const AppMap: React.FC<MapContainerProps> = ({
   }, [routePoints, memories]);
 
   return (
-    // 修改容器樣式為 absolute inset-0，確保在 flex 佈局下能正確撐開高度
     <div className="absolute inset-0 w-full h-full z-0 bg-white">
       <LeafletMap center={center} zoom={13} style={{ height: '100%', width: '100%' }} zoomControl={false} preferCanvas={true}>
         
-        {/* 使用 Google Maps 圖磚，並啟用 subdomains 以平行下載加速渲染 */}
         <TileLayer
           attribution='&copy; Google Maps'
           url="https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=zh-TW"

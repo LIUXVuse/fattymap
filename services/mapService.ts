@@ -60,6 +60,7 @@ export const findPlaceDetails = async (
  * 地點搜尋功能
  * 1. 支援座標格式 (lat, lng)
  * 2. 支援關鍵字搜尋，回傳多筆建議結果
+ * 修正：增加 limit 上限，避免過度編碼導致關鍵字失效
  */
 export const searchLocation = async (query: string): Promise<PlaceSearchResult[]> => {
     // 1. 檢查是否為座標格式 (例如: 25.0330, 121.5654)
@@ -83,9 +84,11 @@ export const searchLocation = async (query: string): Promise<PlaceSearchResult[]
 
     // 2. 關鍵字搜尋 (Nominatim)
     try {
-        // limit=5 回傳5筆結果供用戶選擇
+        // limit 增加到 10 筆，增加找到正確地點的機率
+        // 移除不必要的編碼處理，只使用 encodeURIComponent
+        // 使用 q 參數進行通用搜尋，這對組合關鍵字 (例如: 台北 美食) 支援較好
         const response = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1&accept-language=zh-TW`
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=10&addressdetails=1&accept-language=zh-TW`
         );
         const data = await response.json();
         

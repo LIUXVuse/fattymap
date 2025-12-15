@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Memory } from '../types';
-import { MapPin, Image as ImageIcon, ChevronRight, ArrowLeft, Globe, List, Building2, Edit2, Trash2, MessageCircle } from 'lucide-react';
+import { MapPin, Image as ImageIcon, ChevronRight, ArrowLeft, Globe, List, Building2, Edit2, Trash2, MessageCircle, Map as MapIcon } from 'lucide-react';
 
 interface MemoryFeedProps {
   memories: Memory[];
@@ -103,14 +103,33 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
   const renderHeader = () => {
       if (viewMode === 'countries') {
           return (
-            <div className="p-6 border-b border-gray-200 bg-gray-50">
-                <h1 className="text-xl font-black text-gray-800 leading-tight">
-                肥宅老司機<br/>
-                <span className="text-blue-600">前進世界地圖</span>
-                </h1>
-                <p className="text-gray-500 text-xs mt-2 font-medium">
-                選擇區域開始探索
-                </p>
+            <div className="relative w-full h-56 shrink-0 group overflow-hidden bg-gray-900">
+                {/* 
+                   如果您有特定的圖片檔案 (例如: 1kofgjk.jpg)，
+                   請將 src 改為 "/1kofgjk.jpg" (需放在 public 資料夾) 
+                   或是將圖片上傳到圖床後填入網址。
+                   目前使用 Unsplash 作為示意圖。
+                */}
+                <img 
+                    src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2021&auto=format&fit=crop" 
+                    alt="Travel Banner" 
+                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 opacity-90"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/30 to-transparent flex flex-col justify-end p-6">
+                    <div className="flex items-center gap-2 mb-2">
+                         <div className="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm">
+                             Interactive Map
+                         </div>
+                    </div>
+                    <h1 className="text-2xl font-black text-white leading-tight drop-shadow-lg tracking-tight">
+                    肥宅老司機<br/>
+                    <span className="text-blue-300">前進世界地圖</span>
+                    </h1>
+                    <p className="text-gray-200 text-xs mt-2 font-medium drop-shadow-md flex items-center gap-1.5 opacity-90">
+                        <MapIcon size={14} className="text-blue-300" />
+                        紀錄足跡，分享感動
+                    </p>
+                </div>
             </div>
           );
       }
@@ -127,13 +146,13 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
       }
 
       return (
-          <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center gap-2">
-              <button onClick={goBack} className="p-2 hover:bg-gray-200 rounded-full text-gray-600 transition-colors">
-                  <ArrowLeft size={20} />
+          <div className="p-4 border-b border-gray-200 bg-white/50 backdrop-blur-md flex items-center gap-3 sticky top-0 z-10">
+              <button onClick={goBack} className="p-2 hover:bg-gray-100 rounded-full text-gray-600 transition-colors border border-gray-200 shadow-sm bg-white">
+                  <ArrowLeft size={18} />
               </button>
               <div className="overflow-hidden">
                   <h2 className="font-bold text-gray-800 text-lg truncate" title={title || ''}>{title}</h2>
-                  <p className="text-xs text-gray-500 truncate">
+                  <p className="text-xs text-gray-500 truncate flex items-center gap-1">
                       {subtitle}
                   </p>
               </div>
@@ -142,7 +161,7 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
   };
 
   return (
-    <div className="h-full flex flex-col bg-white/95 backdrop-blur-xl border-r border-gray-200 shadow-xl">
+    <div className="h-full flex flex-col bg-white/95 backdrop-blur-xl border-r border-gray-200 shadow-xl font-sans">
       {renderHeader()}
 
       <div className="flex-1 overflow-y-auto p-4 space-y-3 scroll-smooth bg-gray-50">
@@ -151,7 +170,13 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
         {viewMode === 'countries' && (
             <div className="space-y-2">
                 {countryStats.length === 0 ? (
-                     <div className="text-center text-gray-400 py-10">地圖上還沒有任何足跡</div>
+                     <div className="flex flex-col items-center justify-center py-12 text-gray-400 gap-3">
+                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                            <MapPin size={24} className="text-gray-300" />
+                        </div>
+                        <p className="text-sm">地圖上還沒有任何足跡</p>
+                        <p className="text-xs text-gray-400">點擊地圖開始新增</p>
+                     </div>
                 ) : (
                     countryStats.map(([country, count]) => (
                         <div 
@@ -160,14 +185,14 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
                             className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:border-blue-300 hover:shadow-md cursor-pointer transition-all flex justify-between items-center group"
                         >
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                                <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
                                     <Globe size={20} />
                                 </div>
                                 <span className="font-bold text-gray-700">{country}</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-bold">{count}</span>
-                                <ChevronRight size={16} className="text-gray-400 group-hover:text-blue-500" />
+                                <span className="bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full text-xs font-bold min-w-[1.5rem] text-center">{count}</span>
+                                <ChevronRight size={16} className="text-gray-300 group-hover:text-blue-500 transition-colors" />
                             </div>
                         </div>
                     ))
@@ -177,7 +202,7 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
 
         {/* VIEW 2: AREAS LIST */}
         {viewMode === 'areas' && (
-            <div className="space-y-2">
+            <div className="space-y-2 animate-in slide-in-from-right-4 duration-300">
                  {areaStats.map(([area, count]) => (
                     <div 
                         key={area}
@@ -185,14 +210,14 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
                         className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:border-green-300 hover:shadow-md cursor-pointer transition-all flex justify-between items-center group"
                     >
                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-full bg-green-50 text-green-600 flex items-center justify-center border border-green-100">
                                 <Building2 size={20} />
                             </div>
                             <span className="font-bold text-gray-700">{area}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-bold">{count}</span>
-                            <ChevronRight size={16} className="text-gray-400 group-hover:text-green-500" />
+                            <span className="bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full text-xs font-bold min-w-[1.5rem] text-center">{count}</span>
+                            <ChevronRight size={16} className="text-gray-300 group-hover:text-green-500 transition-colors" />
                         </div>
                     </div>
                  ))}
@@ -201,7 +226,7 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
 
         {/* VIEW 3: CATEGORIES LIST */}
         {viewMode === 'categories' && (
-            <div className="space-y-2">
+            <div className="space-y-2 animate-in slide-in-from-right-4 duration-300">
                  {categoryStatsInArea.map(([cat, count]) => (
                     <div 
                         key={cat}
@@ -209,14 +234,14 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
                         className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:border-orange-300 hover:shadow-md cursor-pointer transition-all flex justify-between items-center group"
                     >
                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center border border-orange-100">
                                 <List size={20} />
                             </div>
                             <span className="font-bold text-gray-700">{cat}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-bold">{count}</span>
-                            <ChevronRight size={16} className="text-gray-400 group-hover:text-orange-500" />
+                            <span className="bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full text-xs font-bold min-w-[1.5rem] text-center">{count}</span>
+                            <ChevronRight size={16} className="text-gray-300 group-hover:text-orange-500 transition-colors" />
                         </div>
                     </div>
                  ))}
@@ -225,7 +250,7 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
 
         {/* VIEW 4: POSTS LIST */}
         {viewMode === 'posts' && (
-             <>
+             <div className="animate-in slide-in-from-right-4 duration-300 space-y-3">
              {filteredMemories.map(memory => {
                  // 權限判斷：本人 或 管理員 可以編輯/刪除
                  const canEdit = isAdmin || (currentUserId && memory.creatorId === currentUserId);
@@ -291,16 +316,15 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
                                         <>
                                         <button 
                                             onClick={(e) => { e.stopPropagation(); onEdit && onEdit(memory); }}
-                                            className="text-[10px] text-blue-600 hover:text-blue-800 font-bold flex items-center gap-0.5"
+                                            className="text-[10px] text-blue-600 hover:text-blue-800 font-bold flex items-center gap-0.5 p-1 hover:bg-blue-50 rounded"
                                         >
-                                            編輯
+                                            <Edit2 size={12}/>
                                         </button>
-                                        <span className="text-gray-300 text-[10px]">/</span>
                                         <button 
                                             onClick={(e) => { e.stopPropagation(); onDelete && onDelete(memory.id); }}
-                                            className="text-[10px] text-red-500 hover:text-red-700 font-bold flex items-center gap-0.5"
+                                            className="text-[10px] text-red-500 hover:text-red-700 font-bold flex items-center gap-0.5 p-1 hover:bg-red-50 rounded"
                                         >
-                                            刪除
+                                            <Trash2 size={12}/>
                                         </button>
                                         <span className="text-gray-300 text-[10px]">|</span>
                                         </>
@@ -308,7 +332,7 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
                                     
                                     <button 
                                         onClick={(e) => { e.stopPropagation(); onViewComments(memory.id); }}
-                                        className="text-[10px] text-gray-500 hover:text-gray-800 font-bold flex items-center gap-0.5"
+                                        className="text-[10px] text-gray-500 hover:text-gray-800 font-bold flex items-center gap-0.5 hover:bg-gray-100 p-1 rounded"
                                     >
                                         <MessageCircle size={12} /> 留言
                                     </button>
@@ -329,7 +353,7 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
                     </div>
                  );
              })}
-             </>
+             </div>
         )}
 
       </div>

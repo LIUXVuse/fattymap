@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, Image as ImageIcon, Loader2, User as UserIcon } from 'lucide-react';
-import { Comment, UserInfo } from '../types';
+import { X, Send, Image as ImageIcon, Loader2, User as UserIcon, Globe, Edit3, Upload } from 'lucide-react';
+import { Comment } from '../types';
 import { subscribeToComments, addCommentToFirestore, uploadImage } from '../services/firebase';
 import { User } from 'firebase/auth';
 
@@ -13,6 +13,8 @@ interface CommentModalProps {
   defaultCustomAvatar?: string;
 }
 
+type IdentityType = 'google' | 'custom' | 'anonymous';
+
 export const CommentModal: React.FC<CommentModalProps> = ({ 
     memoryId, 
     memoryTitle, 
@@ -24,14 +26,41 @@ export const CommentModal: React.FC<CommentModalProps> = ({
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // 圖片上傳 (留言附圖)
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   
+  // Identity State
+  const [identityType, setIdentityType] = useState<IdentityType>('google');
+  const [customName, setCustomName] = useState('');
+  const [customAvatarFile, setCustomAvatarFile] = useState<File | null>(null);
+  const [customAvatarPreview, setCustomAvatarPreview] = useState<string>('');
+
   const commentsEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const MAX_CHARS = 150;
   const MIN_CHARS = 2;
+
+  // 初始化身分設定
+  useEffect(() => {
+    // 優先讀取 LocalStorage (即時修正)
+    const savedName = localStorage.getItem('lastCustomName');
+    const savedAvatar = localStorage.getItem('lastCustomAvatar');
+    
+    if (savedName) setCustomName(savedName);
+    if (savedAvatar) setCustomAvatarPreview(savedAvatar);
+    else if (defaultCustomAvatar) setCustomAvatarPreview(defaultCustomAvatar);
+
+    if (currentUser) {
+        setIdentityType('google');
+    } else if (savedName || defaultCustomName) {
+        setIdentityType('custom');
+    } else {
+        setIdentityType('custom'); // 預設給 Custom 讓用戶輸入
+    }
+  }, [currentUser, defaultCustomName, defaultCustomAvatar]);
 
   useEffect(() => {
     const unsubscribe = subscribeToComments(memoryId, (data) => {
@@ -59,6 +88,18 @@ export const CommentModal: React.FC<CommentModalProps> = ({
       }
   };
 
+  const handleCustomAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+        const file = e.target.files[0];
+        setCustomAvatarFile(file);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setCustomAvatarPreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+    }
+  };
+
   const removeImage = () => {
       setImageFile(null);
       setImagePreview(null);
@@ -71,23 +112,38 @@ export const CommentModal: React.FC<CommentModalProps> = ({
 
       setIsSubmitting(true);
       try {
+          // 1. 上傳留言附圖
           let imageUrl = '';
           if (imageFile) {
               imageUrl = await uploadImage(imageFile, `comments/${memoryId}/${Date.now()}_reply`);
           }
 
-          // 決定顯示名稱與頭像
-          // 如果登入，用 Google 資訊
-          // 如果沒登入，優先使用 LocalStorage 記住的自訂資訊，否則為匿名
+          // 2. 決定身分與上傳自訂頭像
           let authorName = '匿名路人';
           let authorAvatar = '';
+          let userId = currentUser?.uid;
 
-          if (currentUser) {
+          if (identityType === 'google' && currentUser) {
               authorName = currentUser.displayName || 'Google User';
               authorAvatar = currentUser.photoURL || '';
-          } else if (defaultCustomName) {
-              authorName = defaultCustomName;
-              authorAvatar = defaultCustomAvatar || '';
+          } else if (identityType === 'custom') {
+              authorName = customName || '老司機';
+              
+              // 處理自訂頭像上傳
+              if (customAvatarFile) {
+                  authorAvatar = await uploadImage(customAvatarFile, `avatars/guest/${Date.now()}_avatar`);
+              } else {
+                  authorAvatar = customAvatarPreview;
+              }
+
+              // **關鍵修復**: 寫入 LocalStorage 記住身分
+              localStorage.setItem('lastCustomName', authorName);
+              if (authorAvatar) {
+                  localStorage.setItem('lastCustomAvatar', authorAvatar);
+              }
+          } else {
+              // Anonymous
+              authorName = '匿名老司機';
           }
 
           const commentData: Omit<Comment, "id"> = {
@@ -97,7 +153,7 @@ export const CommentModal: React.FC<CommentModalProps> = ({
               content: newComment,
               imageUrl: imageUrl,
               timestamp: Date.now(),
-              userId: currentUser?.uid
+              userId: userId
           };
 
           await addCommentToFirestore(memoryId, commentData);
@@ -118,7 +174,7 @@ export const CommentModal: React.FC<CommentModalProps> = ({
         {/* Backdrop */}
         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
         
-        {/* Modal Content (Glassmorphism) */}
+        {/* Modal Content */}
         <div className="relative w-full max-w-md bg-white/70 backdrop-blur-xl border border-white/50 shadow-2xl rounded-2xl flex flex-col max-h-[85vh] overflow-hidden animate-in zoom-in-95 duration-200">
             
             {/* Header */}
@@ -173,9 +229,58 @@ export const CommentModal: React.FC<CommentModalProps> = ({
             </div>
 
             {/* Input Area */}
-            <div className="p-3 bg-white/80 border-t border-gray-200/50">
+            <div className="p-3 bg-white/80 border-t border-gray-200/50 flex flex-col gap-2">
+                
+                {/* Identity Selector */}
+                <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                    {currentUser && (
+                        <button 
+                           type="button"
+                           onClick={() => setIdentityType('google')}
+                           className={`shrink-0 py-1 px-2 rounded-lg text-[10px] font-bold border transition-all flex items-center gap-1 ${identityType === 'google' ? 'bg-blue-50 border-blue-400 text-blue-600' : 'border-transparent text-gray-500 hover:bg-black/5'}`}
+                        >
+                            <UserIcon size={12} /> Google: {currentUser.displayName}
+                        </button>
+                    )}
+                    <button 
+                       type="button"
+                       onClick={() => setIdentityType('custom')}
+                       className={`shrink-0 py-1 px-2 rounded-lg text-[10px] font-bold border transition-all flex items-center gap-1 ${identityType === 'custom' ? 'bg-blue-50 border-blue-400 text-blue-600' : 'border-transparent text-gray-500 hover:bg-black/5'}`}
+                    >
+                        <Edit3 size={12} /> 自訂身分
+                    </button>
+                    <button 
+                       type="button"
+                       onClick={() => setIdentityType('anonymous')}
+                       className={`shrink-0 py-1 px-2 rounded-lg text-[10px] font-bold border transition-all flex items-center gap-1 ${identityType === 'anonymous' ? 'bg-blue-50 border-blue-400 text-blue-600' : 'border-transparent text-gray-500 hover:bg-black/5'}`}
+                    >
+                        <Globe size={12} /> 匿名
+                    </button>
+                </div>
+
+                {/* Custom Identity Inputs */}
+                {identityType === 'custom' && (
+                    <div className="flex items-center gap-2 p-2 bg-gray-50/80 rounded-lg animate-in fade-in slide-in-from-top-1">
+                        <div className="relative group cursor-pointer w-8 h-8 shrink-0">
+                            <div className="w-8 h-8 rounded-full bg-white overflow-hidden border border-gray-300 flex items-center justify-center">
+                                {customAvatarPreview ? <img src={customAvatarPreview} className="w-full h-full object-cover"/> : <Upload size={14} className="text-gray-400"/>}
+                            </div>
+                            <input type="file" accept="image/*" onChange={handleCustomAvatarSelect} className="absolute inset-0 opacity-0 cursor-pointer" />
+                        </div>
+                        <input 
+                            type="text" 
+                            value={customName}
+                            onChange={(e) => setCustomName(e.target.value)}
+                            placeholder="輸入顯示暱稱..."
+                            className="flex-1 bg-transparent border-b border-gray-300 focus:border-blue-500 outline-none px-1 py-1 text-xs font-bold text-gray-700"
+                            autoFocus
+                        />
+                    </div>
+                )}
+
+                {/* Image Preview (Comment Image) */}
                 {imagePreview && (
-                    <div className="relative w-16 h-16 mb-2 group">
+                    <div className="relative w-16 h-16 mb-1 group">
                         <img src={imagePreview} className="w-full h-full object-cover rounded-lg border border-gray-300" alt="preview" />
                         <button onClick={removeImage} className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-0.5 shadow-md">
                             <X size={12} />
@@ -188,7 +293,7 @@ export const CommentModal: React.FC<CommentModalProps> = ({
                         <textarea 
                             value={newComment}
                             onChange={(e) => setNewComment(e.target.value)}
-                            placeholder={currentUser ? "寫下你的想法..." : `以 ${defaultCustomName || '匿名'} 身分留言...`}
+                            placeholder="寫下你的想法..."
                             className="w-full bg-gray-50/50 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none resize-none pr-10 min-h-[44px] max-h-[100px]"
                             rows={1}
                             maxLength={MAX_CHARS}
@@ -217,8 +322,7 @@ export const CommentModal: React.FC<CommentModalProps> = ({
                         {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
                     </button>
                 </form>
-                <div className="text-[10px] text-gray-400 mt-1 flex justify-between px-1">
-                     <span>{currentUser ? '已登入' : '訪客模式'}</span>
+                <div className="text-[10px] text-gray-400 flex justify-end px-1">
                      <span className={newComment.length > MAX_CHARS ? 'text-red-500' : ''}>{newComment.length}/{MAX_CHARS}</span>
                 </div>
             </div>
