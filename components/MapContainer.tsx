@@ -157,21 +157,17 @@ const SolidMapPin = ({ color }: { color: string }) => (
 );
 
 // ----------------------------------------------------------------------
-// 優化重點 1: Icon 快取 (Global Cache)
-// 避免每次 Render 都重新執行 renderToStaticMarkup
+// Icon 快取 (Global Cache)
 // ----------------------------------------------------------------------
 const iconCache: Record<string, L.DivIcon> = {};
 
 const createCustomMarker = (color: string, iconType: MarkerIconType = 'default', isDraggable: boolean = false) => {
-    // 建立快取 Key
     const cacheKey = `${color}-${iconType}-${isDraggable}`;
 
-    // 如果快取中有，直接回傳
     if (iconCache[cacheKey]) {
         return iconCache[cacheKey];
     }
 
-    // 如果沒有，則生成並寫入快取
     const IconComponent = ICON_MAP[iconType] || MapPin;
 
     const svgString = renderToStaticMarkup(
@@ -222,10 +218,20 @@ const MapEvents: React.FC<{ onClick: (lat: number, lng: number) => void, isRouti
 };
 
 // Map View Updater
+// 這裡加入 map.invalidateSize() 修正地圖灰底問題
 const MapUpdater: React.FC<{ center: [number, number] }> = ({ center }) => {
   const map = useMap();
-  // 使用 useRef 紀錄上次的 center，避免微小變動造成的重複呼叫
   const lastCenter = useRef<string>('');
+
+  useEffect(() => {
+    // 解決地圖在 Flex 容器中初始化時，因高度計算延遲導致的灰底問題
+    // 強制地圖重新計算尺寸
+    const timer = setTimeout(() => {
+        map.invalidateSize();
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, [map]);
 
   useEffect(() => {
     if (center) {
@@ -243,7 +249,6 @@ const MapUpdater: React.FC<{ center: [number, number] }> = ({ center }) => {
 // Draggable Pin Component
 const DraggablePin: React.FC<{ position: [number, number], onDragEnd: (lat: number, lng: number) => void }> = ({ position, onDragEnd }) => {
     const markerRef = useRef<L.Marker>(null);
-    // 使用 useMemo 確保 icon 不會因為 re-render 而重新建立實例
     const icon = useMemo(() => createCustomMarker('#ef4444', 'default', true), []);
     
     const eventHandlers = useMemo(
@@ -271,10 +276,7 @@ const DraggablePin: React.FC<{ position: [number, number], onDragEnd: (lat: numb
     )
 }
 
-// ----------------------------------------------------------------------
-// 優化重點 2: 獨立的 Marker Component 並使用 React.memo
-// 這樣當地圖移動時，個別的 Marker 不會重新渲染，大幅降低 DOM 操作
-// ----------------------------------------------------------------------
+// Memory Marker Component (Memoized)
 interface MemoryMarkerProps {
     memory: Memory;
     isRoutingMode: boolean;
@@ -285,7 +287,6 @@ interface MemoryMarkerProps {
 
 const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, hasRoutePoints, onMarkerClick }: MemoryMarkerProps) => {
     
-    // 從快取取得 icon，依賴項改變時才會重新計算 (雖然有 global cache，但 useMemo 確保 reference 穩定)
     const icon = useMemo(() => 
         createCustomMarker(memory.markerColor || '#3b82f6', memory.markerIcon || 'default'), 
         [memory.markerColor, memory.markerIcon]
@@ -386,14 +387,15 @@ export const AppMap: React.FC<MapContainerProps> = ({
   }, [routePoints, memories]);
 
   return (
-    <div className="h-full w-full z-0 bg-white">
-      {/* 關閉 zoomControl 以獲得更乾淨的 UI，若有需要可開啟 */}
+    // 修改容器樣式為 absolute inset-0，確保在 flex 佈局下能正確撐開高度
+    <div className="absolute inset-0 w-full h-full z-0 bg-white">
       <LeafletMap center={center} zoom={13} style={{ height: '100%', width: '100%' }} zoomControl={false} preferCanvas={true}>
         
-        {/* GOOGLE MAPS TILE LAYER */}
+        {/* 使用 Google Maps 圖磚，並啟用 subdomains 以平行下載加速渲染 */}
         <TileLayer
           attribution='&copy; Google Maps'
-          url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=zh-TW"
+          url="https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=zh-TW"
+          subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
           maxZoom={20}
         />
         
@@ -408,12 +410,12 @@ export const AppMap: React.FC<MapContainerProps> = ({
             />
         )}
         
-        {/* Special Draggable Pin for creating new memories */}
+        {/* Special Draggable Pin */}
         {isDraggablePinMode && (
             <DraggablePin position={center} onDragEnd={onDragEnd} />
         )}
 
-        {/* Render Memoized Markers */}
+        {/* Markers */}
         {memories.map((memory) => (
             <MemoryMarker 
                 key={memory.id}
