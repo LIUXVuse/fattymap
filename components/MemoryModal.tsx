@@ -118,17 +118,25 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
         }
         setIsLoadingDetails(false);
     } else {
-        // 新增模式：設定預設身分
+        // 新增模式：優先讀取 LocalStorage (解決使用者提到的記憶問題)
+        const savedName = localStorage.getItem('lastCustomName');
+        const savedAvatar = localStorage.getItem('lastCustomAvatar');
+        
+        // 設定預設值
+        if (savedName) setCustomName(savedName);
+        if (savedAvatar) setCustomAvatarPreview(savedAvatar);
+
+        // 決定預設身分選項
         if (currentUser) {
             setIdentityType('google');
-        } else if (defaultCustomName) {
-            // 如果有記憶的自訂身分
+        } else if (savedName || defaultCustomName) {
+            // 如果有記憶的自訂身分 (不管是剛剛傳進來的 props 還是 localStorage)
             setIdentityType('custom');
-            setCustomName(defaultCustomName);
-            if (defaultCustomAvatar) setCustomAvatarPreview(defaultCustomAvatar);
+            if (!customName && defaultCustomName) setCustomName(defaultCustomName);
+            if (!customAvatarPreview && defaultCustomAvatar) setCustomAvatarPreview(defaultCustomAvatar);
         } else {
-            // 完全沒資料，預設匿名 (會讓用戶手動切換去自訂)
-            setIdentityType('custom'); // 為了讓用戶有機會輸入，預設切到 custom 比較好，anonymous 太隱晦
+            // 完全沒資料，預設切到 Custom 讓用戶輸入
+            setIdentityType('custom'); 
         }
     }
   }, [initialData, categories, currentUser, defaultCustomName, defaultCustomAvatar]);

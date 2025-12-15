@@ -130,18 +130,14 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
                 title="點擊隨機探索一個回憶"
             >
                 {/* 
-                   使用根目錄下的檔案 1kofgjk
-                   如果您的檔案有副檔名 (如 .jpg)，瀏覽器可能會自動識別，
-                   如果不顯示，請嘗試在檔案列表將其重新命名為 1kofgjk.jpg 並修改此處。
+                   使用根目錄下的檔案 1kofgjk (無副檔名或自動識別)
+                   已移除 onError 自動跳轉，確保顯示您的檔案。
+                   如果圖片仍未顯示，請確認檔案已放置於 public 資料夾中。
                 */}
                 <img 
                     src="/1kofgjk" 
                     alt="Travel Banner" 
                     className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 opacity-90 group-hover:opacity-100"
-                    onError={(e) => {
-                        // 備用圖片，防止檔案讀取失敗
-                        e.currentTarget.src = "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2021&auto=format&fit=crop";
-                    }}
                 />
                 
                 {/* 隨機探索提示 (Hover 時顯示更明顯) */}
