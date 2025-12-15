@@ -8,7 +8,7 @@ export interface Location {
 
 // 支援任意 HEX 顏色
 export type MarkerColor = string;
-// 支援的圖示代碼 (擴充為 string 以支援大量圖示)
+// 支援的圖示代碼
 export type MarkerIconType = string;
 
 export interface RegionInfo {
@@ -27,20 +27,24 @@ export interface CategoryNode {
 
 export interface Memory {
   id: string;
-  creatorId: string; // 新增：建立者 ID
+  creatorId: string; // Firebase UID
+  
+  // 身分識別
+  author: string;        // 顯示名稱 (可能是 Google 名稱、自訂名稱或 '匿名')
+  authorAvatar?: string; // 顯示頭像 (可能是 Google Photo、自訂上傳 URL)
+  isAnonymous: boolean;  // UI 標記，若為真則顯示匿名圖示(或忽略 authorAvatar)
+  
   location: Location;
-  author: string; // 真實暱稱 (存入資料庫)
-  isAnonymous: boolean; // 是否開啟匿名
   content: string;
   timestamp: number;
-  photos: string[]; // Base64 strings
+  photos: string[]; // Firebase Storage URLs
   markerColor: MarkerColor;
-  markerIcon?: MarkerIconType; // 新增：圖示類型
+  markerIcon?: MarkerIconType; 
   category: {
       main: string;
       sub?: string;
   };
-  region: RegionInfo; // 新增地理分區
+  region: RegionInfo; 
 }
 
 export interface PlaceSearchResult {
@@ -50,4 +54,11 @@ export interface PlaceSearchResult {
   address: string;
   uri?: string;
   region: RegionInfo; 
+}
+
+export interface UserInfo {
+    uid: string;
+    displayName: string | null;
+    email: string | null;
+    photoURL: string | null;
 }

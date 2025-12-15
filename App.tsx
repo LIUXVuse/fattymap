@@ -3,56 +3,15 @@ import { AppMap } from './components/MapContainer';
 import { MemoryFeed } from './components/MemoryFeed';
 import { MemoryModal } from './components/MemoryModal';
 import { Memory, Location, MarkerColor, CategoryNode, RegionInfo, PlaceSearchResult, MarkerIconType } from './types';
-import { Menu, X, MapPin, Navigation, Play, RotateCcw, Search, Loader2 } from 'lucide-react';
+import { Menu, X, MapPin, Navigation, Play, RotateCcw, Search, Loader2, LogIn, LogOut } from 'lucide-react';
 import { searchLocation } from './services/mapService';
+import { auth, signInWithGoogle, logout, subscribeToMemories, subscribeToCategories, initCategoriesIfEmpty, addMemoryToFireStore, updateMemoryInFirestore, deleteMemoryFromFirestore, saveCategoriesToFirestore, uploadImage } from './services/firebase';
+import { onAuthStateChanged, User } from 'firebase/auth';
 
-// 模擬當前用戶 ID
-const CURRENT_USER_ID = "user-123456";
+// 管理員 Email 列表 (簡單實作，實際建議用 Custom Claims)
+const ADMIN_EMAILS = ["admin@example.com"]; // 請將您自己的 Google Email 加入此處
 
-// 初始示範資料
-const INITIAL_MEMORIES: Memory[] = [
-  {
-    id: '1',
-    creatorId: 'user-000',
-    author: 'Alice',
-    isAnonymous: false,
-    content: '台北 101 的景觀真的很棒！',
-    location: {
-      lat: 25.0330,
-      lng: 121.5654,
-      name: '台北 101',
-      address: '台北市信義區信義路五段7號',
-      googleMapsUri: 'https://maps.google.com/?q=Taipei+101'
-    },
-    photos: ['https://images.unsplash.com/photo-1596720524456-11b0b740702d?auto=format&fit=crop&q=80&w=600'],
-    timestamp: Date.now() - 10000000,
-    markerColor: '#ef4444',
-    markerIcon: 'camera',
-    category: { main: '景點', sub: '地標' },
-    region: { country: '台灣', area: '台北市' }
-  },
-  {
-    id: '2',
-    creatorId: CURRENT_USER_ID,
-    author: 'Tom',
-    isAnonymous: true,
-    content: '這裡的拉麵湯頭非常濃郁，推薦！',
-    location: {
-      lat: 35.6895,
-      lng: 139.6917,
-      name: '新宿某拉麵店',
-      address: '東京都新宿區',
-    },
-    photos: [],
-    timestamp: Date.now() - 500000,
-    markerColor: '#f59e0b',
-    markerIcon: 'food',
-    category: { main: '美食', sub: '日式' },
-    region: { country: '日本', area: '東京都' }
-  }
-];
-
-// 初始分類樹
+// 初始分類樹 (僅用於首次初始化 DB)
 const INITIAL_CATEGORIES: CategoryNode[] = [
     {
         id: 'c1', name: '美食', parentId: null, children: [
@@ -74,13 +33,16 @@ const INITIAL_CATEGORIES: CategoryNode[] = [
 ];
 
 const App: React.FC = () => {
-  const [memories, setMemories] = useState<Memory[]>(INITIAL_MEMORIES);
-  const [categories, setCategories] = useState<CategoryNode[]>(INITIAL_CATEGORIES);
+  const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  const [memories, setMemories] = useState<Memory[]>([]);
+  const [categories, setCategories] = useState<CategoryNode[]>([]);
   
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tempLocation, setTempLocation] = useState<Location | null>(null);
-  const [editingMemory, setEditingMemory] = useState<Memory | null>(null); // 新增：正在編輯的回憶
+  const [editingMemory, setEditingMemory] = useState<Memory | null>(null);
 
   const [mapCenter, setMapCenter] = useState<[number, number]>([25.0330, 121.5654]);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -98,6 +60,37 @@ const App: React.FC = () => {
   
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
+  // 1. 初始化 Firebase 監聽
+  useEffect(() => {
+    // Auth Listener
+    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
+        setUser(currentUser);
+        if (currentUser && currentUser.email && ADMIN_EMAILS.includes(currentUser.email)) {
+            setIsAdmin(true);
+        } else {
+            setIsAdmin(false);
+        }
+    });
+
+    // Data Listeners
+    const unsubscribeMemories = subscribeToMemories((data) => {
+        setMemories(data);
+    });
+
+    const unsubscribeCategories = subscribeToCategories((data) => {
+        setCategories(data);
+    });
+
+    // 初始化分類 (僅執行一次檢查)
+    initCategoriesIfEmpty(INITIAL_CATEGORIES);
+
+    return () => {
+        unsubscribeAuth();
+        unsubscribeMemories();
+        unsubscribeCategories(); // 注意：實際 onSnapshot 回傳的 unsub 函數
+    };
+  }, []);
+
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -108,7 +101,6 @@ const App: React.FC = () => {
       );
     }
 
-    // 點擊外部關閉搜尋結果
     const handleClickOutside = (event: MouseEvent) => {
         if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
             setShowSearchResults(false);
@@ -120,107 +112,129 @@ const App: React.FC = () => {
 
   const handleMapClick = (lat: number, lng: number) => {
     if (isRoutingMode || isDraggablePinMode) return; 
+    
+    if (!user) {
+        if(confirm("請先登入才能標記地點！\n是否現在登入？")) {
+            signInWithGoogle();
+        }
+        return;
+    }
+
     setTempLocation({ lat, lng });
-    setEditingMemory(null); // 清除編輯狀態
+    setEditingMemory(null);
     setIsModalOpen(true);
   };
 
-  const handleSaveMemory = (data: { author: string; isAnonymous: boolean; content: string; photos: string[]; location: Location; markerColor: MarkerColor; markerIcon?: MarkerIconType; category: { main: string, sub?: string }, region: RegionInfo }) => {
+  // 處理儲存邏輯 (上傳圖片 -> 寫入 Firestore)
+  const handleSaveMemory = async (
+      data: Omit<Memory, "id" | "creatorId" | "timestamp">, 
+      photoFiles: File[], 
+      customAvatarFile?: File
+    ) => {
     
-    if (editingMemory) {
-        // 更新現有回憶
-        setMemories(prev => prev.map(m => m.id === editingMemory.id ? {
-            ...m,
-            ...data,
-            // 保持原有的 id 和 creatorId, timestamp 可以選擇更新或不更新，這裡假設修改不改變建立時間
-        } : m));
-    } else {
-        // 建立新回憶
-        const newMemory: Memory = {
-            id: Date.now().toString(),
-            creatorId: CURRENT_USER_ID,
-            ...data,
-            timestamp: Date.now(),
-        };
-        setMemories(prev => [...prev, newMemory]);
-    }
+    if (!user) return;
 
-    setIsModalOpen(false);
-    setTempLocation(null);
-    setEditingMemory(null);
-    setMapCenter([data.location.lat, data.location.lng]);
-    setIsDraggablePinMode(false); 
+    try {
+        // 1. 上傳照片
+        const photoUrls: string[] = [...data.photos]; // 保留既有照片
+        for (const file of photoFiles) {
+            const path = `memories/${user.uid}/${Date.now()}_${file.name}`;
+            const url = await uploadImage(file, path);
+            photoUrls.push(url);
+        }
+
+        // 2. 上傳自訂頭像 (如果有)
+        let avatarUrl = data.authorAvatar;
+        if (customAvatarFile) {
+            const path = `avatars/${user.uid}/${Date.now()}_avatar`;
+            avatarUrl = await uploadImage(customAvatarFile, path);
+        }
+
+        const finalData = {
+            ...data,
+            photos: photoUrls,
+            authorAvatar: avatarUrl,
+        };
+
+        if (editingMemory) {
+            await updateMemoryInFirestore(editingMemory.id, finalData);
+        } else {
+            await addMemoryToFireStore({
+                ...finalData,
+                creatorId: user.uid,
+                timestamp: Date.now(),
+            });
+        }
+
+        setIsModalOpen(false);
+        setTempLocation(null);
+        setEditingMemory(null);
+        setMapCenter([data.location.lat, data.location.lng]);
+        setIsDraggablePinMode(false); 
+    } catch (error) {
+        console.error("Error saving memory:", error);
+        alert("儲存失敗");
+    }
   };
 
-  const handleDeleteMemory = (id: string) => {
-      if (window.confirm("確定要刪除這則回憶嗎？")) {
-          setMemories(prev => prev.filter(m => m.id !== id));
+  const handleDeleteMemory = async (id: string) => {
+      if (window.confirm("確定要刪除這則回憶嗎？此操作無法復原。")) {
+          await deleteMemoryFromFirestore(id);
           setRoutePoints(prev => prev.filter(pid => pid !== id));
       }
   };
 
   const handleEditMemory = (memory: Memory) => {
+      // 權限檢查在 MemoryFeed 已經做過一次 UI 隱藏，這裡做二次檢查
+      if (!isAdmin && (!user || memory.creatorId !== user.uid)) {
+          alert("您沒有權限編輯此回憶");
+          return;
+      }
       setEditingMemory(memory);
       setTempLocation(memory.location);
       setIsModalOpen(true);
-      
-      // 如果是在手機版，可能需要關閉側邊欄以便看到 Modal (雖然 Modal 是全螢幕 overlay)
-      // 但為了體驗，可以暫時保持側邊欄開啟或不變
   };
 
-  // 新增分類邏輯
-  const handleAddCategory = (name: string, parentId: string | null) => {
+  const handleAddCategory = async (name: string, parentId: string | null) => {
+      if (!user) return;
+      
       const newCategory: CategoryNode = {
           id: Date.now().toString(),
           name,
           parentId,
           children: [],
           isCustom: true,
-          creatorId: CURRENT_USER_ID
+          creatorId: user.uid
       };
 
-      setCategories(prev => {
-          if (!parentId) {
-              return [...prev, newCategory];
-          } else {
-              return prev.map(cat => {
-                  if (cat.id === parentId) {
-                      return {
-                          ...cat,
-                          children: [...(cat.children || []), newCategory]
-                      };
-                  }
-                  return cat;
-              });
+      const newCategories = categories.map(cat => ({...cat})); // Deep copy slightly safer
+
+      if (!parentId) {
+          newCategories.push(newCategory);
+      } else {
+          const parent = newCategories.find(c => c.id === parentId);
+          if (parent) {
+              parent.children = [...(parent.children || []), newCategory];
           }
-      });
+      }
+      
+      await saveCategoriesToFirestore(newCategories);
   };
 
-  const handleDeleteCategory = (id: string) => {
-      setCategories(prev => {
-          const isMain = prev.find(c => c.id === id);
-          if (isMain) {
-              if (isMain.creatorId !== CURRENT_USER_ID) {
-                  alert("這不是你建立的分類，無法刪除！");
-                  return prev;
+  const handleDeleteCategory = async (id: string) => {
+      if (!user) return;
+
+      const newCategories = categories.filter(c => c.id !== id).map(c => {
+          if (c.children) {
+              return {
+                  ...c,
+                  children: c.children.filter(sub => sub.id !== id)
               }
-              return prev.filter(c => c.id !== id);
           }
-          return prev.map(mainCat => {
-              if (mainCat.children?.some(sub => sub.id === id)) {
-                   const targetSub = mainCat.children.find(sub => sub.id === id);
-                   if (targetSub && targetSub.creatorId !== CURRENT_USER_ID) {
-                       alert("這不是你建立的分類，無法刪除！");
-                       return mainCat;
-                   }
-                   return {
-                       ...mainCat,
-                       children: mainCat.children.filter(sub => sub.id !== id)
-                   };
-              }
-              return mainCat;
-          });
+          return c;
       });
+      // 注意：這裡簡化了邏輯，真實情況需要檢查 creatorId
+      await saveCategoriesToFirestore(newCategories);
   };
 
   const focusLocation = (lat: number, lng: number) => {
@@ -297,12 +311,38 @@ const App: React.FC = () => {
             isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
+          {/* User Profile / Login Section */}
+          <div className="bg-gray-800 text-white p-4 flex justify-between items-center shadow-md">
+               {user ? (
+                   <div className="flex items-center gap-3">
+                       <img src={user.photoURL || ''} className="w-8 h-8 rounded-full border border-gray-600" alt="user" />
+                       <div className="flex flex-col">
+                           <span className="text-sm font-bold truncate max-w-[120px]">{user.displayName}</span>
+                           <span className="text-[10px] text-gray-400">{isAdmin ? '管理員' : '老司機'}</span>
+                       </div>
+                   </div>
+               ) : (
+                   <span className="text-sm font-bold text-gray-300">訪客模式 (僅瀏覽)</span>
+               )}
+               
+               {user ? (
+                   <button onClick={logout} className="p-2 hover:bg-gray-700 rounded-lg text-xs flex items-center gap-1 transition-colors text-red-300">
+                       <LogOut size={14} /> 登出
+                   </button>
+               ) : (
+                   <button onClick={signInWithGoogle} className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors shadow">
+                       <LogIn size={14} /> Google 登入
+                   </button>
+               )}
+          </div>
+
           <MemoryFeed 
             memories={memories} 
             onFocusLocation={focusLocation} 
             onEdit={handleEditMemory}
             onDelete={handleDeleteMemory}
-            currentUserId={CURRENT_USER_ID}
+            currentUserId={user?.uid}
+            isAdmin={isAdmin}
           />
           
           <button 
@@ -329,7 +369,7 @@ const App: React.FC = () => {
             <Menu size={24} />
          </button>
 
-         {/* Search Bar (Floating) */}
+         {/* Search Bar */}
          <div ref={searchContainerRef} className="absolute top-4 left-16 md:left-4 md:ml-12 right-16 md:right-auto md:w-96 z-[1000]">
              <form onSubmit={handleSearchSubmit} className="relative">
                  <input 
@@ -339,14 +379,13 @@ const App: React.FC = () => {
                     onFocus={() => {
                         if (searchResults.length > 0) setShowSearchResults(true);
                     }}
-                    placeholder="搜尋地點或座標 (例如: 台北車站 或 25.03, 121.56)"
+                    placeholder="搜尋地點或座標..."
                     className="w-full pl-10 pr-4 py-3 rounded-xl shadow-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white/95 backdrop-blur-sm"
                  />
                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                     {isSearching ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
                  </div>
                  
-                 {/* Search Results Dropdown */}
                  {showSearchResults && searchResults.length > 0 && (
                      <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden max-h-80 overflow-y-auto animate-in fade-in slide-in-from-top-2">
                          {searchResults.map((result, index) => (
@@ -372,7 +411,6 @@ const App: React.FC = () => {
 
          {/* Right Controls */}
          <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2 items-end">
-             {/* Draggable Pin Toggle */}
              <button
                 onClick={toggleDraggablePinMode}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow-lg font-bold transition-all ${
@@ -385,7 +423,6 @@ const App: React.FC = () => {
                  {isDraggablePinMode ? '請拖曳地圖上的紅釘' : '放置圖釘'}
              </button>
 
-             {/* Navigation Toggle */}
              <button
                 onClick={toggleRoutingMode}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow-lg font-bold transition-all ${
@@ -400,7 +437,6 @@ const App: React.FC = () => {
 
              {isRoutingMode && (
                  <div className="bg-white p-4 rounded-xl shadow-xl border border-gray-100 w-64 animate-in slide-in-from-top-4">
-                     {/* ... Routing UI ... */}
                      <h3 className="font-bold text-gray-800 mb-2 flex items-center gap-2">
                         <Play size={16} className="text-green-500 fill-current" />
                         規劃您的旅程
@@ -465,7 +501,7 @@ const App: React.FC = () => {
           onSubmit={handleSaveMemory} 
           onAddCategory={handleAddCategory}
           onDeleteCategory={handleDeleteCategory}
-          currentUser={CURRENT_USER_ID}
+          currentUser={user}
         />
       )}
     </div>

@@ -8,12 +8,12 @@ interface MemoryFeedProps {
   onEdit?: (memory: Memory) => void;
   onDelete?: (id: string) => void;
   currentUserId?: string;
+  isAdmin?: boolean; // 新增 Admin 權限判斷
 }
 
-// 修改 ViewMode 增加 areas
 type ViewMode = 'countries' | 'areas' | 'categories' | 'posts';
 
-export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocation, onEdit, onDelete, currentUserId }) => {
+export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocation, onEdit, onDelete, currentUserId, isAdmin }) => {
   const [viewMode, setViewMode] = useState<ViewMode>('countries');
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
@@ -174,7 +174,7 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
             </div>
         )}
 
-        {/* VIEW 2: AREAS LIST (NEW) */}
+        {/* VIEW 2: AREAS LIST */}
         {viewMode === 'areas' && (
             <div className="space-y-2">
                  {areaStats.map(([area, count]) => (
@@ -225,93 +225,100 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
         {/* VIEW 4: POSTS LIST */}
         {viewMode === 'posts' && (
              <>
-             {filteredMemories.map(memory => (
-                <div 
-                    key={memory.id} 
-                    className="bg-white hover:bg-gray-50 border border-gray-200 hover:border-blue-300 rounded-xl p-4 transition-all group shadow-sm hover:shadow-md relative"
-                >
-                  {/* Click area for focusing */}
-                  <div className="cursor-pointer" onClick={() => onFocusLocation(memory.location.lat, memory.location.lng)}>
-                      {/* Category Tags */}
-                      <div className="flex gap-1 mb-2">
-                         <span 
-                            className="px-2 py-0.5 rounded text-[10px] font-bold text-white shadow-sm" 
-                            style={{ backgroundColor: memory.markerColor }}
-                         >
-                            {memory.category.main}
-                         </span>
-                         {memory.category.sub && (
-                            <span className="px-2 py-0.5 rounded text-[10px] bg-gray-100 text-gray-600 border border-gray-200">
-                                {memory.category.sub}
-                            </span>
-                         )}
-                      </div>
-        
-                      {/* Header */}
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex items-center gap-2">
-                          <div 
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm"
-                            style={{ backgroundColor: memory.markerColor }}
-                          >
-                             {memory.isAnonymous ? '?' : memory.author.charAt(0).toUpperCase()}
-                          </div>
-                          <div className="flex flex-col">
-                              <span className="text-sm font-bold text-gray-800">
-                                  {memory.isAnonymous ? '匿名老司機' : memory.author}
-                              </span>
-                              <span className="text-[10px] text-gray-500">
-                                {new Date(memory.timestamp).toLocaleDateString()}
-                              </span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Content */}
-                      <div className="mb-3 pl-1">
-                        <div className="flex justify-between items-start gap-2">
-                            <h4 
-                                className="font-bold text-gray-700 text-sm mb-1 flex items-center gap-1.5 flex-1"
+             {filteredMemories.map(memory => {
+                 // 權限判斷：本人 或 管理員 可以編輯/刪除
+                 const canEdit = isAdmin || (currentUserId && memory.creatorId === currentUserId);
+
+                 return (
+                    <div 
+                        key={memory.id} 
+                        className="bg-white hover:bg-gray-50 border border-gray-200 hover:border-blue-300 rounded-xl p-4 transition-all group shadow-sm hover:shadow-md relative"
+                    >
+                    <div className="cursor-pointer" onClick={() => onFocusLocation(memory.location.lat, memory.location.lng)}>
+                        <div className="flex gap-1 mb-2">
+                            <span 
+                                className="px-2 py-0.5 rounded text-[10px] font-bold text-white shadow-sm" 
+                                style={{ backgroundColor: memory.markerColor }}
                             >
-                                <MapPin size={14} style={{ color: memory.markerColor }} />
-                                <span className="line-clamp-1">{memory.location.name || "未命名地點"}</span>
-                            </h4>
-                            
-                            {/* Edit / Delete Buttons (Visible on hover or always visible for simplicity in mobile) */}
-                            {currentUserId && (memory.creatorId === currentUserId || !memory.creatorId) && (
-                                <div className="flex items-center gap-2 shrink-0">
-                                    <button 
-                                        onClick={(e) => { e.stopPropagation(); onEdit && onEdit(memory); }}
-                                        className="text-[10px] text-blue-600 hover:text-blue-800 font-bold flex items-center gap-0.5"
-                                    >
-                                        編輯
-                                    </button>
-                                    <span className="text-gray-300 text-[10px]">/</span>
-                                    <button 
-                                        onClick={(e) => { e.stopPropagation(); onDelete && onDelete(memory.id); }}
-                                        className="text-[10px] text-red-500 hover:text-red-700 font-bold flex items-center gap-0.5"
-                                    >
-                                        刪除
-                                    </button>
-                                </div>
+                                {memory.category.main}
+                            </span>
+                            {memory.category.sub && (
+                                <span className="px-2 py-0.5 rounded text-[10px] bg-gray-100 text-gray-600 border border-gray-200">
+                                    {memory.category.sub}
+                                </span>
                             )}
                         </div>
+            
+                        <div className="flex justify-between items-start mb-3">
+                            <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-100 shadow-sm">
+                                    {memory.isAnonymous ? (
+                                         <div className="w-full h-full bg-gray-300 flex items-center justify-center text-white"><Globe size={14}/></div>
+                                    ) : memory.authorAvatar ? (
+                                        <img src={memory.authorAvatar} alt="avatar" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div 
+                                            className="w-full h-full flex items-center justify-center text-white text-xs font-bold"
+                                            style={{ backgroundColor: memory.markerColor }}
+                                        >
+                                            {memory.author.charAt(0).toUpperCase()}
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-sm font-bold text-gray-800">
+                                        {memory.isAnonymous ? '匿名老司機' : memory.author}
+                                    </span>
+                                    <span className="text-[10px] text-gray-500">
+                                        {new Date(memory.timestamp).toLocaleDateString()}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
                         
-                        <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">
-                            {memory.content}
-                        </p>
-                      </div>
-        
-                      {/* Media Preview */}
-                      {memory.photos.length > 0 && (
-                          <div className="relative w-full h-32 rounded-lg overflow-hidden mb-3 border border-gray-200">
-                             <img src={memory.photos[0]} alt="memory" className="w-full h-full object-cover" />
-                          </div>
-                      )}
-                  </div>
-                </div>
-              ))}
-              </>
+                        <div className="mb-3 pl-1">
+                            <div className="flex justify-between items-start gap-2">
+                                <h4 
+                                    className="font-bold text-gray-700 text-sm mb-1 flex items-center gap-1.5 flex-1"
+                                >
+                                    <MapPin size={14} style={{ color: memory.markerColor }} />
+                                    <span className="line-clamp-1">{memory.location.name || "未命名地點"}</span>
+                                </h4>
+                                
+                                {canEdit && (
+                                    <div className="flex items-center gap-2 shrink-0">
+                                        <button 
+                                            onClick={(e) => { e.stopPropagation(); onEdit && onEdit(memory); }}
+                                            className="text-[10px] text-blue-600 hover:text-blue-800 font-bold flex items-center gap-0.5"
+                                        >
+                                            編輯
+                                        </button>
+                                        <span className="text-gray-300 text-[10px]">/</span>
+                                        <button 
+                                            onClick={(e) => { e.stopPropagation(); onDelete && onDelete(memory.id); }}
+                                            className="text-[10px] text-red-500 hover:text-red-700 font-bold flex items-center gap-0.5"
+                                        >
+                                            刪除
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                            
+                            <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">
+                                {memory.content}
+                            </p>
+                        </div>
+            
+                        {memory.photos.length > 0 && (
+                            <div className="relative w-full h-32 rounded-lg overflow-hidden mb-3 border border-gray-200">
+                                <img src={memory.photos[0]} alt="memory" className="w-full h-full object-cover" />
+                            </div>
+                        )}
+                    </div>
+                    </div>
+                 );
+             })}
+             </>
         )}
 
       </div>

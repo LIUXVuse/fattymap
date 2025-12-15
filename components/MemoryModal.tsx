@@ -1,18 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { X, MapPin, Image as ImageIcon, Check, Palette, Globe, Edit3, Loader2, Plus, Trash2, ChevronRight, Grid } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, MapPin, Image as ImageIcon, Check, Palette, Globe, Edit3, Loader2, Plus, Trash2, ChevronRight, Grid, User as UserIcon, Upload } from 'lucide-react';
 import { Location, MarkerColor, CategoryNode, RegionInfo, MarkerIconType, Memory } from '../types';
 import { findPlaceDetails } from '../services/mapService';
 import { ICON_MAP } from './MapContainer';
+import { User } from 'firebase/auth';
+import { uploadImage } from '../services/firebase';
 
 interface MemoryModalProps {
   location: Location;
   categories: CategoryNode[];
-  initialData?: Memory; // 新增：用於編輯模式
+  initialData?: Memory; 
   onClose: () => void;
-  onSubmit: (data: { author: string; isAnonymous: boolean; content: string; photos: string[]; location: Location; markerColor: MarkerColor; markerIcon?: MarkerIconType; category: { main: string, sub?: string }, region: RegionInfo }) => void;
+  // 更新 onSubmit 簽名以配合 Firebase 邏輯
+  onSubmit: (data: Omit<Memory, "id" | "creatorId" | "timestamp">, photoFiles: File[], customAvatarFile?: File) => Promise<void>;
   onAddCategory: (name: string, parentId: string | null) => void;
   onDeleteCategory: (id: string) => void;
-  currentUser: string; 
+  currentUser: User | null; 
 }
 
 // 靜態分類定義
@@ -27,8 +30,9 @@ const ICON_CATEGORIES = {
     "其他": ['flag', 'bell', 'info', 'alert', 'crown', 'zap', 'bomb', 'sparkles']
 };
 
-// 預設的常用圖示列表
 const DEFAULT_RECENT_ICONS = ['default', 'food', 'coffee', 'camera', 'star', 'heart', 'smile'];
+
+type IdentityType = 'google' | 'custom' | 'anonymous';
 
 export const MemoryModal: React.FC<MemoryModalProps> = ({ 
     location: initialLocation, 
@@ -40,19 +44,24 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
     onDeleteCategory,
     currentUser
 }) => {
-  const [author, setAuthor] = useState(currentUser || '老司機');
-  const [isAnonymous, setIsAnonymous] = useState(false);
+  // Identity State
+  const [identityType, setIdentityType] = useState<IdentityType>('google');
+  const [customName, setCustomName] = useState('');
+  const [customAvatarFile, setCustomAvatarFile] = useState<File | null>(null);
+  const [customAvatarPreview, setCustomAvatarPreview] = useState<string>('');
+
   const [content, setContent] = useState('');
-  const [photos, setPhotos] = useState<string[]>([]);
   
-  // 顏色、圖示與分類狀態
+  // Photos State: 區分已上傳(URL)和新選擇(File)
+  const [existingPhotos, setExistingPhotos] = useState<string[]>([]);
+  const [newPhotoFiles, setNewPhotoFiles] = useState<File[]>([]);
+  const [newPhotoPreviews, setNewPhotoPreviews] = useState<string[]>([]);
+  
+  // Map/Category State
   const [markerColor, setMarkerColor] = useState<MarkerColor>('#ef4444');
   const [markerIcon, setMarkerIcon] = useState<MarkerIconType>('default');
   const [showIconPicker, setShowIconPicker] = useState(false);
-  
-  // **NEW: 常用圖示狀態**
   const [recentIcons, setRecentIcons] = useState<string[]>(DEFAULT_RECENT_ICONS);
-
   const [selectedIconCategory, setSelectedIconCategory] = useState<keyof typeof ICON_CATEGORIES>("人物/心情");
   
   const [selectedMainCatId, setSelectedMainCatId] = useState<string>('');
@@ -60,22 +69,30 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
   const [isAddingCategory, setIsAddingCategory] = useState<{ type: 'main' | 'sub', parentId?: string } | null>(null);
   const [newCategoryName, setNewCategoryName] = useState('');
   
-  // 可編輯的地點與區域資訊
   const [currentLocation, setCurrentLocation] = useState<Location>(initialLocation);
   const [region, setRegion] = useState<RegionInfo>({ country: '', area: '' });
   const [isLoadingDetails, setIsLoadingDetails] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 初始化資料 (編輯模式)
   useEffect(() => {
     if (initialData) {
-        setAuthor(initialData.author);
-        setIsAnonymous(initialData.isAnonymous);
+        // 設定身分狀態
+        if (initialData.isAnonymous) {
+            setIdentityType('anonymous');
+        } else if (currentUser && initialData.author === currentUser.displayName && initialData.authorAvatar === currentUser.photoURL) {
+            setIdentityType('google');
+        } else {
+            setIdentityType('custom');
+            setCustomName(initialData.author);
+            if (initialData.authorAvatar) setCustomAvatarPreview(initialData.authorAvatar);
+        }
+
         setContent(initialData.content);
-        setPhotos(initialData.photos);
+        setExistingPhotos(initialData.photos);
         setMarkerColor(initialData.markerColor);
         setMarkerIcon(initialData.markerIcon || 'default');
         
-        // 如果目前圖示不在常用列表中，把它加進去
         if (initialData.markerIcon && !DEFAULT_RECENT_ICONS.includes(initialData.markerIcon)) {
              setRecentIcons(prev => {
                  const filtered = prev.filter(k => k !== initialData.markerIcon);
@@ -86,7 +103,6 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
         setCurrentLocation(initialData.location);
         setRegion(initialData.region);
         
-        // 設定分類
         const main = categories.find(c => c.name === initialData.category.main);
         if (main) {
             setSelectedMainCatId(main.id);
@@ -96,12 +112,15 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
             }
         }
         setIsLoadingDetails(false);
+    } else {
+        // 新增模式預設值
+        if (!currentUser) setIdentityType('anonymous');
     }
-  }, [initialData, categories]);
+  }, [initialData, categories, currentUser]);
 
-  // 初始化地點資訊 (自動抓取) - 僅在非編輯模式下執行，避免覆蓋舊資料
+  // 自動抓取地點資訊 (非編輯模式)
   useEffect(() => {
-    if (initialData) return; // 如果是編輯模式，不重新抓取
+    if (initialData) return;
 
     const identify = async () => {
         setIsLoadingDetails(true);
@@ -136,23 +155,38 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
     identify();
   }, [initialLocation, initialData]);
 
-  // 設定預設分類 (僅在新增模式且未選擇時)
+  // 預設分類
   useEffect(() => {
       if (!initialData && categories.length > 0 && !selectedMainCatId) {
           setSelectedMainCatId(categories[0].id);
       }
   }, [categories, selectedMainCatId, initialData]);
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      Array.from(e.target.files).forEach((file: File) => {
+      const files = Array.from(e.target.files);
+      setNewPhotoFiles(prev => [...prev, ...files]);
+      
+      files.forEach(file => {
         const reader = new FileReader();
         reader.onloadend = () => {
-          setPhotos(prev => [...prev, reader.result as string]);
+          setNewPhotoPreviews(prev => [...prev, reader.result as string]);
         };
         reader.readAsDataURL(file);
       });
     }
+  };
+
+  const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files[0]) {
+          const file = e.target.files[0];
+          setCustomAvatarFile(file);
+          const reader = new FileReader();
+          reader.onloadend = () => {
+              setCustomAvatarPreview(reader.result as string);
+          };
+          reader.readAsDataURL(file);
+      }
   };
 
   const handleAddCategorySubmit = (e: React.FormEvent) => {
@@ -165,21 +199,19 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
       }
   };
 
-  // **NEW: 處理圖示選擇，並將其加入「常用」列表**
   const handleIconSelect = (iconKey: string) => {
       setMarkerIcon(iconKey);
       setRecentIcons(prev => {
-          // 移除已存在的 (避免重複)，然後將新的加到最前面
           const filtered = prev.filter(k => k !== iconKey);
-          // 保持列表長度為 6 個
           return [iconKey, ...filtered].slice(0, 6);
       });
       setShowIconPicker(false);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    if (isSubmitting) return;
+
     const mainCat = categories.find(c => c.id === selectedMainCatId);
     const subCat = mainCat?.children?.find(c => c.id === selectedSubCatId);
 
@@ -187,26 +219,55 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
         alert("請選擇一個分類");
         return;
     }
-    
-    const finalRegion = {
-        country: region.country || "未知國度",
-        area: region.area || "未知區域"
-    };
 
-    onSubmit({ 
-        author,
-        isAnonymous,
-        content, 
-        photos, 
-        location: currentLocation, 
-        markerColor,
-        markerIcon,
-        category: {
-            main: mainCat.name,
-            sub: subCat?.name
-        },
-        region: finalRegion
-    });
+    setIsSubmitting(true);
+
+    try {
+        let finalAuthor = '匿名老司機';
+        let finalAvatar = '';
+        let finalIsAnonymous = false;
+
+        if (identityType === 'google' && currentUser) {
+            finalAuthor = currentUser.displayName || 'Google User';
+            finalAvatar = currentUser.photoURL || '';
+        } else if (identityType === 'custom') {
+            finalAuthor = customName || '老司機';
+            // Avatar file will be handled by parent component or service via callback
+            // We pass the file, and if there is an existing preview URL (from edit mode), we pass it as initial
+            finalAvatar = customAvatarPreview; 
+        } else {
+            finalIsAnonymous = true;
+        }
+
+        const finalRegion = {
+            country: region.country || "未知國度",
+            area: region.area || "未知區域"
+        };
+
+        // Construct Data Payload
+        const submitData = {
+            author: finalAuthor,
+            authorAvatar: finalAvatar, // Note: If file exists, it will be replaced by URL in service
+            isAnonymous: finalIsAnonymous,
+            content,
+            photos: existingPhotos, // Pass existing URLs
+            location: currentLocation,
+            markerColor,
+            markerIcon,
+            category: {
+                main: mainCat.name,
+                sub: subCat?.name
+            },
+            region: finalRegion
+        };
+
+        await onSubmit(submitData, newPhotoFiles, customAvatarFile || undefined);
+        
+    } catch (error) {
+        console.error("Submission error:", error);
+        alert("發佈失敗，請重試");
+        setIsSubmitting(false);
+    }
   };
 
   const presetColors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#6366f1', '#14b8a6'];
@@ -228,8 +289,75 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
         {/* Content */}
         <div className="p-6 overflow-y-auto flex-1 space-y-6 relative">
           
-          {/* Region Info */}
-          <div className="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 p-2 rounded-lg border border-gray-100">
+          {/* 1. Identity Selection */}
+          <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+             <label className="block text-sm font-bold text-gray-700 mb-2">發佈身分</label>
+             
+             <div className="flex gap-2 mb-3">
+                 {currentUser && (
+                     <button 
+                        type="button"
+                        onClick={() => setIdentityType('google')}
+                        className={`flex-1 py-2 px-1 rounded-lg text-xs font-bold border transition-all flex flex-col items-center gap-1 ${identityType === 'google' ? 'bg-white border-blue-500 text-blue-600 shadow-sm' : 'border-transparent text-gray-500 hover:bg-gray-100'}`}
+                     >
+                         <UserIcon size={16} /> Google 帳號
+                     </button>
+                 )}
+                 <button 
+                    type="button"
+                    onClick={() => setIdentityType('custom')}
+                    className={`flex-1 py-2 px-1 rounded-lg text-xs font-bold border transition-all flex flex-col items-center gap-1 ${identityType === 'custom' ? 'bg-white border-blue-500 text-blue-600 shadow-sm' : 'border-transparent text-gray-500 hover:bg-gray-100'}`}
+                 >
+                     <Edit3 size={16} /> 自訂身分
+                 </button>
+                 <button 
+                    type="button"
+                    onClick={() => setIdentityType('anonymous')}
+                    className={`flex-1 py-2 px-1 rounded-lg text-xs font-bold border transition-all flex flex-col items-center gap-1 ${identityType === 'anonymous' ? 'bg-white border-blue-500 text-blue-600 shadow-sm' : 'border-transparent text-gray-500 hover:bg-gray-100'}`}
+                 >
+                     <Globe size={16} /> 匿名發佈
+                 </button>
+             </div>
+
+             {/* Identity Preview / Input */}
+             <div className="flex items-center gap-3 p-2 bg-white rounded-lg border border-gray-200">
+                {identityType === 'google' && currentUser && (
+                    <>
+                        <img src={currentUser.photoURL || ''} className="w-10 h-10 rounded-full bg-gray-200" alt="avatar" />
+                        <span className="font-bold text-gray-700">{currentUser.displayName}</span>
+                    </>
+                )}
+                
+                {identityType === 'anonymous' && (
+                    <>
+                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500"><Globe size={20}/></div>
+                        <span className="font-bold text-gray-500">匿名老司機</span>
+                    </>
+                )}
+
+                {identityType === 'custom' && (
+                    <>
+                        <div className="relative group cursor-pointer">
+                            <div className="w-10 h-10 rounded-full bg-gray-100 overflow-hidden border border-gray-200 flex items-center justify-center">
+                                {customAvatarPreview ? <img src={customAvatarPreview} className="w-full h-full object-cover"/> : <Upload size={16} className="text-gray-400"/>}
+                            </div>
+                            <input type="file" accept="image/*" onChange={handleAvatarSelect} className="absolute inset-0 opacity-0 cursor-pointer" />
+                        </div>
+                        <input 
+                            type="text" 
+                            value={customName}
+                            onChange={(e) => setCustomName(e.target.value)}
+                            placeholder="輸入顯示暱稱..."
+                            className="flex-1 bg-transparent border-b border-gray-300 focus:border-blue-500 outline-none px-1 py-1 text-sm font-bold"
+                            autoFocus
+                        />
+                    </>
+                )}
+             </div>
+          </div>
+
+          {/* Region Info (Read-onlyish) */}
+          <div className="flex items-center gap-2 text-sm text-gray-500">
              <Globe size={16} className="text-blue-500" />
              <span>歸檔區域：</span>
              {isLoadingDetails ? (
@@ -240,7 +368,7 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
                         type="text" 
                         value={region.country}
                         onChange={(e) => setRegion({...region, country: e.target.value})}
-                        className="bg-white border border-gray-300 rounded px-2 py-1 text-xs w-20 focus:outline-none focus:border-blue-500 font-bold text-gray-700"
+                        className="bg-gray-50 border border-gray-200 rounded px-2 py-1 text-xs w-20 font-bold text-gray-700"
                         placeholder="國家"
                     />
                     <span className="text-gray-400 self-center">&gt;</span>
@@ -248,7 +376,7 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
                         type="text" 
                         value={region.area}
                         onChange={(e) => setRegion({...region, area: e.target.value})}
-                        className="bg-white border border-gray-300 rounded px-2 py-1 text-xs w-24 focus:outline-none focus:border-blue-500 font-bold text-gray-700"
+                        className="bg-gray-50 border border-gray-200 rounded px-2 py-1 text-xs w-24 font-bold text-gray-700"
                         placeholder="城市/區域"
                     />
                 </div>
@@ -307,24 +435,15 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
                                 {markerColor === color && <Check size={14} className="text-white drop-shadow-md" />}
                             </button>
                         ))}
-                        <div className="relative group ml-2">
-                            <input 
-                                type="color" 
-                                value={markerColor}
-                                onChange={(e) => setMarkerColor(e.target.value)}
-                                className="w-8 h-8 p-0 border-0 rounded-full overflow-hidden cursor-pointer shadow-sm ring-1 ring-gray-200"
-                            />
-                        </div>
                     </div>
                 </div>
 
-                {/* 2. 圖示選擇 (Quick View - Now Dynamic!) */}
+                {/* 2. 圖示選擇 */}
                 <div>
                      <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                         <Grid size={16} /> 標記圖示
                     </label>
                     <div className="flex flex-wrap gap-2">
-                        {/* 這裡改成 render recentIcons 狀態 */}
                         {recentIcons.map((iconKey) => {
                             const IconComp = ICON_MAP[iconKey] || MapPin;
                             return (
@@ -342,7 +461,6 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
                                 </button>
                             );
                         })}
-                        {/* More Button */}
                         <button
                             type="button"
                             onClick={() => setShowIconPicker(true)}
@@ -354,7 +472,7 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
                 </div>
             </div>
 
-            {/* Icon Picker Overlay */}
+            {/* Icon Picker Overlay (省略詳細實作，保持原樣) */}
             {showIconPicker && (
                 <div className="absolute inset-0 bg-white z-50 flex flex-col animate-in fade-in slide-in-from-bottom-5">
                     <div className="p-3 border-b border-gray-100 flex justify-between items-center bg-gray-50">
@@ -362,7 +480,6 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
                          <button type="button" onClick={() => setShowIconPicker(false)} className="p-1 hover:bg-gray-200 rounded-full"><X size={20}/></button>
                     </div>
                     <div className="flex flex-1 overflow-hidden">
-                        {/* Sidebar */}
                         <div className="w-24 bg-gray-50 border-r border-gray-200 overflow-y-auto">
                             {Object.keys(ICON_CATEGORIES).map(cat => (
                                 <button
@@ -379,7 +496,6 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
                                 </button>
                             ))}
                         </div>
-                        {/* Grid */}
                         <div className="flex-1 overflow-y-auto p-4">
                             <h4 className="text-sm font-bold text-gray-800 mb-3">{selectedIconCategory}</h4>
                             <div className="grid grid-cols-5 gap-3">
@@ -389,7 +505,6 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
                                         <button
                                             key={iconKey}
                                             type="button"
-                                            // 點選後觸發 handleIconSelect，更新狀態並加入 Quick View
                                             onClick={() => handleIconSelect(iconKey)}
                                             className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-1 border transition-all ${
                                                 markerIcon === iconKey 
@@ -407,9 +522,8 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
                 </div>
             )}
 
-            {/* Category Tree Selector */}
+            {/* Category Tree Selector (保持原樣，僅省略內容) */}
             <div className="space-y-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                {/* ... Category logic ... */}
                 <label className="block text-sm font-medium text-gray-700 mb-1">分類歸檔</label>
                 <div className="flex items-center gap-2">
                     <select 
@@ -433,10 +547,6 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
                     >
                         <Plus size={18} />
                     </button>
-                    
-                    {selectedMainCatId && categories.find(c => c.id === selectedMainCatId)?.isCustom && (
-                        <button type="button" onClick={() => { if (window.confirm('確定刪除?')) onDeleteCategory(selectedMainCatId); }} className="p-2 text-red-400 hover:bg-red-50 rounded-lg"><Trash2 size={18}/></button>
-                    )}
                 </div>
 
                 {selectedMainCatId && (
@@ -460,14 +570,9 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
                         >
                             <Plus size={18} />
                         </button>
-                        
-                        {selectedSubCatId && categories.find(c => c.id === selectedMainCatId)?.children?.find(s => s.id === selectedSubCatId)?.isCustom && (
-                            <button type="button" onClick={() => { if (window.confirm('確定刪除?')) onDeleteCategory(selectedSubCatId); }} className="p-2 text-red-400 hover:bg-red-50 rounded-lg"><Trash2 size={18}/></button>
-                        )}
                     </div>
                 )}
                 
-                {/* Add Category Overlay ... */}
                 {isAddingCategory && (
                     <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
                         <label className="text-xs font-bold text-blue-700 mb-1 block">新增分類:</label>
@@ -480,33 +585,14 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
                 )}
             </div>
 
-            {/* Author & Content */}
-            <div>
-              <div className="flex justify-between items-center mb-1.5">
-                  <label className="block text-sm font-medium text-gray-700">您的暱稱</label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" checked={isAnonymous} onChange={(e) => setIsAnonymous(e.target.checked)} className="rounded text-blue-600" />
-                      <span className="text-xs text-gray-500 select-none">匿名發佈</span>
-                  </label>
-              </div>
-              <input
-                type="text"
-                required
-                value={isAnonymous ? "匿名老司機" : author}
-                onChange={(e) => !isAnonymous && setAuthor(e.target.value)}
-                disabled={isAnonymous}
-                className={`w-full border rounded-lg p-3 ${isAnonymous ? 'bg-gray-100' : 'bg-gray-50'}`}
-                placeholder="怎麼稱呼您？"
-              />
-            </div>
-
+            {/* Story Content */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">您的故事</label>
               <textarea
                 required
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 h-24 resize-none"
+                className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 h-24 resize-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none"
                 placeholder="寫下這裡發生的故事..."
               />
             </div>
@@ -514,7 +600,7 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
             {/* Photo Upload */}
             <div className="flex flex-wrap gap-3">
                 <div className="relative">
-                    <input type="file" accept="image/*" multiple onChange={handlePhotoUpload} className="hidden" id="photo-upload" />
+                    <input type="file" accept="image/*" multiple onChange={handlePhotoSelect} className="hidden" id="photo-upload" />
                     <label htmlFor="photo-upload" className="flex items-center gap-2 cursor-pointer bg-white hover:bg-gray-50 text-gray-700 px-4 py-2.5 rounded-lg border border-gray-300 shadow-sm text-sm font-medium">
                         <ImageIcon size={18} />
                         <span>新增照片</span>
@@ -523,12 +609,25 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
             </div>
 
             {/* Photo Previews */}
-            {photos.length > 0 && (
+            {(existingPhotos.length > 0 || newPhotoPreviews.length > 0) && (
                 <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 flex gap-2 overflow-x-auto">
-                    {photos.map((p, idx) => (
-                        <div key={idx} className="relative shrink-0 w-20 h-20 group">
-                            <img src={p} className="w-full h-full object-cover rounded-lg" alt="preview"/>
-                            <button type="button" onClick={() => setPhotos(photos.filter((_, i) => i !== idx))} className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100"><X size={12}/></button>
+                    {/* Existing Photos (URLs) */}
+                    {existingPhotos.map((p, idx) => (
+                        <div key={`exist-${idx}`} className="relative shrink-0 w-20 h-20 group">
+                            <img src={p} className="w-full h-full object-cover rounded-lg border border-gray-300" alt="preview"/>
+                            <div className="absolute top-0 right-0 bg-blue-500 text-white text-[8px] px-1 rounded-bl">已上傳</div>
+                            <button type="button" onClick={() => setExistingPhotos(prev => prev.filter((_, i) => i !== idx))} className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100"><X size={12}/></button>
+                        </div>
+                    ))}
+                    {/* New Photos (Local Previews) */}
+                    {newPhotoPreviews.map((p, idx) => (
+                        <div key={`new-${idx}`} className="relative shrink-0 w-20 h-20 group">
+                            <img src={p} className="w-full h-full object-cover rounded-lg border border-gray-300 opacity-80" alt="preview"/>
+                            <div className="absolute top-0 right-0 bg-green-500 text-white text-[8px] px-1 rounded-bl">待上傳</div>
+                            <button type="button" onClick={() => {
+                                setNewPhotoPreviews(prev => prev.filter((_, i) => i !== idx));
+                                setNewPhotoFiles(prev => prev.filter((_, i) => i !== idx));
+                            }} className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100"><X size={12}/></button>
                         </div>
                     ))}
                 </div>
@@ -539,9 +638,10 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
 
         {/* Footer */}
         <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
-          <button onClick={onClose} className="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-200 text-sm">放棄</button>
-          <button form="memoryForm" type="submit" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm shadow-md">
-            <Check size={16} /> {initialData ? '更新足跡' : '發佈足跡'}
+          <button onClick={onClose} className="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-200 text-sm" disabled={isSubmitting}>放棄</button>
+          <button form="memoryForm" type="submit" disabled={isSubmitting} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-lg text-sm shadow-md transition-colors">
+            {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />} 
+            {isSubmitting ? '上傳中...' : (initialData ? '更新足跡' : '發佈足跡')}
           </button>
         </div>
       </div>
