@@ -95,12 +95,16 @@ export const searchLocation = async (query: string): Promise<PlaceSearchResult[]
         // Mapbox Geocoding API
         // types: poi (商家), address (地址), place (城市), neighborhood (區域)
         // language: zh-TW 繁體中文
+        // proximity: 以台北為中心，優先顯示附近結果
+        // bbox: 限制在台灣區域 (經度 119-122, 緯度 21.5-25.5)
         // limit: 回傳最多 10 筆結果
         const response = await fetch(
             `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` +
             `access_token=${MAPBOX_TOKEN}` +
             `&types=poi,address,place,neighborhood,locality` +
             `&language=zh-TW` +
+            `&proximity=121.5654,25.0330` + // 台北座標 (lng, lat)
+            `&bbox=119.0,21.5,122.5,25.6` + // 台灣區域範圍
             `&limit=10`
         );
 
