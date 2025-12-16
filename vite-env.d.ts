@@ -2,6 +2,7 @@
 
 interface ImportMetaEnv {
     readonly VITE_MAPBOX_TOKEN: string
+    readonly VITE_GOOGLE_PLACES_API_KEY: string
     readonly VITE_FIREBASE_API_KEY: string
     readonly VITE_FIREBASE_AUTH_DOMAIN: string
     readonly VITE_FIREBASE_PROJECT_ID: string

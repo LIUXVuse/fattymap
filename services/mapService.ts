@@ -3,7 +3,6 @@ import { PlaceSearchResult } from "../types";
 /**
  * 使用 OpenStreetMap (Nominatim) 進行逆向地理編碼
  * 免費方案，無須 API Key，但須注意頻率限制 (1秒1次)
- * 修正：將 accept-language 移至 URL 參數以避免 CORS 問題
  */
 export const findPlaceDetails = async (
     lat: number,
@@ -19,18 +18,13 @@ export const findPlaceDetails = async (
         const data = await response.json();
         const addr = data.address || {};
 
-        // 組合地點名稱 (優先順序: 設施名 > 路名 > 區域)
         let name = data.name || "";
         if (!name) {
             name = addr.amenity || addr.shop || addr.tourism || addr.historic || addr.building || addr.road || "未命名地點";
         }
 
-        // 組合完整地址
         const fullAddress = data.display_name || "";
-
-        // 解析區域
         const country = addr.country || "未知國度";
-        // 城市/區域判定邏輯
         const area = addr.city || addr.town || addr.village || addr.county || addr.suburb || addr.district || "未知區域";
 
         return {
@@ -44,7 +38,6 @@ export const findPlaceDetails = async (
 
     } catch (error) {
         console.error("Geocoding Error:", error);
-        // 失敗時回傳基礎座標
         return {
             lat: lat,
             lng: lng,
@@ -56,14 +49,16 @@ export const findPlaceDetails = async (
     }
 };
 
-// Mapbox API Token
+// API Keys
+const GOOGLE_PLACES_API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY || '';
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || '';
 
 /**
- * 地點搜尋功能 - 使用 Mapbox Geocoding API
+ * 地點搜尋功能 - 使用 Google Places API (New) 作為主要搜尋
+ * 備援：Mapbox -> Nominatim
  * 1. 支援座標格式 (lat, lng)
  * 2. 支援關鍵字搜尋，回傳多筆建議結果
- * 3. 優先搜尋 POI (商家、景點)，再搜尋地址
+ * 3. 全球 POI 搜尋，資料最完整
  */
 export const searchLocation = async (query: string): Promise<PlaceSearchResult[]> => {
     // 1. 檢查是否為座標格式 (例如: 25.0330, 121.5654)
@@ -73,7 +68,6 @@ export const searchLocation = async (query: string): Promise<PlaceSearchResult[]
     if (match) {
         const lat = parseFloat(match[1]);
         const lng = parseFloat(match[3]);
-        // 驗證經緯度範圍
         if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
             return [{
                 lat,
@@ -85,96 +79,130 @@ export const searchLocation = async (query: string): Promise<PlaceSearchResult[]
         }
     }
 
-    // 2. 使用 Mapbox Geocoding API 搜尋
-    if (!MAPBOX_TOKEN) {
-        console.error("Mapbox Token 未設定！");
-        return [];
-    }
-
-    try {
-        // Mapbox Geocoding API
-        // types: poi (商家), address (地址), place (城市), neighborhood (區域)
-        // language: zh-TW 繁體中文
-        // limit: 回傳最多 10 筆結果
-        // 不限制區域，支援全球搜尋
-        const response = await fetch(
-            `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` +
-            `access_token=${MAPBOX_TOKEN}` +
-            `&types=poi,address,place,neighborhood,locality` +
-            `&language=zh-TW` +
-            `&limit=10`
-        );
-
-        if (!response.ok) {
-            throw new Error(`Mapbox API Error: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (data.features && data.features.length > 0) {
-            return data.features.map((feature: any) => {
-                // Mapbox 回傳 [lng, lat] 格式
-                const [lng, lat] = feature.center;
-
-                // 解析 context 取得國家和區域
-                let country = "未知國度";
-                let area = "未知區域";
-
-                if (feature.context) {
-                    for (const ctx of feature.context) {
-                        if (ctx.id.startsWith('country')) {
-                            country = ctx.text;
-                        }
-                        if (ctx.id.startsWith('place') || ctx.id.startsWith('locality')) {
-                            area = ctx.text;
-                        }
-                        if (ctx.id.startsWith('district') && area === "未知區域") {
-                            area = ctx.text;
-                        }
-                    }
-                }
-
-                return {
-                    lat,
-                    lng,
-                    name: feature.text || feature.place_name.split(',')[0], // POI 名稱
-                    address: feature.place_name, // 完整地址
-                    region: { country, area },
-                    uri: `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
-                };
-            });
-        }
-        return [];
-    } catch (error) {
-        console.error("Mapbox Search Error:", error);
-
-        // 備援：如果 Mapbox 失敗，降級使用 Nominatim
-        console.log("降級使用 Nominatim...");
+    // 2. 優先使用 Google Places API (New) - Text Search
+    if (GOOGLE_PLACES_API_KEY) {
         try {
             const response = await fetch(
-                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=10&addressdetails=1&accept-language=zh-TW`
+                'https://places.googleapis.com/v1/places:searchText',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
+                        'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.shortFormattedAddress'
+                    },
+                    body: JSON.stringify({
+                        textQuery: query,
+                        languageCode: 'zh-TW',
+                        maxResultCount: 10
+                    })
+                }
             );
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("Google Places API Error:", errorData);
+                throw new Error(`Google API Error: ${response.status}`);
+            }
+
             const data = await response.json();
 
-            if (data && data.length > 0) {
-                return data.map((item: any) => {
-                    const addr = item.address || {};
-                    const country = addr.country || "未知國度";
-                    const area = addr.city || addr.town || addr.village || addr.county || addr.suburb || addr.district || "未知區域";
+            if (data.places && data.places.length > 0) {
+                return data.places.map((place: any) => {
+                    const lat = place.location?.latitude || 0;
+                    const lng = place.location?.longitude || 0;
+
+                    // 從地址解析國家和區域
+                    const addressParts = (place.formattedAddress || '').split(', ');
+                    const country = addressParts[addressParts.length - 1] || "未知國度";
+                    const area = addressParts[addressParts.length - 2] || "未知區域";
 
                     return {
-                        lat: parseFloat(item.lat),
-                        lng: parseFloat(item.lon),
-                        name: item.display_name.split(',')[0],
-                        address: item.display_name,
-                        region: { country, area }
+                        lat,
+                        lng,
+                        name: place.displayName?.text || place.shortFormattedAddress || "未命名地點",
+                        address: place.formattedAddress || "",
+                        region: { country, area },
+                        uri: `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
                     };
                 });
             }
-        } catch (fallbackError) {
-            console.error("Fallback Search Error:", fallbackError);
+        } catch (error) {
+            console.error("Google Places Search Error:", error);
         }
-
-        return [];
     }
+
+    // 3. 備援：Mapbox Geocoding API
+    if (MAPBOX_TOKEN) {
+        console.log("降級使用 Mapbox...");
+        try {
+            const response = await fetch(
+                `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` +
+                `access_token=${MAPBOX_TOKEN}` +
+                `&types=poi,address,place,neighborhood,locality` +
+                `&language=zh-TW` +
+                `&limit=10`
+            );
+
+            if (response.ok) {
+                const data = await response.json();
+
+                if (data.features && data.features.length > 0) {
+                    return data.features.map((feature: any) => {
+                        const [lng, lat] = feature.center;
+                        let country = "未知國度";
+                        let area = "未知區域";
+
+                        if (feature.context) {
+                            for (const ctx of feature.context) {
+                                if (ctx.id.startsWith('country')) country = ctx.text;
+                                if (ctx.id.startsWith('place') || ctx.id.startsWith('locality')) area = ctx.text;
+                                if (ctx.id.startsWith('district') && area === "未知區域") area = ctx.text;
+                            }
+                        }
+
+                        return {
+                            lat,
+                            lng,
+                            name: feature.text || feature.place_name.split(',')[0],
+                            address: feature.place_name,
+                            region: { country, area },
+                            uri: `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
+                        };
+                    });
+                }
+            }
+        } catch (error) {
+            console.error("Mapbox Search Error:", error);
+        }
+    }
+
+    // 4. 最終備援：Nominatim
+    console.log("降級使用 Nominatim...");
+    try {
+        const response = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=10&addressdetails=1&accept-language=zh-TW`
+        );
+        const data = await response.json();
+
+        if (data && data.length > 0) {
+            return data.map((item: any) => {
+                const addr = item.address || {};
+                const country = addr.country || "未知國度";
+                const area = addr.city || addr.town || addr.village || addr.county || addr.suburb || addr.district || "未知區域";
+
+                return {
+                    lat: parseFloat(item.lat),
+                    lng: parseFloat(item.lon),
+                    name: item.display_name.split(',')[0],
+                    address: item.display_name,
+                    region: { country, area }
+                };
+            });
+        }
+    } catch (fallbackError) {
+        console.error("Nominatim Search Error:", fallbackError);
+    }
+
+    return [];
 }
