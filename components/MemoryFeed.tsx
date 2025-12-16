@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Memory } from '../types';
-import { MapPin, Image as ImageIcon, ChevronRight, ArrowLeft, Globe, List, Building2, Edit2, Trash2, MessageCircle, Map as MapIcon, Dices } from 'lucide-react';
+import { MapPin, Image as ImageIcon, ChevronRight, ArrowLeft, Globe, List, Building2, Edit2, Trash2, MessageCircle, Map as MapIcon, Dices, ZoomIn } from 'lucide-react';
+import { ImageLightbox } from './ImageLightbox';
 
 interface MemoryFeedProps {
     memories: Memory[];
@@ -19,6 +20,10 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
     const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
     const [selectedArea, setSelectedArea] = useState<string | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+    // Lightbox State
+    const [lightboxImages, setLightboxImages] = useState<string[]>([]);
+    const [lightboxIndex, setLightboxIndex] = useState(0);
 
     // 1. 整理出所有國家清單與數量
     const countryStats = useMemo(() => {
@@ -375,19 +380,46 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
                                         {memory.photos.length > 0 && (
                                             <div className="mb-3">
                                                 {memory.photos.length === 1 ? (
-                                                    <div className="relative w-full h-32 rounded-lg overflow-hidden border border-gray-200">
-                                                        <img src={memory.photos[0]} alt="memory" className="w-full h-full object-cover" />
+                                                    <div
+                                                        className="relative w-full h-32 rounded-lg overflow-hidden border border-gray-200 cursor-pointer group"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setLightboxImages(memory.photos);
+                                                            setLightboxIndex(0);
+                                                        }}
+                                                    >
+                                                        <img src={memory.photos[0]} alt="memory" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                                            <ZoomIn size={24} className="text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
+                                                        </div>
                                                     </div>
                                                 ) : (
-                                                    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300">
-                                                        {memory.photos.map((photo, idx) => (
-                                                            <div key={idx} className="relative w-28 h-28 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0">
-                                                                <img src={photo} alt={`memory-${idx + 1}`} className="w-full h-full object-cover" />
-                                                                <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
-                                                                    {idx + 1}/{memory.photos.length}
+                                                    <div className="relative">
+                                                        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300">
+                                                            {memory.photos.map((photo, idx) => (
+                                                                <div
+                                                                    key={idx}
+                                                                    className="relative w-28 h-28 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0 cursor-pointer group"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setLightboxImages(memory.photos);
+                                                                        setLightboxIndex(idx);
+                                                                    }}
+                                                                >
+                                                                    <img src={photo} alt={`memory-${idx + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                                                                    <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
+                                                                        {idx + 1}/{memory.photos.length}
+                                                                    </div>
                                                                 </div>
+                                                            ))}
+                                                        </div>
+                                                        {/* 滾動提示 */}
+                                                        {memory.photos.length > 2 && (
+                                                            <div className="absolute right-0 top-1/2 -translate-y-1/2 bg-gradient-to-l from-white via-white/80 to-transparent pr-1 pl-4 py-6 pointer-events-none">
+                                                                <ChevronRight size={20} className="text-gray-400 animate-pulse" />
                                                             </div>
-                                                        ))}
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>
@@ -404,6 +436,15 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
             <div className="p-3 border-t border-gray-200 text-center text-[10px] text-gray-400 bg-white">
                 {viewMode === 'posts' ? `${filteredMemories.length} 則回憶` : '分區導覽模式'}
             </div>
+
+            {/* Image Lightbox */}
+            {lightboxImages.length > 0 && (
+                <ImageLightbox
+                    images={lightboxImages}
+                    initialIndex={lightboxIndex}
+                    onClose={() => setLightboxImages([])}
+                />
+            )}
         </div>
     );
 };

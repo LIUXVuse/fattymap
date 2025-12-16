@@ -54,7 +54,8 @@ export interface Comment {
   author: string;
   authorAvatar?: string;
   content: string;
-  imageUrl?: string;
+  imageUrl?: string; // 向下相容舊資料
+  images?: string[]; // 新的多圖欄位
   timestamp: number;
   userId?: string; // 如果是登入用戶
 }

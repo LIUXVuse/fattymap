@@ -3,6 +3,7 @@ import { AppMap } from './components/MapContainer';
 import { MemoryFeed } from './components/MemoryFeed';
 import { MemoryModal } from './components/MemoryModal';
 import { CommentModal } from './components/CommentModal';
+import { ImageLightbox } from './components/ImageLightbox';
 import { Memory, Location, MarkerColor, CategoryNode, RegionInfo, PlaceSearchResult, MarkerIconType } from './types';
 import { Menu, X, MapPin, Navigation, Play, RotateCcw, Search, Loader2, LogIn, LogOut, ExternalLink } from 'lucide-react';
 import { searchLocation, getAutocomplete, getPlaceDetails, openGoogleMapsNavigation } from './services/mapService';
@@ -66,6 +67,10 @@ const App: React.FC = () => {
     // User Identity Persistence (記憶自訂身分)
     const [lastCustomName, setLastCustomName] = useState('');
     const [lastCustomAvatar, setLastCustomAvatar] = useState('');
+
+    // Global Lightbox State (for image zoom)
+    const [lightboxImages, setLightboxImages] = useState<string[]>([]);
+    const [lightboxIndex, setLightboxIndex] = useState(0);
 
     const searchContainerRef = useRef<HTMLDivElement>(null);
 
@@ -571,6 +576,10 @@ const App: React.FC = () => {
                     isDraggablePinMode={isDraggablePinMode}
                     onDragEnd={handlePinDragEnd}
                     onViewComments={handleViewComments}
+                    onImageClick={(images, index) => {
+                        setLightboxImages(images);
+                        setLightboxIndex(index);
+                    }}
                 />
 
                 {/* Helper Overlay */}
@@ -666,6 +675,15 @@ const App: React.FC = () => {
                         </p>
                     </div>
                 </div>
+            )}
+
+            {/* Global Image Lightbox */}
+            {lightboxImages.length > 0 && (
+                <ImageLightbox
+                    images={lightboxImages}
+                    initialIndex={lightboxIndex}
+                    onClose={() => setLightboxImages([])}
+                />
             )}
         </div>
     );

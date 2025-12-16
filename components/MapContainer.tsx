@@ -207,6 +207,7 @@ interface MapContainerProps {
     isDraggablePinMode: boolean;
     onDragEnd: (lat: number, lng: number) => void;
     onViewComments: (memoryId: string) => void;
+    onImageClick?: (images: string[], index: number) => void;
 }
 
 // Map Events Handler (Click)
@@ -285,9 +286,10 @@ interface MemoryMarkerProps {
     hasRoutePoints: boolean;
     onMarkerClick?: (memoryId: string) => void;
     onViewComments: (memoryId: string) => void;
+    onImageClick?: (images: string[], index: number) => void;
 }
 
-const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, hasRoutePoints, onMarkerClick, onViewComments }: MemoryMarkerProps) => {
+const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, hasRoutePoints, onMarkerClick, onViewComments, onImageClick }: MemoryMarkerProps) => {
 
     // 修改：不再傳入頭像資訊給 Marker Icon，只傳顏色與圖示
     const icon = useMemo(() =>
@@ -353,13 +355,20 @@ const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, has
                         {memory.photos.length > 0 && (
                             <div className="mb-2">
                                 {memory.photos.length === 1 ? (
-                                    <div className="rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                                    <div
+                                        className="rounded-lg overflow-hidden border border-gray-200 shadow-sm cursor-pointer hover:opacity-90 transition-opacity"
+                                        onClick={() => onImageClick?.(memory.photos, 0)}
+                                    >
                                         <img src={memory.photos[0]} className="w-full h-32 object-cover" alt="story" />
                                     </div>
                                 ) : (
                                     <div className="flex gap-2 overflow-x-auto pb-2">
                                         {memory.photos.map((photo, idx) => (
-                                            <div key={idx} className="relative rounded-lg overflow-hidden border border-gray-200 shadow-sm flex-shrink-0">
+                                            <div
+                                                key={idx}
+                                                className="relative rounded-lg overflow-hidden border border-gray-200 shadow-sm flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity"
+                                                onClick={() => onImageClick?.(memory.photos, idx)}
+                                            >
                                                 <img src={photo} className="w-24 h-24 object-cover" alt={`story-${idx + 1}`} />
                                                 <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1 rounded">
                                                     {idx + 1}/{memory.photos.length}
@@ -403,7 +412,8 @@ export const AppMap: React.FC<MapContainerProps> = ({
     isRoutingMode,
     isDraggablePinMode,
     onDragEnd,
-    onViewComments
+    onViewComments,
+    onImageClick
 }) => {
 
     const routePositions = useMemo(() => {
@@ -450,6 +460,7 @@ export const AppMap: React.FC<MapContainerProps> = ({
                         hasRoutePoints={routePoints.length > 0}
                         onMarkerClick={onMarkerClick}
                         onViewComments={onViewComments}
+                        onImageClick={onImageClick}
                     />
                 ))}
 
