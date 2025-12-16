@@ -3,7 +3,7 @@ import { MapContainer as LeafletMap, TileLayer, Marker, Popup, useMapEvents, use
 import L from 'leaflet';
 import { Memory, MarkerIconType } from '../types';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { 
+import {
     MapPin, Utensils, Coffee, Camera, BedDouble, Train, ShoppingBag, Star, Heart, Home,
     Beer, Wine, Pizza, Cake, IceCream, // Eat & Drink
     Tent, Building, Castle, // Accommodation
@@ -27,7 +27,7 @@ export const ICON_MAP: Record<string, React.ElementType> = {
     star: Star,
     heart: Heart,
     home: Home,
-    
+
     // Faces & People
     user: User,
     user_round: UserRound,
@@ -129,26 +129,26 @@ export const ICON_MAP: Record<string, React.ElementType> = {
     bell: Bell,
     info: Info,
     alert: AlertTriangle,
-    
+
     crown: Crown,
     sparkles: Sparkles,
     zap: Zap,
     bomb: Bomb,
-    sword: Sword, 
+    sword: Sword,
     shield: Shield
 };
 
 // Custom Solid Map Pin SVG (No hole in center)
 const SolidMapPin = ({ color }: { color: string }) => (
-    <svg 
-        width="40" 
-        height="40" 
-        viewBox="0 0 24 24" 
-        fill={color} 
-        stroke={color} 
-        strokeWidth="1" 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
+    <svg
+        width="40"
+        height="40"
+        viewBox="0 0 24 24"
+        fill={color}
+        stroke={color}
+        strokeWidth="1"
+        strokeLinecap="round"
+        strokeLinejoin="round"
         style={{ filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.3))' }}
         xmlns="http://www.w3.org/2000/svg"
     >
@@ -174,19 +174,19 @@ const createCustomMarker = (color: string, iconType: MarkerIconType = 'default',
 
     const svgString = renderToStaticMarkup(
         <div style={{ position: 'relative', width: '40px', height: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center' }} className={isDraggable ? 'animate-bounce' : ''}>
-             <div style={{ position: 'absolute', top: 0, left: 0, zIndex: 0 }}>
-                 <SolidMapPin color={color} />
-             </div>
-             
-             {/* 強制顯示圖示，忽略頭像 */}
-             <div style={{ position: 'relative', zIndex: 10, marginTop: '-5px', color: 'white', display: 'flex' }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, zIndex: 0 }}>
+                <SolidMapPin color={color} />
+            </div>
+
+            {/* 強制顯示圖示，忽略頭像 */}
+            <div style={{ position: 'relative', zIndex: 10, marginTop: '-5px', color: 'white', display: 'flex' }}>
                 <IconComponent size={18} strokeWidth={2.5} />
-             </div>
+            </div>
         </div>
     );
 
     const newIcon = L.divIcon({
-        className: 'custom-marker-icon', 
+        className: 'custom-marker-icon',
         html: svgString,
         iconSize: [40, 40],
         iconAnchor: [20, 40],
@@ -198,60 +198,60 @@ const createCustomMarker = (color: string, iconType: MarkerIconType = 'default',
 };
 
 interface MapContainerProps {
-  memories: Memory[];
-  onMapClick: (lat: number, lng: number) => void;
-  center: [number, number];
-  routePoints: string[]; 
-  onMarkerClick?: (memoryId: string) => void;
-  isRoutingMode: boolean;
-  isDraggablePinMode: boolean; 
-  onDragEnd: (lat: number, lng: number) => void; 
-  onViewComments: (memoryId: string) => void;
+    memories: Memory[];
+    onMapClick: (lat: number, lng: number) => void;
+    center: [number, number];
+    routePoints: string[];
+    onMarkerClick?: (memoryId: string) => void;
+    isRoutingMode: boolean;
+    isDraggablePinMode: boolean;
+    onDragEnd: (lat: number, lng: number) => void;
+    onViewComments: (memoryId: string) => void;
 }
 
 // Map Events Handler (Click)
 const MapEvents: React.FC<{ onClick: (lat: number, lng: number) => void, isRouting: boolean, isDragging: boolean }> = ({ onClick, isRouting, isDragging }) => {
-  useMapEvents({
-    click(e) {
-      if (!isRouting && !isDragging) {
-         onClick(e.latlng.lat, e.latlng.lng);
-      }
-    },
-  });
-  return null;
+    useMapEvents({
+        click(e) {
+            if (!isRouting && !isDragging) {
+                onClick(e.latlng.lat, e.latlng.lng);
+            }
+        },
+    });
+    return null;
 };
 
 // Map View Updater
 const MapUpdater: React.FC<{ center: [number, number] }> = ({ center }) => {
-  const map = useMap();
-  const lastCenter = useRef<string>('');
+    const map = useMap();
+    const lastCenter = useRef<string>('');
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-        map.invalidateSize();
-    }, 200);
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            map.invalidateSize();
+        }, 200);
 
-    return () => clearTimeout(timer);
-  }, [map]);
+        return () => clearTimeout(timer);
+    }, [map]);
 
-  useEffect(() => {
-    if (center) {
-        const centerKey = `${center[0]},${center[1]}`;
-        if (lastCenter.current !== centerKey) {
-            map.flyTo(center, Math.max(map.getZoom(), 15), { duration: 1.5 });
-            lastCenter.current = centerKey;
+    useEffect(() => {
+        if (center) {
+            const centerKey = `${center[0]},${center[1]}`;
+            if (lastCenter.current !== centerKey) {
+                map.flyTo(center, Math.max(map.getZoom(), 15), { duration: 1.5 });
+                lastCenter.current = centerKey;
+            }
         }
-    }
-  }, [center, map]);
-  
-  return null;
+    }, [center, map]);
+
+    return null;
 };
 
 // Draggable Pin Component
 const DraggablePin: React.FC<{ position: [number, number], onDragEnd: (lat: number, lng: number) => void }> = ({ position, onDragEnd }) => {
     const markerRef = useRef<L.Marker>(null);
     const icon = useMemo(() => createCustomMarker('#ef4444', 'default', true), []);
-    
+
     const eventHandlers = useMemo(
         () => ({
             dragend() {
@@ -272,7 +272,7 @@ const DraggablePin: React.FC<{ position: [number, number], onDragEnd: (lat: numb
             position={position}
             ref={markerRef}
             icon={icon}
-            zIndexOffset={1000} 
+            zIndexOffset={1000}
         />
     )
 }
@@ -288,10 +288,10 @@ interface MemoryMarkerProps {
 }
 
 const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, hasRoutePoints, onMarkerClick, onViewComments }: MemoryMarkerProps) => {
-    
+
     // 修改：不再傳入頭像資訊給 Marker Icon，只傳顏色與圖示
-    const icon = useMemo(() => 
-        createCustomMarker(memory.markerColor || '#3b82f6', memory.markerIcon || 'default', false), 
+    const icon = useMemo(() =>
+        createCustomMarker(memory.markerColor || '#3b82f6', memory.markerIcon || 'default', false),
         [memory.markerColor, memory.markerIcon]
     );
 
@@ -306,7 +306,7 @@ const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, has
     const opacity = isRoutingMode && !isSelectedInRoute && hasRoutePoints ? 0.5 : 1;
 
     return (
-        <Marker 
+        <Marker
             position={[memory.location.lat, memory.location.lng]}
             icon={icon}
             eventHandlers={eventHandlers}
@@ -317,45 +317,60 @@ const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, has
                     <div className="p-1">
                         {/* Category Badge */}
                         <div className="flex gap-1 mb-2">
-                                <span className="px-2 py-0.5 rounded text-[10px] font-bold text-white shadow-sm" style={{ backgroundColor: memory.markerColor }}>
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold text-white shadow-sm" style={{ backgroundColor: memory.markerColor }}>
                                 {memory.category.main}
-                                </span>
-                                {memory.category.sub && (
+                            </span>
+                            {memory.category.sub && (
                                 <span className="px-2 py-0.5 rounded text-[10px] bg-gray-100 text-gray-600 border border-gray-200">
                                     {memory.category.sub}
                                 </span>
-                                )}
-                                <span className="px-2 py-0.5 rounded text-[10px] bg-gray-100 text-gray-600 border border-gray-200 ml-auto">
+                            )}
+                            <span className="px-2 py-0.5 rounded text-[10px] bg-gray-100 text-gray-600 border border-gray-200 ml-auto">
                                 {memory.region.country}
-                                </span>
+                            </span>
                         </div>
 
                         <div className="flex items-center gap-2 mb-2 pb-2 border-b border-gray-100">
-                                <div 
+                            <div
                                 className="w-8 h-8 rounded-full flex items-center justify-center text-xs text-white font-bold shadow-sm overflow-hidden"
                                 style={{ backgroundColor: memory.markerColor }}
-                                >
-                                {memory.isAnonymous ? '?' : (memory.authorAvatar ? <img src={memory.authorAvatar} className="w-full h-full object-cover"/> : memory.author.charAt(0))}
-                                </div>
-                                <div>
+                            >
+                                {memory.isAnonymous ? '?' : (memory.authorAvatar ? <img src={memory.authorAvatar} className="w-full h-full object-cover" /> : memory.author.charAt(0))}
+                            </div>
+                            <div>
                                 <h3 className="font-bold text-gray-800 text-sm">
                                     {memory.isAnonymous ? '匿名老司機' : memory.author}
                                 </h3>
                                 <div className="text-[10px] text-gray-500">{new Date(memory.timestamp).toLocaleDateString()}</div>
-                                </div>
+                            </div>
                         </div>
-                        
+
                         <h4 className="font-bold text-gray-900 text-base mb-1">{memory.location.name}</h4>
                         <p className="text-gray-500 text-xs mb-2">{memory.location.address}</p>
 
                         <p className="text-gray-700 text-sm mb-3 leading-relaxed bg-gray-50 p-2 rounded">{memory.content}</p>
-                        
+
                         {memory.photos.length > 0 && (
-                            <div className="rounded-lg overflow-hidden border border-gray-200 mb-2 shadow-sm">
-                                    <img src={memory.photos[0]} className="w-full h-32 object-cover" alt="story" />
+                            <div className="mb-2">
+                                {memory.photos.length === 1 ? (
+                                    <div className="rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                                        <img src={memory.photos[0]} className="w-full h-32 object-cover" alt="story" />
+                                    </div>
+                                ) : (
+                                    <div className="flex gap-2 overflow-x-auto pb-2">
+                                        {memory.photos.map((photo, idx) => (
+                                            <div key={idx} className="relative rounded-lg overflow-hidden border border-gray-200 shadow-sm flex-shrink-0">
+                                                <img src={photo} className="w-24 h-24 object-cover" alt={`story-${idx + 1}`} />
+                                                <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1 rounded">
+                                                    {idx + 1}/{memory.photos.length}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         )}
-                        
+
                         <div className="flex gap-2 mt-3">
                             <button
                                 onClick={() => onViewComments(memory.id)}
@@ -363,8 +378,8 @@ const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, has
                             >
                                 💬 留言板
                             </button>
-                            <a href={`https://www.google.com/maps/dir/?api=1&destination=${memory.location.lat},${memory.location.lng}`} 
-                                target="_blank" 
+                            <a href={`https://www.google.com/maps/dir/?api=1&destination=${memory.location.lat},${memory.location.lng}`}
+                                target="_blank"
                                 rel="noreferrer"
                                 className="flex-1 text-center text-xs bg-blue-50 text-blue-600 py-2 rounded-lg hover:bg-blue-100 font-bold transition-colors"
                             >
@@ -379,66 +394,66 @@ const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, has
 });
 
 
-export const AppMap: React.FC<MapContainerProps> = ({ 
-    memories, 
-    onMapClick, 
-    center, 
-    routePoints, 
-    onMarkerClick, 
+export const AppMap: React.FC<MapContainerProps> = ({
+    memories,
+    onMapClick,
+    center,
+    routePoints,
+    onMarkerClick,
     isRoutingMode,
     isDraggablePinMode,
     onDragEnd,
     onViewComments
 }) => {
-  
-  const routePositions = useMemo(() => {
-      return routePoints
-        .map(id => memories.find(m => m.id === id))
-        .filter((m): m is Memory => !!m)
-        .map(m => [m.location.lat, m.location.lng] as [number, number]);
-  }, [routePoints, memories]);
 
-  return (
-    <div className="absolute inset-0 w-full h-full z-0 bg-white">
-      <LeafletMap center={center} zoom={13} style={{ height: '100%', width: '100%' }} zoomControl={false} preferCanvas={true}>
-        
-        <TileLayer
-          attribution='&copy; Google Maps'
-          url="https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=zh-TW"
-          subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
-          maxZoom={20}
-        />
-        
-        <MapEvents onClick={onMapClick} isRouting={isRoutingMode} isDragging={isDraggablePinMode} />
-        <MapUpdater center={center} />
+    const routePositions = useMemo(() => {
+        return routePoints
+            .map(id => memories.find(m => m.id === id))
+            .filter((m): m is Memory => !!m)
+            .map(m => [m.location.lat, m.location.lng] as [number, number]);
+    }, [routePoints, memories]);
 
-        {/* Navigation Route Line */}
-        {routePositions.length > 1 && (
-            <Polyline 
-                positions={routePositions} 
-                pathOptions={{ color: '#3b82f6', weight: 5, opacity: 0.7, dashArray: '10, 10' }} 
-            />
-        )}
-        
-        {/* Special Draggable Pin */}
-        {isDraggablePinMode && (
-            <DraggablePin position={center} onDragEnd={onDragEnd} />
-        )}
+    return (
+        <div className="absolute inset-0 w-full h-full z-0 bg-white">
+            <LeafletMap center={center} zoom={13} style={{ height: '100%', width: '100%' }} zoomControl={false} preferCanvas={true}>
 
-        {/* Markers */}
-        {memories.map((memory) => (
-            <MemoryMarker 
-                key={memory.id}
-                memory={memory}
-                isRoutingMode={isRoutingMode}
-                isSelectedInRoute={routePoints.includes(memory.id)}
-                hasRoutePoints={routePoints.length > 0}
-                onMarkerClick={onMarkerClick}
-                onViewComments={onViewComments}
-            />
-        ))}
+                <TileLayer
+                    attribution='&copy; Google Maps'
+                    url="https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=zh-TW"
+                    subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
+                    maxZoom={20}
+                />
 
-      </LeafletMap>
-    </div>
-  );
+                <MapEvents onClick={onMapClick} isRouting={isRoutingMode} isDragging={isDraggablePinMode} />
+                <MapUpdater center={center} />
+
+                {/* Navigation Route Line */}
+                {routePositions.length > 1 && (
+                    <Polyline
+                        positions={routePositions}
+                        pathOptions={{ color: '#3b82f6', weight: 5, opacity: 0.7, dashArray: '10, 10' }}
+                    />
+                )}
+
+                {/* Special Draggable Pin */}
+                {isDraggablePinMode && (
+                    <DraggablePin position={center} onDragEnd={onDragEnd} />
+                )}
+
+                {/* Markers */}
+                {memories.map((memory) => (
+                    <MemoryMarker
+                        key={memory.id}
+                        memory={memory}
+                        isRoutingMode={isRoutingMode}
+                        isSelectedInRoute={routePoints.includes(memory.id)}
+                        hasRoutePoints={routePoints.length > 0}
+                        onMarkerClick={onMarkerClick}
+                        onViewComments={onViewComments}
+                    />
+                ))}
+
+            </LeafletMap>
+        </div>
+    );
 };

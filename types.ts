@@ -33,6 +33,7 @@ export interface Memory {
   author: string;        // 顯示名稱 (可能是 Google 名稱、自訂名稱或 '匿名')
   authorAvatar?: string; // 顯示頭像 (可能是 Google Photo、自訂上傳 URL)
   isAnonymous: boolean;  // UI 標記，若為真則顯示匿名圖示(或忽略 authorAvatar)
+  identityType?: 'google' | 'custom' | 'anonymous'; // 用於追蹤用戶選擇的身分類型
 
   location: Location;
   content: string;

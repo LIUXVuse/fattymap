@@ -373,8 +373,23 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
                                         </div>
 
                                         {memory.photos.length > 0 && (
-                                            <div className="relative w-full h-32 rounded-lg overflow-hidden mb-3 border border-gray-200">
-                                                <img src={memory.photos[0]} alt="memory" className="w-full h-full object-cover" />
+                                            <div className="mb-3">
+                                                {memory.photos.length === 1 ? (
+                                                    <div className="relative w-full h-32 rounded-lg overflow-hidden border border-gray-200">
+                                                        <img src={memory.photos[0]} alt="memory" className="w-full h-full object-cover" />
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300">
+                                                        {memory.photos.map((photo, idx) => (
+                                                            <div key={idx} className="relative w-28 h-28 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0">
+                                                                <img src={photo} alt={`memory-${idx + 1}`} className="w-full h-full object-cover" />
+                                                                <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
+                                                                    {idx + 1}/{memory.photos.length}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
                                     </div>
