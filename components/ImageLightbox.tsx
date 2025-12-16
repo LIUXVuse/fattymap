@@ -44,20 +44,34 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
 
     return (
         <div
-            className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center animate-in fade-in duration-200"
+            className="fixed inset-0 z-[9999] bg-black/95 animate-in fade-in duration-200"
+            style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0
+            }}
             onClick={onClose}
         >
             {/* 關閉按鈕 */}
             <button
                 onClick={onClose}
                 className="absolute top-4 right-4 text-white/70 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors z-10"
+                style={{ position: 'fixed', top: '16px', right: '16px' }}
             >
                 <X size={28} />
             </button>
 
             {/* 圖片計數器 */}
             {images.length > 1 && (
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 text-white/70 text-sm bg-black/50 px-3 py-1 rounded-full">
+                <div
+                    className="text-white/70 text-sm bg-black/50 px-3 py-1 rounded-full"
+                    style={{ position: 'fixed', top: '16px', left: '50%', transform: 'translateX(-50%)' }}
+                >
                     {currentIndex + 1} / {images.length}
                 </div>
             )}
@@ -66,17 +80,24 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
             {images.length > 1 && (
                 <button
                     onClick={(e) => { e.stopPropagation(); goToPrev(); }}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white p-3 rounded-full hover:bg-white/10 transition-colors"
+                    className="text-white/70 hover:text-white p-3 rounded-full hover:bg-white/10 transition-colors"
+                    style={{ position: 'fixed', left: '16px', top: '50%', transform: 'translateY(-50%)' }}
                 >
                     <ChevronLeft size={36} />
                 </button>
             )}
 
-            {/* 主圖片 */}
+            {/* 主圖片 - 使用 fixed 定位確保居中 */}
             <img
                 src={images[currentIndex]}
                 alt={`Image ${currentIndex + 1}`}
-                className="max-w-[90vw] max-h-[85vh] object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-200"
+                className="max-w-[90vw] max-h-[80vh] object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-200"
+                style={{
+                    position: 'fixed',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)'
+                }}
                 onClick={(e) => e.stopPropagation()}
             />
 
@@ -84,7 +105,8 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
             {images.length > 1 && (
                 <button
                     onClick={(e) => { e.stopPropagation(); goToNext(); }}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white p-3 rounded-full hover:bg-white/10 transition-colors"
+                    className="text-white/70 hover:text-white p-3 rounded-full hover:bg-white/10 transition-colors"
+                    style={{ position: 'fixed', right: '16px', top: '50%', transform: 'translateY(-50%)' }}
                 >
                     <ChevronRight size={36} />
                 </button>
@@ -92,14 +114,17 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
 
             {/* 縮圖列表 */}
             {images.length > 1 && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-black/50 rounded-lg max-w-[80vw] overflow-x-auto">
+                <div
+                    className="flex gap-2 p-2 bg-black/50 rounded-lg max-w-[80vw] overflow-x-auto"
+                    style={{ position: 'fixed', bottom: '16px', left: '50%', transform: 'translateX(-50%)' }}
+                >
                     {images.map((img, idx) => (
                         <button
                             key={idx}
                             onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx); }}
                             className={`shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${idx === currentIndex
-                                    ? 'border-white scale-105'
-                                    : 'border-transparent opacity-60 hover:opacity-100'
+                                ? 'border-white scale-105'
+                                : 'border-transparent opacity-60 hover:opacity-100'
                                 }`}
                         >
                             <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
