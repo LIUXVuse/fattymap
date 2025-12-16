@@ -54,6 +54,193 @@ const GOOGLE_PLACES_API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY || '';
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || '';
 
 /**
+ * 實時搜尋建議 - 使用 Google Places Autocomplete API
+ * 費用較低：$2.83 / 1000 次（比 Text Search 的 $32 便宜很多）
+ * 建議配合 debounce 使用（300-500ms）
+ */
+export const getAutocomplete = async (query: string): Promise<PlaceSearchResult[]> => {
+    if (!query || query.length < 2) return [];
+
+    // 檢查是否為座標格式，座標不需要 autocomplete
+    const coordRegex = /^(-?\d+(\.\d+)?)[,\s]+(-?\d+(\.\d+)?)$/;
+    if (coordRegex.test(query)) return [];
+
+    if (!GOOGLE_PLACES_API_KEY) {
+        console.warn("Google Places API Key 未設定，使用 Mapbox 備援");
+        return getMapboxAutocomplete(query);
+    }
+
+    try {
+        const response = await fetch(
+            'https://places.googleapis.com/v1/places:autocomplete',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
+                },
+                body: JSON.stringify({
+                    input: query,
+                    languageCode: 'zh-TW',
+                })
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`Autocomplete API Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.suggestions && data.suggestions.length > 0) {
+            // Autocomplete 只回傳建議文字，不含座標
+            // 需要後續呼叫 Place Details 取得座標
+            return data.suggestions
+                .filter((s: any) => s.placePrediction)
+                .slice(0, 8)
+                .map((suggestion: any) => {
+                    const pred = suggestion.placePrediction;
+                    return {
+                        lat: 0, // 需要後續取得
+                        lng: 0,
+                        name: pred.structuredFormat?.mainText?.text || pred.text?.text || "",
+                        address: pred.structuredFormat?.secondaryText?.text || pred.text?.text || "",
+                        region: { country: "", area: "" },
+                        placeId: pred.placeId // 用於取得詳細資訊
+                    };
+                });
+        }
+    } catch (error) {
+        console.error("Google Autocomplete Error:", error);
+        return getMapboxAutocomplete(query);
+    }
+
+    return [];
+};
+
+/**
+ * Mapbox Autocomplete 備援
+ */
+const getMapboxAutocomplete = async (query: string): Promise<PlaceSearchResult[]> => {
+    if (!MAPBOX_TOKEN) return [];
+
+    try {
+        const response = await fetch(
+            `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` +
+            `access_token=${MAPBOX_TOKEN}` +
+            `&types=poi,address,place,neighborhood,locality` +
+            `&language=zh-TW` +
+            `&limit=8`
+        );
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data.features && data.features.length > 0) {
+                return data.features.map((feature: any) => {
+                    const [lng, lat] = feature.center;
+                    return {
+                        lat,
+                        lng,
+                        name: feature.text || feature.place_name.split(',')[0],
+                        address: feature.place_name,
+                        region: { country: "", area: "" }
+                    };
+                });
+            }
+        }
+    } catch (error) {
+        console.error("Mapbox Autocomplete Error:", error);
+    }
+
+    return [];
+};
+
+/**
+ * 根據 Place ID 取得完整地點資訊（座標等）
+ */
+export const getPlaceDetails = async (placeId: string): Promise<PlaceSearchResult | null> => {
+    if (!GOOGLE_PLACES_API_KEY || !placeId) return null;
+
+    try {
+        const response = await fetch(
+            `https://places.googleapis.com/v1/places/${placeId}`,
+            {
+                method: 'GET',
+                headers: {
+                    'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
+                    'X-Goog-FieldMask': 'displayName,formattedAddress,location,shortFormattedAddress'
+                }
+            }
+        );
+
+        if (!response.ok) throw new Error(`Place Details Error: ${response.status}`);
+
+        const place = await response.json();
+        const lat = place.location?.latitude || 0;
+        const lng = place.location?.longitude || 0;
+
+        const addressParts = (place.formattedAddress || '').split(', ');
+        const country = addressParts[addressParts.length - 1] || "未知國度";
+        const area = addressParts[addressParts.length - 2] || "未知區域";
+
+        return {
+            lat,
+            lng,
+            name: place.displayName?.text || place.shortFormattedAddress || "未命名地點",
+            address: place.formattedAddress || "",
+            region: { country, area },
+            uri: `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
+        };
+    } catch (error) {
+        console.error("Place Details Error:", error);
+        return null;
+    }
+};
+
+/**
+ * 開啟 Google Maps 導航
+ * @param destinations 目的地座標陣列 [{lat, lng, name}]
+ * @param origin 可選的起點座標，若無則使用用戶當前位置
+ */
+export const openGoogleMapsNavigation = (
+    destinations: Array<{ lat: number; lng: number; name?: string }>,
+    origin?: { lat: number; lng: number }
+) => {
+    if (destinations.length === 0) return;
+
+    let url: string;
+
+    if (destinations.length === 1) {
+        // 單一目的地：直接導航
+        const dest = destinations[0];
+        url = `https://www.google.com/maps/dir/?api=1`;
+        if (origin) {
+            url += `&origin=${origin.lat},${origin.lng}`;
+        }
+        url += `&destination=${dest.lat},${dest.lng}`;
+        url += `&travelmode=driving`;
+    } else {
+        // 多個目的地：使用 waypoints
+        const dest = destinations[destinations.length - 1];
+        const waypoints = destinations.slice(0, -1)
+            .map(p => `${p.lat},${p.lng}`)
+            .join('|');
+
+        url = `https://www.google.com/maps/dir/?api=1`;
+        if (origin) {
+            url += `&origin=${origin.lat},${origin.lng}`;
+        }
+        url += `&destination=${dest.lat},${dest.lng}`;
+        url += `&waypoints=${encodeURIComponent(waypoints)}`;
+        url += `&travelmode=driving`;
+    }
+
+    // 在新視窗開啟 Google Maps
+    window.open(url, '_blank');
+};
+
+
+/**
  * 地點搜尋功能 - 使用 Google Places API (New) 作為主要搜尋
  * 備援：Mapbox -> Nominatim
  * 1. 支援座標格式 (lat, lng)

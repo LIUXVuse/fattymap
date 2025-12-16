@@ -4,8 +4,8 @@ import { MemoryFeed } from './components/MemoryFeed';
 import { MemoryModal } from './components/MemoryModal';
 import { CommentModal } from './components/CommentModal';
 import { Memory, Location, MarkerColor, CategoryNode, RegionInfo, PlaceSearchResult, MarkerIconType } from './types';
-import { Menu, X, MapPin, Navigation, Play, RotateCcw, Search, Loader2, LogIn, LogOut } from 'lucide-react';
-import { searchLocation } from './services/mapService';
+import { Menu, X, MapPin, Navigation, Play, RotateCcw, Search, Loader2, LogIn, LogOut, ExternalLink } from 'lucide-react';
+import { searchLocation, getAutocomplete, getPlaceDetails, openGoogleMapsNavigation } from './services/mapService';
 import { auth, signInWithGoogle, logout, subscribeToMemories, subscribeToCategories, initCategoriesIfEmpty, addMemoryToFireStore, updateMemoryInFirestore, deleteMemoryFromFirestore, saveCategoriesToFirestore, uploadImage } from './services/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 
@@ -292,6 +292,29 @@ const App: React.FC = () => {
         setActiveMemoryIdForComments(memoryId);
     };
 
+    // Debounce 實時搜尋建議
+    useEffect(() => {
+        if (!searchQuery || searchQuery.length < 2) {
+            setSearchResults([]);
+            setShowSearchResults(false);
+            return;
+        }
+
+        const debounceTimer = setTimeout(async () => {
+            setIsSearching(true);
+            setShowSearchResults(true);
+            try {
+                const results = await getAutocomplete(searchQuery);
+                setSearchResults(results);
+            } catch (error) {
+                console.error('Autocomplete error:', error);
+            }
+            setIsSearching(false);
+        }, 300); // 300ms debounce
+
+        return () => clearTimeout(debounceTimer);
+    }, [searchQuery]);
+
     const handleSearchSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!searchQuery.trim()) return;
@@ -299,6 +322,7 @@ const App: React.FC = () => {
         setIsSearching(true);
         setShowSearchResults(true);
 
+        // 使用完整搜尋（按 Enter 時）
         const results = await searchLocation(searchQuery);
         setSearchResults(results);
         setIsSearching(false);
@@ -310,7 +334,20 @@ const App: React.FC = () => {
         }
     };
 
-    const handleSearchResultClick = (result: PlaceSearchResult) => {
+    const handleSearchResultClick = async (result: PlaceSearchResult) => {
+        // 如果結果來自 Autocomplete（只有 placeId，沒有座標）
+        if (result.placeId && result.lat === 0 && result.lng === 0) {
+            setIsSearching(true);
+            const details = await getPlaceDetails(result.placeId);
+            setIsSearching(false);
+            if (details) {
+                result = details;
+            } else {
+                alert('無法取得地點詳細資訊');
+                return;
+            }
+        }
+
         setMapCenter([result.lat, result.lng]);
         setTempLocation({
             lat: result.lat,
@@ -322,6 +359,24 @@ const App: React.FC = () => {
         setIsModalOpen(true);
         setSearchQuery('');
         setShowSearchResults(false);
+    };
+
+    // 開始 Google Maps 導航
+    const handleStartNavigation = () => {
+        if (routePoints.length === 0) {
+            alert('請先選擇至少一個地點');
+            return;
+        }
+
+        const destinations = routePoints.map(id => {
+            const m = memories.find(mem => mem.id === id);
+            if (m) {
+                return { lat: m.location.lat, lng: m.location.lng, name: m.location.name };
+            }
+            return null;
+        }).filter(Boolean) as Array<{ lat: number; lng: number; name?: string }>;
+
+        openGoogleMapsNavigation(destinations);
     };
 
     const handlePinDragEnd = (lat: number, lng: number) => {
@@ -492,6 +547,16 @@ const App: React.FC = () => {
                                 <span className="text-xs font-bold text-blue-600">總計: {routePoints.length} 個點</span>
                                 <button onClick={() => setRoutePoints([])} className="text-xs text-gray-500 hover:text-red-500 flex items-center gap-1"><RotateCcw size={12} /> 重置</button>
                             </div>
+                            {/* 開始導航按鈕 */}
+                            {routePoints.length > 0 && (
+                                <button
+                                    onClick={handleStartNavigation}
+                                    className="mt-3 w-full py-2 px-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg"
+                                >
+                                    <ExternalLink size={16} />
+                                    開始 Google Maps 導航
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>
