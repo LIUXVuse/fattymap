@@ -37,10 +37,6 @@ const App: React.FC = () => {
     const [user, setUser] = useState<User | null>(null);
     const [isAdmin, setIsAdmin] = useState(false);
 
-    // Age Verification State
-    const [isAgeVerified, setIsAgeVerified] = useState(() => {
-        return localStorage.getItem('ageVerified') === 'true';
-    });
 
     const [memories, setMemories] = useState<Memory[]>([]);
     const [categories, setCategories] = useState<CategoryNode[]>([]);
@@ -552,8 +548,8 @@ const App: React.FC = () => {
                 />
             )}
 
-            {/* Age Verification Modal */}
-            {!isAgeVerified && (
+            {/* Age Verification & Login Modal - 未登入時強制顯示 */}
+            {!user && (
                 <div className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
                     <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl shadow-2xl border border-gray-700 max-w-md w-full p-8 text-center">
                         {/* Header Image */}
@@ -590,10 +586,7 @@ const App: React.FC = () => {
 
                             <button
                                 onClick={async () => {
-                                    // Save verification to localStorage
-                                    localStorage.setItem('ageVerified', 'true');
-                                    setIsAgeVerified(true);
-                                    // Trigger Google login after age verification
+                                    // Trigger Google login - 登入成功後 user 狀態會改變，Modal 自動消失
                                     await signInWithGoogle();
                                 }}
                                 className="w-full py-4 px-6 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 text-white font-black rounded-xl transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-red-500/30 text-lg"
