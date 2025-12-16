@@ -585,18 +585,20 @@ const App: React.FC = () => {
                                 }}
                                 className="w-full py-4 px-6 bg-gray-700 hover:bg-gray-600 text-gray-300 font-bold rounded-xl transition-all duration-300 hover:scale-[1.02] border border-gray-600"
                             >
-                                ⬅️ 未滿18歲 請甩尾往左
+                                ⬅️ 未滿18歲 請甩尾往左 (確定)
                             </button>
 
                             <button
-                                onClick={() => {
-                                    // Save verification to localStorage and allow entry
+                                onClick={async () => {
+                                    // Save verification to localStorage
                                     localStorage.setItem('ageVerified', 'true');
                                     setIsAgeVerified(true);
+                                    // Trigger Google login after age verification
+                                    await signInWithGoogle();
                                 }}
                                 className="w-full py-4 px-6 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 text-white font-black rounded-xl transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-red-500/30 text-lg"
                             >
-                                🚗 師傅嘗試切他中路
+                                🚗 師傅嘗試切他中路 (確定)
                             </button>
                         </div>
 
