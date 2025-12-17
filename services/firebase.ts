@@ -40,9 +40,9 @@ export const signInWithGoogle = async () => {
   } catch (error: any) {
     console.error("Login failed", error);
     if (error.code === 'auth/unauthorized-domain') {
-        alert("登入失敗：網域未授權。\n請到 Firebase Console > Authentication > Settings > Authorized domains\n新增您的 Cloudflare 網址。");
+      alert("登入失敗：網域未授權。\n請到 Firebase Console > Authentication > Settings > Authorized domains\n新增您的 Cloudflare 網址。");
     } else {
-        alert(`登入失敗 (${error.code})，請檢查網路或 API Key 設定`);
+      alert(`登入失敗 (${error.code})，請檢查網路或 API Key 設定`);
     }
   }
 };
@@ -51,50 +51,127 @@ export const logout = async () => {
   await firebaseSignOut(auth);
 };
 
+// --- 圖片壓縮工具 (解決 Cloudinary 10MB 限制) ---
+const MAX_FILE_SIZE = 9 * 1024 * 1024; // 9MB (留一點緩衝)
+const MAX_DIMENSION = 2048; // 最大寬高 (像素)
+
+/**
+ * 壓縮圖片以符合 Cloudinary 免費方案的 10MB 限制
+ * @param file 原始圖片檔案
+ * @returns 壓縮後的 Blob (或原始檔案如果已經夠小)
+ */
+const compressImage = async (file: File): Promise<Blob> => {
+  // 如果檔案已經夠小，直接回傳
+  if (file.size <= MAX_FILE_SIZE) {
+    return file;
+  }
+
+  console.log(`📸 圖片壓縮中... 原始大小: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
+
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    img.onload = () => {
+      // 計算新尺寸 (保持比例)
+      let { width, height } = img;
+      if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+        if (width > height) {
+          height = Math.round((height * MAX_DIMENSION) / width);
+          width = MAX_DIMENSION;
+        } else {
+          width = Math.round((width * MAX_DIMENSION) / height);
+          height = MAX_DIMENSION;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      ctx?.drawImage(img, 0, 0, width, height);
+
+      // 嘗試不同的品質來達到目標大小
+      const tryCompress = (quality: number) => {
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error('圖片壓縮失敗'));
+              return;
+            }
+
+            console.log(`   品質 ${Math.round(quality * 100)}%: ${(blob.size / 1024 / 1024).toFixed(2)} MB`);
+
+            // 如果夠小或品質已經很低，就用這個
+            if (blob.size <= MAX_FILE_SIZE || quality <= 0.3) {
+              console.log(`✅ 壓縮完成！最終大小: ${(blob.size / 1024 / 1024).toFixed(2)} MB`);
+              resolve(blob);
+            } else {
+              // 繼續降低品質
+              tryCompress(quality - 0.1);
+            }
+          },
+          'image/jpeg',
+          quality
+        );
+      };
+
+      // 從 90% 品質開始嘗試
+      tryCompress(0.9);
+    };
+
+    img.onerror = () => reject(new Error('無法讀取圖片'));
+    img.src = URL.createObjectURL(file);
+  });
+};
+
 // --- Image Upload Service (Switched to Cloudinary) ---
 /**
  * 上傳圖片到 Cloudinary (取代 Firebase Storage)
  * 使用 Unsigned Upload 模式，無需後端簽章
+ * 自動壓縮超過 9MB 的圖片
  */
 export const uploadImage = async (file: File, path: string): Promise<string> => {
   // 檢查設定
   if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
-      console.error("Cloudinary 設定缺失", { CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET });
-      alert("系統錯誤：圖片上傳服務尚未設定 (Cloudinary)。請聯繫管理員。");
-      throw new Error("Cloudinary config missing");
+    console.error("Cloudinary 設定缺失", { CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET });
+    alert("系統錯誤：圖片上傳服務尚未設定 (Cloudinary)。請聯繫管理員。");
+    throw new Error("Cloudinary config missing");
   }
 
+  // 壓縮圖片 (如果需要)
+  const processedFile = await compressImage(file);
+
   const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
-  
+
   const formData = new FormData();
-  formData.append("file", file);
+  formData.append("file", processedFile);
   formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-  
+
   // Cloudinary 支援 folder 參數，我們可以利用 path 來模擬資料夾結構
   // path 範例: memories/uid/filename.jpg -> 取 memories/uid
   const folder = path.substring(0, path.lastIndexOf('/'));
   if (folder) {
-      formData.append("folder", folder);
+    formData.append("folder", folder);
   }
 
   try {
-      const response = await fetch(url, {
-          method: "POST",
-          body: formData
-      });
+    const response = await fetch(url, {
+      method: "POST",
+      body: formData
+    });
 
-      if (!response.ok) {
-          const errData = await response.json();
-          throw new Error(errData.error?.message || "Upload failed");
-      }
+    if (!response.ok) {
+      const errData = await response.json();
+      throw new Error(errData.error?.message || "Upload failed");
+    }
 
-      const data = await response.json();
-      // 回傳 secure_url (HTTPS)
-      return data.secure_url;
+    const data = await response.json();
+    // 回傳 secure_url (HTTPS)
+    return data.secure_url;
 
   } catch (error) {
-      console.error("Cloudinary Upload Error:", error);
-      throw error;
+    console.error("Cloudinary Upload Error:", error);
+    throw error;
   }
 };
 
@@ -109,7 +186,7 @@ export const subscribeToMemories = (callback: (memories: Memory[]) => void) => {
     } as Memory));
     callback(memories);
   }, (error) => {
-      console.error("Firestore subscription error:", error);
+    console.error("Firestore subscription error:", error);
   });
 };
 
@@ -128,21 +205,21 @@ export const deleteMemoryFromFirestore = async (id: string) => {
 
 // --- Firestore Services (Comments) ---
 export const subscribeToComments = (memoryId: string, callback: (comments: Comment[]) => void) => {
-    // 使用 sub-collection "comments"
-    const q = query(collection(db, "memories", memoryId, "comments"), orderBy("timestamp", "asc"));
-    return onSnapshot(q, (snapshot) => {
-        const comments = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        } as Comment));
-        callback(comments);
-    }, (error) => {
-        console.error("Comments subscription error:", error);
-    });
+  // 使用 sub-collection "comments"
+  const q = query(collection(db, "memories", memoryId, "comments"), orderBy("timestamp", "asc"));
+  return onSnapshot(q, (snapshot) => {
+    const comments = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    } as Comment));
+    callback(comments);
+  }, (error) => {
+    console.error("Comments subscription error:", error);
+  });
 };
 
 export const addCommentToFirestore = async (memoryId: string, comment: Omit<Comment, "id">) => {
-    await addDoc(collection(db, "memories", memoryId, "comments"), comment);
+  await addDoc(collection(db, "memories", memoryId, "comments"), comment);
 };
 
 // --- Firestore Services (Categories) ---
@@ -152,7 +229,7 @@ export const subscribeToCategories = (callback: (categories: CategoryNode[]) => 
     if (docSnap.exists()) {
       callback(docSnap.data().data as CategoryNode[]);
     } else {
-        callback([]);
+      callback([]);
     }
   });
 };
@@ -164,15 +241,15 @@ export const saveCategoriesToFirestore = async (categories: CategoryNode[]) => {
 
 // 初始化預設分類 (只執行一次)
 export const initCategoriesIfEmpty = async (defaultCategories: CategoryNode[]) => {
-    try {
-        const docRef = doc(db, "settings", "global_categories");
-        // 修正：使用靜態引用的 getDoc，避免 Vite 建置時的動態引用警告
-        const docSnap = await getDoc(docRef);
-        
-        if (!docSnap.exists()) {
-            await setDoc(docRef, { data: defaultCategories });
-        }
-    } catch (e) {
-        console.error("Init categories error:", e);
+  try {
+    const docRef = doc(db, "settings", "global_categories");
+    // 修正：使用靜態引用的 getDoc，避免 Vite 建置時的動態引用警告
+    const docSnap = await getDoc(docRef);
+
+    if (!docSnap.exists()) {
+      await setDoc(docRef, { data: defaultCategories });
     }
+  } catch (e) {
+    console.error("Init categories error:", e);
+  }
 }
