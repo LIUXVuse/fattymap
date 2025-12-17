@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, Image as ImageIcon, Loader2, User as UserIcon, Globe, Edit3, Upload } from 'lucide-react';
+import { X, Send, Image as ImageIcon, Loader2, User as UserIcon, Globe, Edit3, Upload, Edit2, Trash2, Check } from 'lucide-react';
 import { Comment } from '../types';
-import { subscribeToComments, addCommentToFirestore, uploadImage } from '../services/firebase';
+import { subscribeToComments, addCommentToFirestore, uploadImage, updateCommentInFirestore, deleteCommentFromFirestore } from '../services/firebase';
 import { User } from 'firebase/auth';
 
 interface CommentModalProps {
@@ -11,6 +11,7 @@ interface CommentModalProps {
     onClose: () => void;
     defaultCustomName?: string;
     defaultCustomAvatar?: string;
+    isAdmin?: boolean;
 }
 
 type IdentityType = 'google' | 'custom' | 'anonymous';
@@ -21,11 +22,16 @@ export const CommentModal: React.FC<CommentModalProps> = ({
     currentUser,
     onClose,
     defaultCustomName,
-    defaultCustomAvatar
+    defaultCustomAvatar,
+    isAdmin
 }) => {
     const [comments, setComments] = useState<Comment[]>([]);
     const [newComment, setNewComment] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // 編輯模式狀態
+    const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+    const [editingContent, setEditingContent] = useState('');
 
     // 圖片上傳 (留言附圖 - 支援多圖)
     const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -184,6 +190,53 @@ export const CommentModal: React.FC<CommentModalProps> = ({
         }
     };
 
+    // 判斷是否有權限編輯/刪除留言 (本人或管理員)
+    const canEditComment = (comment: Comment) => {
+        if (isAdmin) return true;
+        if (currentUser && comment.userId === currentUser.uid) return true;
+        return false;
+    };
+
+    // 開始編輯留言
+    const handleEditComment = (comment: Comment) => {
+        setEditingCommentId(comment.id);
+        setEditingContent(comment.content);
+    };
+
+    // 儲存編輯
+    const handleSaveEdit = async () => {
+        if (!editingCommentId || !editingContent.trim()) return;
+
+        try {
+            await updateCommentInFirestore(memoryId, editingCommentId, {
+                content: editingContent.trim()
+            });
+            setEditingCommentId(null);
+            setEditingContent('');
+        } catch (error) {
+            console.error("Edit comment error:", error);
+            alert("編輯失敗，請稍後再試");
+        }
+    };
+
+    // 取消編輯
+    const handleCancelEdit = () => {
+        setEditingCommentId(null);
+        setEditingContent('');
+    };
+
+    // 刪除留言
+    const handleDeleteComment = async (commentId: string) => {
+        if (!window.confirm("確定要刪除這則留言嗎？")) return;
+
+        try {
+            await deleteCommentFromFirestore(memoryId, commentId);
+        } catch (error) {
+            console.error("Delete comment error:", error);
+            alert("刪除失敗，請稍後再試");
+        }
+    };
+
     return (
         <div className="fixed inset-0 z-[1200] flex items-center justify-center p-4">
             {/* Backdrop */}
@@ -225,11 +278,63 @@ export const CommentModal: React.FC<CommentModalProps> = ({
                                     <div className="bg-white/60 p-3 rounded-2xl rounded-tl-none shadow-sm border border-white/50">
                                         <div className="flex justify-between items-baseline mb-1">
                                             <span className="font-bold text-sm text-gray-800">{comment.author}</span>
-                                            <span className="text-[10px] text-gray-400">{new Date(comment.timestamp).toLocaleString()}</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[10px] text-gray-400">{new Date(comment.timestamp).toLocaleString()}</span>
+                                                {/* 編輯/刪除按鈕 (僅本人或管理員可見) */}
+                                                {canEditComment(comment) && editingCommentId !== comment.id && (
+                                                    <div className="flex items-center gap-0.5">
+                                                        <button
+                                                            onClick={() => handleEditComment(comment)}
+                                                            className="p-1 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded transition-colors"
+                                                            title="編輯"
+                                                        >
+                                                            <Edit2 size={12} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteComment(comment.id)}
+                                                            className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                                                            title="刪除"
+                                                        >
+                                                            <Trash2 size={12} />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                        <p className="text-sm text-gray-700 whitespace-pre-wrap break-words leading-relaxed">
-                                            {comment.content}
-                                        </p>
+
+                                        {/* 編輯模式 vs 顯示模式 */}
+                                        {editingCommentId === comment.id ? (
+                                            <div className="space-y-2">
+                                                <textarea
+                                                    value={editingContent}
+                                                    onChange={(e) => setEditingContent(e.target.value)}
+                                                    className="w-full bg-white border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none resize-none"
+                                                    rows={2}
+                                                    maxLength={MAX_CHARS}
+                                                    autoFocus
+                                                />
+                                                <div className="flex justify-end gap-1.5">
+                                                    <button
+                                                        onClick={handleCancelEdit}
+                                                        className="px-2 py-1 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                                                    >
+                                                        取消
+                                                    </button>
+                                                    <button
+                                                        onClick={handleSaveEdit}
+                                                        disabled={!editingContent.trim()}
+                                                        className="px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white rounded flex items-center gap-1 transition-colors"
+                                                    >
+                                                        <Check size={12} /> 儲存
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-gray-700 whitespace-pre-wrap break-words leading-relaxed">
+                                                {comment.content}
+                                            </p>
+                                        )}
+
                                         {/* 留言圖片 - 支援多圖 (向下相容舊資料) */}
                                         {(comment.images && comment.images.length > 0) ? (
                                             <div className="mt-2 flex gap-1.5 overflow-x-auto">

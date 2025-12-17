@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Memory } from '../types';
 import { MapPin, Image as ImageIcon, ChevronRight, ArrowLeft, Globe, List, Building2, Edit2, Trash2, MessageCircle, Map as MapIcon, Dices } from 'lucide-react';
 
@@ -10,17 +10,26 @@ interface MemoryFeedProps {
     currentUserId?: string;
     isAdmin?: boolean; // 新增 Admin 權限判斷
     onViewComments: (memoryId: string) => void;
+    syncToMemory?: Memory | null; // 當點擊地圖圖釘時同步導航
 }
 
 type ViewMode = 'countries' | 'areas' | 'categories' | 'posts';
 
-export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocation, onEdit, onDelete, currentUserId, isAdmin, onViewComments }) => {
+export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocation, onEdit, onDelete, currentUserId, isAdmin, onViewComments, syncToMemory }) => {
     const [viewMode, setViewMode] = useState<ViewMode>('countries');
     const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
     const [selectedArea, setSelectedArea] = useState<string | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-
+    // 當外部傳入 syncToMemory 時，自動導航到該回憶所在位置
+    useEffect(() => {
+        if (syncToMemory) {
+            setSelectedCountry(syncToMemory.region.country || "其他");
+            setSelectedArea(syncToMemory.region.area || "未知區域");
+            setSelectedCategory(syncToMemory.category.main);
+            setViewMode('posts');
+        }
+    }, [syncToMemory]);
 
     // 1. 整理出所有國家清單與數量
     const countryStats = useMemo(() => {
@@ -180,12 +189,24 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
                 <button onClick={goBack} className="p-2 hover:bg-gray-100 rounded-full text-gray-600 transition-colors border border-gray-200 shadow-sm bg-white">
                     <ArrowLeft size={18} />
                 </button>
-                <div className="overflow-hidden">
+                <div className="flex-1 overflow-hidden">
                     <h2 className="font-bold text-gray-800 text-lg truncate" title={title || ''}>{title}</h2>
                     <p className="text-xs text-gray-500 truncate flex items-center gap-1">
                         {subtitle}
                     </p>
                 </div>
+                {/* 隨機探索按鈕 - 老司機帶你遊世界 */}
+                <button
+                    onClick={handleRandomExplore}
+                    className="shrink-0 w-10 h-10 rounded-full overflow-hidden border-2 border-blue-400 hover:border-blue-600 shadow-md hover:shadow-lg transition-all hover:scale-110 active:scale-95 group"
+                    title="🎲 老司機帶你遊世界"
+                >
+                    <img
+                        src="https://i.meee.com.tw/Xo1WINx.jpg"
+                        alt="隨機探索"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                </button>
             </div>
         );
     };

@@ -222,6 +222,15 @@ export const addCommentToFirestore = async (memoryId: string, comment: Omit<Comm
   await addDoc(collection(db, "memories", memoryId, "comments"), comment);
 };
 
+export const updateCommentInFirestore = async (memoryId: string, commentId: string, data: Partial<Comment>) => {
+  const docRef = doc(db, "memories", memoryId, "comments", commentId);
+  await updateDoc(docRef, data);
+};
+
+export const deleteCommentFromFirestore = async (memoryId: string, commentId: string) => {
+  await deleteDoc(doc(db, "memories", memoryId, "comments", commentId));
+};
+
 // --- Firestore Services (Categories) ---
 export const subscribeToCategories = (callback: (categories: CategoryNode[]) => void) => {
   const docRef = doc(db, "settings", "global_categories");

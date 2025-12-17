@@ -75,6 +75,9 @@ const App: React.FC = () => {
     // Focused Memory State (用於自動展開圖釘 Popup)
     const [focusedMemoryId, setFocusedMemoryId] = useState<string | null>(null);
 
+    // Synced Memory State (當點擊圖釘時同步側邊欄)
+    const [syncedMemory, setSyncedMemory] = useState<Memory | null>(null);
+
     const searchContainerRef = useRef<HTMLDivElement>(null);
 
     // 1. 初始化 Firebase 監聽與 LocalStorage
@@ -440,6 +443,7 @@ const App: React.FC = () => {
                     currentUserId={user?.uid}
                     isAdmin={isAdmin}
                     onViewComments={handleViewComments}
+                    syncToMemory={syncedMemory}
                 />
 
                 <button
@@ -588,6 +592,7 @@ const App: React.FC = () => {
                     }}
                     focusedMemoryId={focusedMemoryId}
                     onClearFocus={() => setFocusedMemoryId(null)}
+                    onPopupOpen={(memory) => setSyncedMemory(memory)}
                 />
 
                 {/* Helper Overlay */}
@@ -627,6 +632,7 @@ const App: React.FC = () => {
                     onClose={() => setActiveMemoryIdForComments(null)}
                     defaultCustomName={lastCustomName}
                     defaultCustomAvatar={lastCustomAvatar}
+                    isAdmin={isAdmin}
                 />
             )}
 

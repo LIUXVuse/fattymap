@@ -210,6 +210,7 @@ interface MapContainerProps {
     onImageClick?: (images: string[], index: number) => void;
     focusedMemoryId?: string | null;
     onClearFocus?: () => void;
+    onPopupOpen?: (memory: Memory) => void;
 }
 
 // Map Events Handler (Click)
@@ -291,9 +292,10 @@ interface MemoryMarkerProps {
     onImageClick?: (images: string[], index: number) => void;
     isFocused?: boolean;
     onClearFocus?: () => void;
+    onPopupOpen?: (memory: Memory) => void;
 }
 
-const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, hasRoutePoints, onMarkerClick, onViewComments, onImageClick, isFocused, onClearFocus }: MemoryMarkerProps) => {
+const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, hasRoutePoints, onMarkerClick, onViewComments, onImageClick, isFocused, onClearFocus, onPopupOpen }: MemoryMarkerProps) => {
     const markerRef = useRef<L.Marker>(null);
 
     // 修改：不再傳入頭像資訊給 Marker Icon，只傳顏色與圖示
@@ -318,13 +320,19 @@ const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, has
                 onMarkerClick(memory.id);
             }
         },
+        popupopen: () => {
+            // 當 Popup 打開時通知 App 同步側邊欄
+            if (onPopupOpen) {
+                onPopupOpen(memory);
+            }
+        },
         popupclose: () => {
             // 當 Popup 關閉時清除 focus 狀態
             if (isFocused && onClearFocus) {
                 onClearFocus();
             }
         }
-    }), [isRoutingMode, onMarkerClick, memory.id, isFocused, onClearFocus]);
+    }), [isRoutingMode, onMarkerClick, memory, isFocused, onClearFocus, onPopupOpen]);
 
     const opacity = isRoutingMode && !isSelectedInRoute && hasRoutePoints ? 0.5 : 1;
 
@@ -437,7 +445,8 @@ export const AppMap: React.FC<MapContainerProps> = ({
     onViewComments,
     onImageClick,
     focusedMemoryId,
-    onClearFocus
+    onClearFocus,
+    onPopupOpen
 }) => {
 
     const routePositions = useMemo(() => {
@@ -487,6 +496,7 @@ export const AppMap: React.FC<MapContainerProps> = ({
                         onImageClick={onImageClick}
                         isFocused={focusedMemoryId === memory.id}
                         onClearFocus={onClearFocus}
+                        onPopupOpen={onPopupOpen}
                     />
                 ))}
 
