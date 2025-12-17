@@ -72,6 +72,9 @@ const App: React.FC = () => {
     const [lightboxImages, setLightboxImages] = useState<string[]>([]);
     const [lightboxIndex, setLightboxIndex] = useState(0);
 
+    // Focused Memory State (用於自動展開圖釘 Popup)
+    const [focusedMemoryId, setFocusedMemoryId] = useState<string | null>(null);
+
     const searchContainerRef = useRef<HTMLDivElement>(null);
 
     // 1. 初始化 Firebase 監聽與 LocalStorage
@@ -266,8 +269,11 @@ const App: React.FC = () => {
         await saveCategoriesToFirestore(newCategories);
     };
 
-    const focusLocation = (lat: number, lng: number) => {
+    const focusLocation = (lat: number, lng: number, memoryId?: string) => {
         setMapCenter([lat, lng]);
+        if (memoryId) {
+            setFocusedMemoryId(memoryId);
+        }
         if (window.innerWidth < 768) {
             setSidebarOpen(false);
         }
@@ -580,6 +586,8 @@ const App: React.FC = () => {
                         setLightboxImages(images);
                         setLightboxIndex(index);
                     }}
+                    focusedMemoryId={focusedMemoryId}
+                    onClearFocus={() => setFocusedMemoryId(null)}
                 />
 
                 {/* Helper Overlay */}

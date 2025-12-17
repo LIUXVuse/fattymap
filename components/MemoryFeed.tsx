@@ -4,7 +4,7 @@ import { MapPin, Image as ImageIcon, ChevronRight, ArrowLeft, Globe, List, Build
 
 interface MemoryFeedProps {
     memories: Memory[];
-    onFocusLocation: (lat: number, lng: number) => void;
+    onFocusLocation: (lat: number, lng: number, memoryId?: string) => void;
     onEdit?: (memory: Memory) => void;
     onDelete?: (id: string) => void;
     currentUserId?: string;
@@ -112,8 +112,8 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
         const randomIndex = Math.floor(Math.random() * memories.length);
         const randomMemory = memories[randomIndex];
 
-        // 2. 移動地圖
-        onFocusLocation(randomMemory.location.lat, randomMemory.location.lng);
+        // 2. 移動地圖並自動展開圖釘
+        onFocusLocation(randomMemory.location.lat, randomMemory.location.lng, randomMemory.id);
 
         // 3. 強制切換側邊欄狀態，進入該文章所在的列表
         setSelectedCountry(randomMemory.region.country || "其他");
@@ -290,7 +290,7 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
                                     key={memory.id}
                                     className="bg-white hover:bg-gray-50 border border-gray-200 hover:border-blue-300 rounded-xl p-4 transition-all group shadow-sm hover:shadow-md relative"
                                 >
-                                    <div className="cursor-pointer" onClick={() => onFocusLocation(memory.location.lat, memory.location.lng)}>
+                                    <div className="cursor-pointer" onClick={() => onFocusLocation(memory.location.lat, memory.location.lng, memory.id)}>
                                         <div className="flex gap-1 mb-2">
                                             <span
                                                 className="px-2 py-0.5 rounded text-[10px] font-bold text-white shadow-sm"

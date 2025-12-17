@@ -208,6 +208,8 @@ interface MapContainerProps {
     onDragEnd: (lat: number, lng: number) => void;
     onViewComments: (memoryId: string) => void;
     onImageClick?: (images: string[], index: number) => void;
+    focusedMemoryId?: string | null;
+    onClearFocus?: () => void;
 }
 
 // Map Events Handler (Click)
@@ -287,9 +289,12 @@ interface MemoryMarkerProps {
     onMarkerClick?: (memoryId: string) => void;
     onViewComments: (memoryId: string) => void;
     onImageClick?: (images: string[], index: number) => void;
+    isFocused?: boolean;
+    onClearFocus?: () => void;
 }
 
-const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, hasRoutePoints, onMarkerClick, onViewComments, onImageClick }: MemoryMarkerProps) => {
+const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, hasRoutePoints, onMarkerClick, onViewComments, onImageClick, isFocused, onClearFocus }: MemoryMarkerProps) => {
+    const markerRef = useRef<L.Marker>(null);
 
     // 修改：不再傳入頭像資訊給 Marker Icon，只傳顏色與圖示
     const icon = useMemo(() =>
@@ -297,18 +302,35 @@ const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, has
         [memory.markerColor, memory.markerIcon]
     );
 
+    // 當 isFocused 為 true 時，自動打開 Popup
+    useEffect(() => {
+        if (isFocused && markerRef.current) {
+            // 延遲一點讓地圖移動完成
+            setTimeout(() => {
+                markerRef.current?.openPopup();
+            }, 800);
+        }
+    }, [isFocused]);
+
     const eventHandlers = useMemo(() => ({
         click: () => {
             if (isRoutingMode && onMarkerClick) {
                 onMarkerClick(memory.id);
             }
+        },
+        popupclose: () => {
+            // 當 Popup 關閉時清除 focus 狀態
+            if (isFocused && onClearFocus) {
+                onClearFocus();
+            }
         }
-    }), [isRoutingMode, onMarkerClick, memory.id]);
+    }), [isRoutingMode, onMarkerClick, memory.id, isFocused, onClearFocus]);
 
     const opacity = isRoutingMode && !isSelectedInRoute && hasRoutePoints ? 0.5 : 1;
 
     return (
         <Marker
+            ref={markerRef}
             position={[memory.location.lat, memory.location.lng]}
             icon={icon}
             eventHandlers={eventHandlers}
@@ -413,7 +435,9 @@ export const AppMap: React.FC<MapContainerProps> = ({
     isDraggablePinMode,
     onDragEnd,
     onViewComments,
-    onImageClick
+    onImageClick,
+    focusedMemoryId,
+    onClearFocus
 }) => {
 
     const routePositions = useMemo(() => {
@@ -461,6 +485,8 @@ export const AppMap: React.FC<MapContainerProps> = ({
                         onMarkerClick={onMarkerClick}
                         onViewComments={onViewComments}
                         onImageClick={onImageClick}
+                        isFocused={focusedMemoryId === memory.id}
+                        onClearFocus={onClearFocus}
                     />
                 ))}
 
