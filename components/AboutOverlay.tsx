@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Heart, ShoppingBag, Users, Headphones, Instagram, Globe, ExternalLink, Copy, Check, Bug } from 'lucide-react';
 
 // Spotify 圖示 SVG
@@ -25,13 +25,19 @@ const DiscordIcon = () => (
 interface AboutOverlayProps {
     isOpen: boolean;
     onClose: () => void;
+    initialTab?: 'about' | 'collab' | 'more';  // 新增：指定初始 Tab
 }
 
 type TabType = 'about' | 'collab' | 'more';
 
-export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose }) => {
-    const [activeTab, setActiveTab] = useState<TabType>('about');
+export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, initialTab = 'about' }) => {
+    const [activeTab, setActiveTab] = useState<TabType>(initialTab);
     const [copiedField, setCopiedField] = useState<string | null>(null);
+
+    // 當 initialTab 改變時同步更新
+    useEffect(() => {
+        setActiveTab(initialTab);
+    }, [initialTab]);
 
     const handleCopy = async (text: string, field: string) => {
         try {

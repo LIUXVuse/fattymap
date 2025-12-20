@@ -76,3 +76,17 @@ export interface UserInfo {
   email: string | null;
   photoURL: string | null;
 }
+
+// 贊助商定義
+export interface Sponsor {
+  id: string;
+  name: string;           // 贊助商名稱
+  imageUrl: string;       // 去背後的 PNG 圖片網址
+  location: {
+    lat: number;
+    lng: number;
+  };
+  linkUrl?: string;       // 點擊後連結（可選）
+  description?: string;   // 簡短描述（可選）
+  isActive: boolean;      // 是否啟用
+}

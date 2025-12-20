@@ -5,14 +5,14 @@ import { MemoryModal } from './components/MemoryModal';
 import { CommentModal } from './components/CommentModal';
 import { ImageLightbox } from './components/ImageLightbox';
 import { AboutOverlay } from './components/AboutOverlay';
-import { Memory, Location, MarkerColor, CategoryNode, RegionInfo, PlaceSearchResult, MarkerIconType } from './types';
+import { Memory, Location, MarkerColor, CategoryNode, RegionInfo, PlaceSearchResult, MarkerIconType, Sponsor } from './types';
 import { Menu, X, MapPin, Navigation, Play, RotateCcw, Search, Loader2, LogIn, LogOut, ExternalLink, Info } from 'lucide-react';
 import { searchLocation, getAutocomplete, getPlaceDetails, openGoogleMapsNavigation } from './services/mapService';
-import { auth, signInWithGoogle, logout, subscribeToMemories, subscribeToCategories, initCategoriesIfEmpty, addMemoryToFireStore, updateMemoryInFirestore, deleteMemoryFromFirestore, saveCategoriesToFirestore, uploadImage } from './services/firebase';
+import { auth, signInWithGoogle, logout, subscribeToMemories, subscribeToCategories, initCategoriesIfEmpty, addMemoryToFireStore, updateMemoryInFirestore, deleteMemoryFromFirestore, saveCategoriesToFirestore, uploadImage, subscribeToSponsors, addSponsorToFirestore, updateSponsorInFirestore, deleteSponsorFromFirestore } from './services/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 
 // 管理員 Email 列表 (簡單實作，實際建議用 Custom Claims)
-const ADMIN_EMAILS = ["admin@example.com"]; // 請將您自己的 Google Email 加入此處
+const ADMIN_EMAILS = ["liupony2000@gmail.com"]; // 管理員 Email
 
 // 初始分類樹 (僅用於首次初始化 DB)
 const INITIAL_CATEGORIES: CategoryNode[] = [
@@ -35,6 +35,8 @@ const INITIAL_CATEGORIES: CategoryNode[] = [
     }
 ];
 
+
+
 const App: React.FC = () => {
     const [user, setUser] = useState<User | null>(null);
     const [isAdmin, setIsAdmin] = useState(false);
@@ -42,6 +44,7 @@ const App: React.FC = () => {
 
     const [memories, setMemories] = useState<Memory[]>([]);
     const [categories, setCategories] = useState<CategoryNode[]>([]);
+    const [sponsors, setSponsors] = useState<Sponsor[]>([]);  // 贊助商列表
 
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -81,6 +84,13 @@ const App: React.FC = () => {
 
     // About Overlay State
     const [isAboutOpen, setIsAboutOpen] = useState(false);
+    const [aboutTab, setAboutTab] = useState<'about' | 'collab' | 'more'>('about');
+
+    // 打開贊助商合作頁面
+    const handleOpenSponsorInfo = () => {
+        setAboutTab('collab');
+        setIsAboutOpen(true);
+    };
 
     const searchContainerRef = useRef<HTMLDivElement>(null);
 
@@ -111,13 +121,19 @@ const App: React.FC = () => {
             setCategories(data);
         });
 
+        // 監聽贊助商列表
+        const unsubscribeSponsors = subscribeToSponsors((data) => {
+            setSponsors(data);
+        });
+
         // 初始化分類 (僅執行一次檢查)
         initCategoriesIfEmpty(INITIAL_CATEGORIES);
 
         return () => {
             unsubscribeAuth();
             unsubscribeMemories();
-            unsubscribeCategories(); // 注意：實際 onSnapshot 回傳的 unsub 函數
+            unsubscribeCategories();
+            unsubscribeSponsors();
         };
     }, []);
 
@@ -593,6 +609,7 @@ const App: React.FC = () => {
 
                 <AppMap
                     memories={memories}
+                    sponsors={sponsors}
                     onMapClick={handleMapClick}
                     center={mapCenter}
                     routePoints={routePoints}
@@ -608,6 +625,7 @@ const App: React.FC = () => {
                     focusedMemoryId={focusedMemoryId}
                     onClearFocus={() => setFocusedMemoryId(null)}
                     onPopupOpen={(memory) => setSyncedMemory(memory)}
+                    onSponsorInfoClick={handleOpenSponsorInfo}
                 />
 
                 {/* Helper Overlay */}
@@ -710,7 +728,11 @@ const App: React.FC = () => {
             {/* About Overlay */}
             <AboutOverlay
                 isOpen={isAboutOpen}
-                onClose={() => setIsAboutOpen(false)}
+                onClose={() => {
+                    setIsAboutOpen(false);
+                    setAboutTab('about');  // 關閉後重置為預設 tab
+                }}
+                initialTab={aboutTab}
             />
 
             {lightboxImages.length > 0 && (

@@ -83,61 +83,87 @@ interface PlaceSearchResult {
 }
 ```
 
+### 2.6 Sponsor (贊助商)
+
+支援在地圖上顯示 3D 懸浮效果的贊助商標記。
+
+```typescript
+interface Sponsor {
+  id: string;           // 唯一識別碼
+  name: string;         // 贊助商名稱
+  imageUrl: string;     // 去背圖片 URL (PNG/WebP，支援圖床)
+  location: {
+    lat: number;
+    lng: number;
+  };
+  linkUrl?: string;     // 點擊後連結 (可選)
+  description?: string; // 簡短描述 (可選)
+  isActive: boolean;    // 是否啟用
+}
+```
+
+**圖片規格**:
+
+- 格式: PNG 或 WebP (需透明背景)
+- 建議尺寸: 300-500px 寬
+- 檔案大小: < 500KB
+- 來源: 可使用任何圖床 (imgur, Cloudinary, meee.com.tw 等)
+
 ## 3. 外部服務
 
 ### 3.1 Google Maps Tiles
 
 本專案**不使用** Google Maps JavaScript API，而是透過 Leaflet 的 `TileLayer` 直接載入 Google 的圖磚服務。
 
-* **URL Template**: `https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=zh-TW`
+- **URL Template**: `https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=zh-TW`
 
 ### 3.2 Google Places API (搜尋建議)
 
 提供即時搜尋建議與地點詳細資訊。
 
-* **Autocomplete**: 輸入時即時回傳地點候選清單 (Debounce 300ms)
-* **Place Details**: 根據 `placeId` 取得完整座標與地址
+- **Autocomplete**: 輸入時即時回傳地點候選清單 (Debounce 300ms)
+- **Place Details**: 根據 `placeId` 取得完整座標與地址
 
 ### 3.3 Cloudinary (圖片儲存)
 
-* **上傳模式**: Unsigned Upload (無需後端簽章)
-* **免費方案限制**: 單檔 10MB、總量 25GB
-* **自動壓縮**: 前端會自動將超過 9MB 的圖片壓縮
-  * 最大尺寸: 2048px
-  * 品質: 從 90% 逐步降低至 30%
+- **上傳模式**: Unsigned Upload (無需後端簽章)
+- **免費方案限制**: 單檔 10MB、總量 25GB
+- **自動壓縮**: 前端會自動將超過 9MB 的圖片壓縮
+  - 最大尺寸: 2048px
+  - 品質: 從 90% 逐步降低至 30%
 
 ## 4. 前端元件邏輯
 
 ### 4.1 MapContainer (`components/MapContainer.tsx`)
 
-* **核心庫**: `react-leaflet`
-* **自訂 Marker**: 使用 `L.divIcon` 結合 React 渲染的 SVG (`<MapPin />`)。
-  * **動態著色**: SVG 的 `fill` 屬性直接綁定 `Memory.markerColor`。
-  * **圖示映射**: 使用 `ICON_MAP` 將字串代碼轉換為 Lucide React 元件。
-* **路線繪製**: 使用 `<Polyline />` 元件，根據 `routePoints` 狀態中的 ID 順序連接座標。
-* **自動展開 Popup**:
-  * 使用 `focusedMemoryId` 狀態追蹤目標圖釘
-  * 透過 `markerRef.current?.openPopup()` 程式化打開 Popup
-  * 延遲 800ms 等待地圖移動動畫完成
+- **核心庫**: `react-leaflet`
+- **自訂 Marker**: 使用 `L.divIcon` 結合 React 渲染的 SVG (`<MapPin />`)。
+  - **動態著色**: SVG 的 `fill` 屬性直接綁定 `Memory.markerColor`。
+  - **圖示映射**: 使用 `ICON_MAP` 將字串代碼轉換為 Lucide React 元件。
+- **路線繪製**: 使用 `<Polyline />` 元件，根據 `routePoints` 狀態中的 ID 順序連接座標。
+- **自動展開 Popup**:
+  - 使用 `focusedMemoryId` 狀態追蹤目標圖釘
+  - 透過 `markerRef.current?.openPopup()` 程式化打開 Popup
+  - 延遲 800ms 等待地圖移動動畫完成
 
 ### 4.2 MemoryModal (`components/MemoryModal.tsx`)
 
-* **狀態管理**:
-  * `recentIcons`: 紀錄用戶最近使用的 6 個圖示，並自動排序。
-* **互動流程**:
-  * 點擊地圖 -> 彈出 Modal (帶入經緯度) -> 用戶填寫資訊 -> 提交。
+- **狀態管理**:
+  - `recentIcons`: 紀錄用戶最近使用的 6 個圖示，並自動排序。
+- **互動流程**:
+  - 點擊地圖 -> 彈出 Modal (帶入經緯度) -> 用戶填寫資訊 -> 提交。
 
 ### 4.3 MemoryFeed (`components/MemoryFeed.tsx`)
 
-* **四層式導航**:
+- **四層式導航**:
     1. **Countries View**: 顯示已建立足跡的國家列表。
     2. **Areas View**: 顯示該國家下的區域/城市列表。
     3. **Categories View**: 顯示該區域下的分類。
     4. **Posts View**: 顯示文章列表。
-* **隨機探索功能**:
-  * 隨機選取一個回憶
-  * 移動地圖視角並自動展開圖釘 Popup
-  * 更新側邊欄導航至該回憶所在的區域
+- **隨機探索功能**:
+  - 隨機選取一個回憶
+  - 移動地圖視角並自動展開圖釘 Popup
+  - 更新側邊欄導航至該回憶所在的區域
 
 ### 4.4 圖片壓縮服務 (`services/firebase.ts`)
 
@@ -153,9 +179,23 @@ const compressImage = async (file: File): Promise<Blob> => {
 
 ### 4.5 搜尋服務 (`services/mapService.ts`)
 
-* **getAutocomplete**: 即時搜尋建議 (Google Places Autocomplete)
-* **getPlaceDetails**: 根據 placeId 取得座標與地址
-* **openGoogleMapsNavigation**: 產生 Google Maps 多點導航 URL
+- **getAutocomplete**: 即時搜尋建議 (Google Places Autocomplete)
+- **getPlaceDetails**: 根據 placeId 取得座標與地址
+- **openGoogleMapsNavigation**: 產生 Google Maps 多點導航 URL
+
+### 4.6 SponsorMarker (`components/SponsorMarker.tsx`)
+
+專為贊助商設計的特殊地圖標記元件。
+
+- **視覺效果**:
+  - CSS 3D 傾斜效果 (`perspective` + `rotateX`)
+  - 上下懸浮動畫
+  - 金色光暈效果
+  - 「⭐ SPONSOR」徽章
+- **互動功能**:
+  - 點擊顯示贊助商資訊 Popup
+  - 支援外部連結跳轉
+- **渲染優先級**: `zIndexOffset: 500` 確保顯示在一般 Marker 上方
 
 ## 5. 系統架構與部署規劃 (Architecture & Deployment)
 
@@ -163,43 +203,47 @@ const compressImage = async (file: File): Promise<Blob> => {
 
 ### 5.1 前端部署 (Frontend Hosting)
 
-* **平台**: **Cloudflare Pages**。
-* **流程**:
+- **平台**: **Cloudflare Pages**。
+- **流程**:
     1. 程式碼託管於 Git Repository (GitHub/GitLab)。
     2. Cloudflare Pages 連結 Git Repo。
     3. Push to `main` branch 自動觸發 Build (`npm run build`) 與 Deploy。
-* **優勢**: 全球 CDN 加速、HTTPS 自動配置、與 Git 深度整合。
+- **優勢**: 全球 CDN 加速、HTTPS 自動配置、與 Git 深度整合。
 
 ### 5.2 後端服務 (Backend Services)
 
-* **平台**: **Google Firebase**。
-* **Authentication (身份驗證)**:
-  * 使用 Firebase Auth 處理註冊、登入。
-  * 支援 Google Social Login。
-* **Database (資料庫)**:
-  * 使用 **Cloud Firestore** (NoSQL)。
-  * 資料結構映射前端的 Types。
-* **Storage (檔案儲存)**:
-  * 使用 **Cloudinary** 儲存用戶上傳的圖片 (取代 Firebase Storage)。
-  * 前端將圖片自動壓縮後上傳，並取得 URL 存入 Firestore。
+- **平台**: **Google Firebase**。
+- **Authentication (身份驗證)**:
+  - 使用 Firebase Auth 處理註冊、登入。
+  - 支援 Google Social Login。
+- **Database (資料庫)**:
+  - 使用 **Cloud Firestore** (NoSQL)。
+  - 資料結構映射前端的 Types。
+- **Storage (檔案儲存)**:
+  - 使用 **Cloudinary** 儲存用戶上傳的圖片 (取代 Firebase Storage)。
+  - 前端將圖片自動壓縮後上傳，並取得 URL 存入 Firestore。
 
 ### 5.3 安全性 (Security)
 
-* **Firestore Security Rules**:
-  * 公開讀取 (Public Read)：允許所有人查看地圖上的公開標記。
-  * 權限寫入 (Authorized Write)：
-    * 新增/編輯/刪除：僅限 `request.auth.uid == resource.data.creatorId` (僅本人能修改自己的資料)。
-* **Environment Variables**:
-  * Firebase Config (API Key, Project ID) 將透過環境變數注入，不直接提交於 Git 中。
+- **Firestore Security Rules**:
+  - 公開讀取 (Public Read)：允許所有人查看地圖上的公開標記。
+  - 權限寫入 (Authorized Write)：
+    - 新增/編輯/刪除：僅限 `request.auth.uid == resource.data.creatorId` (僅本人能修改自己的資料)。
+- **Environment Variables**:
+  - Firebase Config (API Key, Project ID) 將透過環境變數注入，不直接提交於 Git 中。
 
 ## 6. 版本記錄
 
+### v1.1.0 - 2025-12-20
+
+- ✅ **贊助商 3D 懸浮 Marker** - 支援去背圖片、浮動動畫、金色光暈效果
+
 ### v1.0.0 (穩定版) - 2025-12-17
 
-* ✅ 完整的地圖標記與編輯功能
-* ✅ Google 登入與匿名發文
-* ✅ 自動圖片壓縮 (解決 Cloudinary 10MB 限制)
-* ✅ 搜尋建議 (Google Places Autocomplete)
-* ✅ 隨機探索自動展開圖釘
-* ✅ 多點 Google Maps 導航
-* ✅ 留言板功能
+- ✅ 完整的地圖標記與編輯功能
+- ✅ Google 登入與匿名發文
+- ✅ 自動圖片壓縮 (解決 Cloudinary 10MB 限制)
+- ✅ 搜尋建議 (Google Places Autocomplete)
+- ✅ 隨機探索自動展開圖釘
+- ✅ 多點 Google Maps 導航
+- ✅ 留言板功能

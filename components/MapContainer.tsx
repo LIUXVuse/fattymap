@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { MapContainer as LeafletMap, TileLayer, Marker, Popup, useMapEvents, useMap, Polyline } from 'react-leaflet';
 import L from 'leaflet';
-import { Memory, MarkerIconType } from '../types';
+import { Memory, MarkerIconType, Sponsor } from '../types';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { SponsorMarker } from './SponsorMarker';
 import {
     MapPin, Utensils, Coffee, Camera, BedDouble, Train, ShoppingBag, Star, Heart, Home,
     Beer, Wine, Pizza, Cake, IceCream, // Eat & Drink
@@ -199,6 +200,7 @@ const createCustomMarker = (color: string, iconType: MarkerIconType = 'default',
 
 interface MapContainerProps {
     memories: Memory[];
+    sponsors?: Sponsor[];  // 贊助商列表
     onMapClick: (lat: number, lng: number) => void;
     center: [number, number];
     routePoints: string[];
@@ -211,6 +213,7 @@ interface MapContainerProps {
     focusedMemoryId?: string | null;
     onClearFocus?: () => void;
     onPopupOpen?: (memory: Memory) => void;
+    onSponsorInfoClick?: () => void;  // 新增：點擊贊助商資訊按鈕
 }
 
 // Map Events Handler (Click)
@@ -435,6 +438,7 @@ const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, has
 
 export const AppMap: React.FC<MapContainerProps> = ({
     memories,
+    sponsors = [],
     onMapClick,
     center,
     routePoints,
@@ -446,7 +450,8 @@ export const AppMap: React.FC<MapContainerProps> = ({
     onImageClick,
     focusedMemoryId,
     onClearFocus,
-    onPopupOpen
+    onPopupOpen,
+    onSponsorInfoClick
 }) => {
 
     const routePositions = useMemo(() => {
@@ -497,6 +502,15 @@ export const AppMap: React.FC<MapContainerProps> = ({
                         isFocused={focusedMemoryId === memory.id}
                         onClearFocus={onClearFocus}
                         onPopupOpen={onPopupOpen}
+                    />
+                ))}
+
+                {/* 贊助商 Markers */}
+                {sponsors.filter(s => s.isActive).map((sponsor) => (
+                    <SponsorMarker
+                        key={sponsor.id}
+                        sponsor={sponsor}
+                        onInfoClick={onSponsorInfoClick}
                     />
                 ))}
 

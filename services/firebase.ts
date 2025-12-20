@@ -3,7 +3,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as firebaseSignOut } from "firebase/auth";
 import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, setDoc, getDocs, where, getDoc } from "firebase/firestore";
 // import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage"; // 暫時停用 Firebase Storage
-import { Memory, CategoryNode, Comment } from "../types";
+import { Memory, CategoryNode, Comment, Sponsor } from "../types";
 
 // Workaround for missing types in current environment
 const env = (import.meta as any).env || {};
@@ -262,3 +262,34 @@ export const initCategoriesIfEmpty = async (defaultCategories: CategoryNode[]) =
     console.error("Init categories error:", e);
   }
 }
+
+// --- Firestore Services (Sponsors) ---
+// 即時監聽贊助商列表
+export const subscribeToSponsors = (callback: (sponsors: Sponsor[]) => void) => {
+  const q = query(collection(db, "sponsors"), orderBy("name", "asc"));
+  return onSnapshot(q, (snapshot) => {
+    const sponsors = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    } as Sponsor));
+    callback(sponsors);
+  }, (error) => {
+    console.error("Sponsors subscription error:", error);
+  });
+};
+
+// 新增贊助商 (僅管理員)
+export const addSponsorToFirestore = async (sponsor: Omit<Sponsor, "id">) => {
+  await addDoc(collection(db, "sponsors"), sponsor);
+};
+
+// 更新贊助商 (僅管理員)
+export const updateSponsorInFirestore = async (id: string, data: Partial<Sponsor>) => {
+  const docRef = doc(db, "sponsors", id);
+  await updateDoc(docRef, data);
+};
+
+// 刪除贊助商 (僅管理員)
+export const deleteSponsorFromFirestore = async (id: string) => {
+  await deleteDoc(doc(db, "sponsors", id));
+};
