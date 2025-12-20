@@ -141,11 +141,13 @@ const App: React.FC = () => {
         };
     }, []);
 
-    // 偵測 URL 參數，自動導航到分享的回憶
+    // 偵測 URL 參數，自動導航到分享的回憶或贊助商
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
         const sharedMemoryId = urlParams.get('memory');
+        const sharedSponsorId = urlParams.get('sponsor');
 
+        // 處理分享的回憶連結
         if (sharedMemoryId && memories.length > 0) {
             const memory = memories.find(m => m.id === sharedMemoryId);
             if (memory) {
@@ -160,7 +162,22 @@ const App: React.FC = () => {
                 window.history.replaceState({}, '', window.location.pathname);
             }
         }
-    }, [memories]); // 當 memories 載入完成後執行
+
+        // 處理分享的贊助商連結
+        if (sharedSponsorId && sponsors.length > 0) {
+            const sponsor = sponsors.find(s => s.id === sharedSponsorId);
+            if (sponsor) {
+                // 移動地圖到贊助商位置
+                setMapCenter([sponsor.location.lat, sponsor.location.lng]);
+                // 打開「合作贊助」頁面
+                setAboutTab('collab');
+                setIsAboutOpen(true);
+
+                // 清除 URL 參數，避免重複觸發
+                window.history.replaceState({}, '', window.location.pathname);
+            }
+        }
+    }, [memories, sponsors]); // 當 memories 或 sponsors 載入完成後執行
 
     useEffect(() => {
         if (navigator.geolocation) {

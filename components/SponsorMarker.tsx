@@ -91,14 +91,36 @@ export const SponsorMarker: React.FC<SponsorMarkerProps> = ({ sponsor, onInfoCli
                         <p className="text-xs text-gray-600 mb-3">{sponsor.description}</p>
                     )}
 
-                    {/* 了解更多按鈕 */}
-                    <button
-                        onClick={handleInfoClick}
-                        className="w-full py-2 px-4 bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-400 hover:to-red-400 text-white font-bold rounded-lg flex items-center justify-center gap-2 transition-all text-sm shadow-md"
-                    >
-                        <Heart size={14} />
-                        {sponsor.linkUrl ? '前往官網' : '了解更多'}
-                    </button>
+                    {/* 按鈕區域 */}
+                    <div className="flex gap-2">
+                        {/* 了解更多/前往官網 按鈕 */}
+                        <button
+                            onClick={handleInfoClick}
+                            className="flex-1 py-2 px-3 bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-400 hover:to-red-400 text-white font-bold rounded-lg flex items-center justify-center gap-1 transition-all text-xs shadow-md"
+                        >
+                            <Heart size={12} />
+                            {sponsor.linkUrl ? '前往官網' : '了解更多'}
+                        </button>
+
+                        {/* 分享按鈕 */}
+                        <button
+                            onClick={() => {
+                                const shareUrl = `${window.location.origin}${window.location.pathname}?sponsor=${sponsor.id}`;
+                                navigator.clipboard.writeText(shareUrl).then(() => {
+                                    const btn = document.getElementById(`sponsor-share-btn-${sponsor.id}`);
+                                    if (btn) {
+                                        btn.textContent = '✅';
+                                        setTimeout(() => { btn.textContent = '🔗'; }, 1500);
+                                    }
+                                });
+                            }}
+                            id={`sponsor-share-btn-${sponsor.id}`}
+                            className="py-2 px-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white font-bold rounded-lg text-xs shadow-md transition-all"
+                            title="複製分享連結"
+                        >
+                            🔗
+                        </button>
+                    </div>
                 </div>
             </Popup>
         </Marker>
