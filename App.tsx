@@ -618,6 +618,17 @@ const App: React.FC = () => {
                         {isRoutingMode ? '結束導航模式' : '開啟路線規劃'}
                     </button>
 
+                    {/* 更多功能按鈕 - 打開換匯計算器 */}
+                    <button
+                        onClick={() => {
+                            setAboutTab('more');
+                            setIsAboutOpen(true);
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg shadow-lg font-bold transition-all bg-gradient-to-r from-orange-500 to-pink-500 text-white hover:from-orange-400 hover:to-pink-400"
+                    >
+                        💱 更多功能
+                    </button>
+
                     {isRoutingMode && (
                         <div className="bg-white p-4 rounded-xl shadow-xl border border-gray-100 w-64 animate-in slide-in-from-top-4">
                             <h3 className="font-bold text-gray-800 mb-2 flex items-center gap-2">
