@@ -1,8 +1,8 @@
 # 技術規格書 (Technical Specification)
 
-![Version](https://img.shields.io/badge/version-1.0.0-green) ![Status](https://img.shields.io/badge/status-穩定版-brightgreen)
+![Version](https://img.shields.io/badge/version-1.2.0-green) ![Status](https://img.shields.io/badge/status-穩定版-brightgreen)
 
-> 最後更新: 2025-12-17
+> 最後更新: 2025-12-20
 
 ## 1. 專案概述
 
@@ -145,6 +145,7 @@ interface Sponsor {
   - 使用 `focusedMemoryId` 狀態追蹤目標圖釘
   - 透過 `markerRef.current?.openPopup()` 程式化打開 Popup
   - 延遲 800ms 等待地圖移動動畫完成
+- **重疊 Marker 選擇器**: 當多個 Marker 重疊時，顯示選擇器讓用戶選擇
 
 ### 4.2 MemoryModal (`components/MemoryModal.tsx`)
 
@@ -164,6 +165,7 @@ interface Sponsor {
   - 隨機選取一個回憶
   - 移動地圖視角並自動展開圖釘 Popup
   - 更新側邊欄導航至該回憶所在的區域
+- **自動滾動**: 點擊地圖 Marker 時自動滾動到對應回憶卡片
 
 ### 4.4 圖片壓縮服務 (`services/firebase.ts`)
 
@@ -195,13 +197,34 @@ const compressImage = async (file: File): Promise<Blob> => {
 - **互動功能**:
   - 點擊顯示贊助商資訊 Popup
   - 支援外部連結跳轉
+  - 分享連結功能 (複製 `?sponsor=xxx` URL)
 - **渲染優先級**: `zIndexOffset: 500` 確保顯示在一般 Marker 上方
 
-## 5. 系統架構與部署規劃 (Architecture & Deployment)
+### 4.7 贊助商管理面板 (`components/SponsorAdminPanel.tsx`)
+
+- **管理員專用**: 僅限管理員帳號可見
+- **CRUD 功能**: 新增、編輯、刪除贊助商
+- **即時預覽**: 圖片 URL 即時預覽
+
+## 5. URL 分享功能
+
+支援透過 URL 參數分享特定回憶或贊助商。
+
+### 5.1 分享回憶
+
+- **URL 格式**: `?memory={memoryId}`
+- **效果**: 自動定位地圖、打開 Popup、側邊欄導航
+
+### 5.2 分享贊助商
+
+- **URL 格式**: `?sponsor={sponsorId}`
+- **效果**: 自動定位地圖、打開「合作贊助」頁面
+
+## 6. 系統架構與部署規劃 (Architecture & Deployment)
 
 本專案採用 **Serverless** 架構，確保高擴展性與低維護成本。
 
-### 5.1 前端部署 (Frontend Hosting)
+### 6.1 前端部署 (Frontend Hosting)
 
 - **平台**: **Cloudflare Pages**。
 - **流程**:
@@ -210,7 +233,7 @@ const compressImage = async (file: File): Promise<Blob> => {
     3. Push to `main` branch 自動觸發 Build (`npm run build`) 與 Deploy。
 - **優勢**: 全球 CDN 加速、HTTPS 自動配置、與 Git 深度整合。
 
-### 5.2 後端服務 (Backend Services)
+### 6.2 後端服務 (Backend Services)
 
 - **平台**: **Google Firebase**。
 - **Authentication (身份驗證)**:
@@ -223,7 +246,7 @@ const compressImage = async (file: File): Promise<Blob> => {
   - 使用 **Cloudinary** 儲存用戶上傳的圖片 (取代 Firebase Storage)。
   - 前端將圖片自動壓縮後上傳，並取得 URL 存入 Firestore。
 
-### 5.3 安全性 (Security)
+### 6.3 安全性 (Security)
 
 - **Firestore Security Rules**:
   - 公開讀取 (Public Read)：允許所有人查看地圖上的公開標記。
@@ -232,7 +255,16 @@ const compressImage = async (file: File): Promise<Blob> => {
 - **Environment Variables**:
   - Firebase Config (API Key, Project ID) 將透過環境變數注入，不直接提交於 Git 中。
 
-## 6. 版本記錄
+## 7. 版本記錄
+
+### v1.2.0 (穩定版) - 2025-12-20
+
+- ✅ **重疊 Marker 選擇器** - 多個 Marker 重疊時顯示選擇列表
+- ✅ **側邊欄自動滾動** - 點擊地圖 Marker 自動滾動到對應回憶卡片
+- ✅ **回憶分享連結** - 複製 `?memory=xxx` URL 分享單篇回憶
+- ✅ **贊助商分享連結** - 複製 `?sponsor=xxx` URL 分享贊助商
+- ✅ **贊助商管理面板** - 管理員可 CRUD 管理贊助商
+- ✅ **贊助商連結行為優化** - 有填 URL 跳轉外部、無填則開啟合作頁面
 
 ### v1.1.0 - 2025-12-20
 
