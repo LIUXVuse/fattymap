@@ -4,8 +4,9 @@ import { MemoryFeed } from './components/MemoryFeed';
 import { MemoryModal } from './components/MemoryModal';
 import { CommentModal } from './components/CommentModal';
 import { ImageLightbox } from './components/ImageLightbox';
+import { AboutOverlay } from './components/AboutOverlay';
 import { Memory, Location, MarkerColor, CategoryNode, RegionInfo, PlaceSearchResult, MarkerIconType } from './types';
-import { Menu, X, MapPin, Navigation, Play, RotateCcw, Search, Loader2, LogIn, LogOut, ExternalLink } from 'lucide-react';
+import { Menu, X, MapPin, Navigation, Play, RotateCcw, Search, Loader2, LogIn, LogOut, ExternalLink, Info } from 'lucide-react';
 import { searchLocation, getAutocomplete, getPlaceDetails, openGoogleMapsNavigation } from './services/mapService';
 import { auth, signInWithGoogle, logout, subscribeToMemories, subscribeToCategories, initCategoriesIfEmpty, addMemoryToFireStore, updateMemoryInFirestore, deleteMemoryFromFirestore, saveCategoriesToFirestore, uploadImage } from './services/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
@@ -77,6 +78,9 @@ const App: React.FC = () => {
 
     // Synced Memory State (當點擊圖釘時同步側邊欄)
     const [syncedMemory, setSyncedMemory] = useState<Memory | null>(null);
+
+    // About Overlay State
+    const [isAboutOpen, setIsAboutOpen] = useState(false);
 
     const searchContainerRef = useRef<HTMLDivElement>(null);
 
@@ -424,15 +428,26 @@ const App: React.FC = () => {
                         </div>
                     )}
 
-                    {user ? (
-                        <button onClick={logout} className="p-2 hover:bg-gray-700 rounded-lg text-xs flex items-center gap-1 transition-colors text-red-300">
-                            <LogOut size={14} /> 登出
+                    <div className="flex items-center gap-2">
+                        {/* About 按鈕 */}
+                        <button
+                            onClick={() => setIsAboutOpen(true)}
+                            className="p-2 hover:bg-gray-700 rounded-lg transition-colors text-gray-300 hover:text-white"
+                            title="關於我們"
+                        >
+                            <Info size={18} />
                         </button>
-                    ) : (
-                        <button onClick={signInWithGoogle} className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors shadow">
-                            <LogIn size={14} /> Google 登入
-                        </button>
-                    )}
+
+                        {user ? (
+                            <button onClick={logout} className="p-2 hover:bg-gray-700 rounded-lg text-xs flex items-center gap-1 transition-colors text-red-300">
+                                <LogOut size={14} /> 登出
+                            </button>
+                        ) : (
+                            <button onClick={signInWithGoogle} className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors shadow">
+                                <LogIn size={14} /> Google 登入
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 <MemoryFeed
@@ -692,6 +707,12 @@ const App: React.FC = () => {
             )}
 
             {/* Global Image Lightbox */}
+            {/* About Overlay */}
+            <AboutOverlay
+                isOpen={isAboutOpen}
+                onClose={() => setIsAboutOpen(false)}
+            />
+
             {lightboxImages.length > 0 && (
                 <ImageLightbox
                     images={lightboxImages}
