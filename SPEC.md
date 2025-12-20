@@ -1,6 +1,6 @@
 # 技術規格書 (Technical Specification)
 
-![Version](https://img.shields.io/badge/version-1.2.0-green) ![Status](https://img.shields.io/badge/status-穩定版-brightgreen)
+![Version](https://img.shields.io/badge/version-1.3.0-green) ![Status](https://img.shields.io/badge/status-穩定版-brightgreen)
 
 > 最後更新: 2025-12-20
 
@@ -257,7 +257,15 @@ const compressImage = async (file: File): Promise<Blob> => {
 
 ## 7. 版本記錄
 
-### v1.2.0 (穩定版) - 2025-12-20
+### v1.3.0 (穩定版) - 2025-12-20
+
+- ✅ **快速換匯計算器** - 支援 13 種常用貨幣即時換算
+  - 使用 ExchangeRate-API 每日更新匯率
+  - 自動偵測使用者本地時區
+  - 芭提雅換匯小提示
+- ✅ **修正 AdBlock 攔截問題** - 將 sponsor 相關 class 改名為 promo
+
+### v1.2.0 - 2025-12-20
 
 - ✅ **重疊 Marker 選擇器** - 多個 Marker 重疊時顯示選擇列表
 - ✅ **側邊欄自動滾動** - 點擊地圖 Marker 自動滾動到對應回憶卡片

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Heart, ShoppingBag, Users, Headphones, Instagram, Globe, ExternalLink, Copy, Check, Bug } from 'lucide-react';
+import { CurrencyExchangeCalculator } from './CurrencyExchangeCalculator';
 
 // Spotify 圖示 SVG
 const SpotifyIcon = () => (
@@ -245,13 +246,7 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
                     )}
 
                     {activeTab === 'more' && (
-                        <div className="space-y-4 text-gray-700">
-                            <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-2xl p-8 shadow-sm border border-orange-100 text-center">
-                                <div className="inline-block px-6 py-3 bg-gradient-to-r from-orange-200 to-yellow-200 rounded-full text-orange-700 font-bold text-lg">
-                                    🚧 敬請期待 Coming Soon...
-                                </div>
-                            </div>
-                        </div>
+                        <CurrencyExchangeCalculator />
                     )}
                 </div>
 
