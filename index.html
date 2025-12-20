@@ -117,6 +117,8 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      /* 讓容器透明區域可穿透點擊 */
+      pointer-events: none;
     }
 
     .sponsor-marker {
@@ -128,16 +130,20 @@
       filter: drop-shadow(0 25px 15px rgba(0, 0, 0, 0.35));
       /* 懸浮動畫 */
       animation: sponsor-float 3s ease-in-out infinite;
-      /* 邊框發光效果 */
+      /* 全透明背景 - 由管理員提供去背圖片 */
+      background: transparent;
       border-radius: 8px;
       overflow: hidden;
-      background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 165, 0, 0.3));
-      padding: 3px;
+      padding: 0;
+      /* 讓滑鼠可以穿透透明區域點擊下面的 Marker */
+      pointer-events: none;
     }
 
     .sponsor-marker img {
       border-radius: 6px;
       background: transparent;
+      /* 圖片本身可以被點擊 */
+      pointer-events: auto;
     }
 
     .sponsor-marker-glow {
@@ -161,6 +167,8 @@
       border-radius: 10px;
       box-shadow: 0 2px 8px rgba(255, 165, 0, 0.5);
       white-space: nowrap;
+      /* 徽章可以被點擊 */
+      pointer-events: auto;
     }
 
     @keyframes sponsor-float {

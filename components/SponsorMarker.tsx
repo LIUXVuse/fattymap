@@ -52,8 +52,14 @@ export const SponsorMarker: React.FC<SponsorMarkerProps> = ({ sponsor, onInfoCli
     );
 
     const handleInfoClick = () => {
-        if (onInfoClick) {
-            onInfoClick();
+        // 如果有填連結網址，開啟外部連結
+        if (sponsor.linkUrl) {
+            window.open(sponsor.linkUrl, '_blank');
+        } else {
+            // 沒填的話，打開「關於我們」贊助頁面
+            if (onInfoClick) {
+                onInfoClick();
+            }
         }
     };
 
@@ -85,13 +91,13 @@ export const SponsorMarker: React.FC<SponsorMarkerProps> = ({ sponsor, onInfoCli
                         <p className="text-xs text-gray-600 mb-3">{sponsor.description}</p>
                     )}
 
-                    {/* 了解更多按鈕 - 打開贊助合作頁面 */}
+                    {/* 了解更多按鈕 */}
                     <button
                         onClick={handleInfoClick}
                         className="w-full py-2 px-4 bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-400 hover:to-red-400 text-white font-bold rounded-lg flex items-center justify-center gap-2 transition-all text-sm shadow-md"
                     >
                         <Heart size={14} />
-                        了解更多
+                        {sponsor.linkUrl ? '前往官網' : '了解更多'}
                     </button>
                 </div>
             </Popup>

@@ -21,13 +21,26 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
     const [selectedArea, setSelectedArea] = useState<string | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-    // 當外部傳入 syncToMemory 時，自動導航到該回憶所在位置
+    // 當外部傳入 syncToMemory 時，自動導航到該回憶所在位置並滾動到對應卡片
     useEffect(() => {
         if (syncToMemory) {
             setSelectedCountry(syncToMemory.region.country || "其他");
             setSelectedArea(syncToMemory.region.area || "未知區域");
             setSelectedCategory(syncToMemory.category.main);
             setViewMode('posts');
+
+            // 延遲滾動，等待 DOM 更新完成
+            setTimeout(() => {
+                const element = document.getElementById(`memory-card-${syncToMemory.id}`);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // 加入高亮動畫
+                    element.classList.add('ring-2', 'ring-blue-500', 'ring-offset-2');
+                    setTimeout(() => {
+                        element.classList.remove('ring-2', 'ring-blue-500', 'ring-offset-2');
+                    }, 2000);
+                }
+            }, 300);
         }
     }, [syncToMemory]);
 
@@ -308,6 +321,7 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
 
                             return (
                                 <div
+                                    id={`memory-card-${memory.id}`}
                                     key={memory.id}
                                     className="bg-white hover:bg-gray-50 border border-gray-200 hover:border-blue-300 rounded-xl p-4 transition-all group shadow-sm hover:shadow-md relative"
                                 >

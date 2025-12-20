@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { MapContainer as LeafletMap, TileLayer, Marker, Popup, useMapEvents, useMap, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import { Memory, MarkerIconType, Sponsor } from '../types';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { SponsorMarker } from './SponsorMarker';
+import { MarkerSelector, SelectableItem } from './MarkerSelector';
 import {
     MapPin, Utensils, Coffee, Camera, BedDouble, Train, ShoppingBag, Star, Heart, Home,
     Beer, Wine, Pizza, Cake, IceCream, // Eat & Drink
@@ -427,6 +428,25 @@ const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, has
                             >
                                 📍 導航
                             </a>
+                            <button
+                                onClick={() => {
+                                    const shareUrl = `${window.location.origin}${window.location.pathname}?memory=${memory.id}`;
+                                    navigator.clipboard.writeText(shareUrl).then(() => {
+                                        // 顯示已複製提示
+                                        const btn = document.getElementById(`share-btn-${memory.id}`);
+                                        if (btn) {
+                                            btn.textContent = '✅ 已複製';
+                                            setTimeout(() => {
+                                                btn.textContent = '🔗 分享';
+                                            }, 1500);
+                                        }
+                                    });
+                                }}
+                                id={`share-btn-${memory.id}`}
+                                className="flex-1 text-center text-xs bg-green-50 text-green-600 py-2 rounded-lg hover:bg-green-100 font-bold transition-colors"
+                            >
+                                🔗 分享
+                            </button>
                         </div>
                     </div>
                 </Popup>
@@ -453,6 +473,10 @@ export const AppMap: React.FC<MapContainerProps> = ({
     onPopupOpen,
     onSponsorInfoClick
 }) => {
+    // 重疊 Marker 選擇器狀態
+    const [selectorItems, setSelectorItems] = useState<SelectableItem[]>([]);
+    const [selectorPosition, setSelectorPosition] = useState<{ x: number; y: number } | null>(null);
+    const mapRef = useRef<L.Map | null>(null);
 
     const routePositions = useMemo(() => {
         return routePoints
@@ -460,6 +484,84 @@ export const AppMap: React.FC<MapContainerProps> = ({
             .filter((m): m is Memory => !!m)
             .map(m => [m.location.lat, m.location.lng] as [number, number]);
     }, [routePoints, memories]);
+
+    // 計算距離（像素）- 較大範圍更容易點選
+    const CLICK_RADIUS = 80; // 80 像素內視為重疊（放大偵測範圍）
+
+    // 偵測點擊位置附近的 markers
+    const handleMapClick = (lat: number, lng: number) => {
+        if (!mapRef.current) {
+            onMapClick(lat, lng);
+            return;
+        }
+
+        const map = mapRef.current;
+        const clickPoint = map.latLngToContainerPoint([lat, lng]);
+
+        // 找附近的 Memory markers
+        const nearbyMemories: SelectableItem[] = memories
+            .filter(m => {
+                const markerPoint = map.latLngToContainerPoint([m.location.lat, m.location.lng]);
+                const distance = Math.sqrt(
+                    Math.pow(clickPoint.x - markerPoint.x, 2) +
+                    Math.pow(clickPoint.y - markerPoint.y, 2)
+                );
+                return distance <= CLICK_RADIUS;
+            })
+            .map(m => ({ type: 'memory' as const, data: m }));
+
+        // 找附近的 Sponsor markers
+        const nearbySponsors: SelectableItem[] = sponsors
+            .filter(s => s.isActive)
+            .filter(s => {
+                const markerPoint = map.latLngToContainerPoint([s.location.lat, s.location.lng]);
+                const distance = Math.sqrt(
+                    Math.pow(clickPoint.x - markerPoint.x, 2) +
+                    Math.pow(clickPoint.y - markerPoint.y, 2)
+                );
+                return distance <= CLICK_RADIUS + 30; // Sponsor 圖標較大
+            })
+            .map(s => ({ type: 'sponsor' as const, data: s }));
+
+        const allNearby = [...nearbyMemories, ...nearbySponsors];
+
+        // 如果有 >= 2 個 marker，顯示選擇器
+        if (allNearby.length >= 2) {
+            setSelectorItems(allNearby);
+            setSelectorPosition({ x: clickPoint.x + 280, y: clickPoint.y + 100 }); // 偏移一點避免擋住
+        } else {
+            // 否則正常觸發 onMapClick
+            onMapClick(lat, lng);
+        }
+    };
+
+    // 處理選擇器選中
+    const handleSelectorSelect = (item: SelectableItem) => {
+        if (item.type === 'memory') {
+            // 對應 Marker 打開 popup
+            onPopupOpen?.(item.data);
+        } else {
+            // 贊助商打開合作頁面
+            onSponsorInfoClick?.();
+        }
+        setSelectorItems([]);
+        setSelectorPosition(null);
+    };
+
+    // 關閉選擇器
+    const closeSelector = () => {
+        setSelectorItems([]);
+        setSelectorPosition(null);
+    };
+
+    // 取得 map 實例的元件
+    const MapRefSetter = () => {
+        const map = useMap();
+        useEffect(() => {
+            mapRef.current = map;
+        }, [map]);
+        return null;
+    };
 
     return (
         <div className="absolute inset-0 w-full h-full z-0 bg-white">
@@ -472,23 +574,44 @@ export const AppMap: React.FC<MapContainerProps> = ({
                     maxZoom={20}
                 />
 
-                <MapEvents onClick={onMapClick} isRouting={isRoutingMode} isDragging={isDraggablePinMode} />
+                <MapEvents onClick={handleMapClick} isRouting={isRoutingMode} isDragging={isDraggablePinMode} />
                 <MapUpdater center={center} />
+                <MapRefSetter />
 
                 {/* Navigation Route Line */}
                 {routePositions.length > 1 && (
                     <Polyline
                         positions={routePositions}
-                        pathOptions={{ color: '#3b82f6', weight: 5, opacity: 0.7, dashArray: '10, 10' }}
+                        pathOptions={{
+                            color: '#3b82f6',
+                            weight: 4,
+                            opacity: 0.8,
+                            dashArray: '10, 10'
+                        }}
                     />
                 )}
 
-                {/* Special Draggable Pin */}
+                {/* Draggable Pin Ghost Marker */}
                 {isDraggablePinMode && (
-                    <DraggablePin position={center} onDragEnd={onDragEnd} />
+                    <Marker
+                        position={center}
+                        icon={createCustomMarker('#3b82f6', 'default', true)}
+                        draggable={true}
+                        eventHandlers={{
+                            dragend: (e) => {
+                                const marker = e.target;
+                                const position = marker.getLatLng();
+                                onDragEnd(position.lat, position.lng);
+                            }
+                        }}
+                    >
+                        <Popup>
+                            <p className="text-sm text-gray-600">拖動此圖釘到想要的位置</p>
+                        </Popup>
+                    </Marker>
                 )}
 
-                {/* Markers */}
+                {/* Memory Markers */}
                 {memories.map((memory) => (
                     <MemoryMarker
                         key={memory.id}
@@ -515,6 +638,16 @@ export const AppMap: React.FC<MapContainerProps> = ({
                 ))}
 
             </LeafletMap>
+
+            {/* 重疊 Marker 選擇器 */}
+            {selectorItems.length > 0 && selectorPosition && (
+                <MarkerSelector
+                    items={selectorItems}
+                    position={selectorPosition}
+                    onSelect={handleSelectorSelect}
+                    onClose={closeSelector}
+                />
+            )}
         </div>
     );
 };

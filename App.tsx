@@ -5,10 +5,11 @@ import { MemoryModal } from './components/MemoryModal';
 import { CommentModal } from './components/CommentModal';
 import { ImageLightbox } from './components/ImageLightbox';
 import { AboutOverlay } from './components/AboutOverlay';
+import { SponsorAdminPanel } from './components/SponsorAdminPanel';
 import { Memory, Location, MarkerColor, CategoryNode, RegionInfo, PlaceSearchResult, MarkerIconType, Sponsor } from './types';
 import { Menu, X, MapPin, Navigation, Play, RotateCcw, Search, Loader2, LogIn, LogOut, ExternalLink, Info } from 'lucide-react';
 import { searchLocation, getAutocomplete, getPlaceDetails, openGoogleMapsNavigation } from './services/mapService';
-import { auth, signInWithGoogle, logout, subscribeToMemories, subscribeToCategories, initCategoriesIfEmpty, addMemoryToFireStore, updateMemoryInFirestore, deleteMemoryFromFirestore, saveCategoriesToFirestore, uploadImage, subscribeToSponsors, addSponsorToFirestore, updateSponsorInFirestore, deleteSponsorFromFirestore } from './services/firebase';
+import { auth, signInWithGoogle, logout, subscribeToMemories, subscribeToCategories, initCategoriesIfEmpty, addMemoryToFireStore, updateMemoryInFirestore, deleteMemoryFromFirestore, saveCategoriesToFirestore, uploadImage, subscribeToSponsors } from './services/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 
 // 管理員 Email 列表 (簡單實作，實際建議用 Custom Claims)
@@ -86,6 +87,9 @@ const App: React.FC = () => {
     const [isAboutOpen, setIsAboutOpen] = useState(false);
     const [aboutTab, setAboutTab] = useState<'about' | 'collab' | 'more'>('about');
 
+    // 贊助商管理面板 State (管理員專用)
+    const [isSponsorAdminOpen, setIsSponsorAdminOpen] = useState(false);
+
     // 打開贊助商合作頁面
     const handleOpenSponsorInfo = () => {
         setAboutTab('collab');
@@ -136,6 +140,27 @@ const App: React.FC = () => {
             unsubscribeSponsors();
         };
     }, []);
+
+    // 偵測 URL 參數，自動導航到分享的回憶
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const sharedMemoryId = urlParams.get('memory');
+
+        if (sharedMemoryId && memories.length > 0) {
+            const memory = memories.find(m => m.id === sharedMemoryId);
+            if (memory) {
+                // 移動地圖到該位置
+                setMapCenter([memory.location.lat, memory.location.lng]);
+                // 設定 focusedMemory 觸發 Popup 打開
+                setFocusedMemoryId(sharedMemoryId);
+                // 同步側邊欄
+                setSyncedMemory(memory);
+
+                // 清除 URL 參數，避免重複觸發
+                window.history.replaceState({}, '', window.location.pathname);
+            }
+        }
+    }, [memories]); // 當 memories 載入完成後執行
 
     useEffect(() => {
         if (navigator.geolocation) {
@@ -454,6 +479,17 @@ const App: React.FC = () => {
                             <Info size={18} />
                         </button>
 
+                        {/* 贊助商管理按鈕 (管理員專用) */}
+                        {isAdmin && (
+                            <button
+                                onClick={() => setIsSponsorAdminOpen(true)}
+                                className="p-2 hover:bg-yellow-600 rounded-lg transition-colors bg-yellow-500 text-white"
+                                title="贊助商管理"
+                            >
+                                ⭐
+                            </button>
+                        )}
+
                         {user ? (
                             <button onClick={logout} className="p-2 hover:bg-gray-700 rounded-lg text-xs flex items-center gap-1 transition-colors text-red-300">
                                 <LogOut size={14} /> 登出
@@ -734,6 +770,15 @@ const App: React.FC = () => {
                 }}
                 initialTab={aboutTab}
             />
+
+            {/* 贊助商管理面板 (管理員專用) */}
+            {isAdmin && (
+                <SponsorAdminPanel
+                    isOpen={isSponsorAdminOpen}
+                    onClose={() => setIsSponsorAdminOpen(false)}
+                    sponsors={sponsors}
+                />
+            )}
 
             {lightboxImages.length > 0 && (
                 <ImageLightbox
