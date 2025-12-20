@@ -10,12 +10,12 @@ interface SponsorMarkerProps {
     onInfoClick?: () => void;  // 新增：點擊「了解更多」時的 callback
 }
 
-// 建立贊助商專用的 3D 懸浮圖示
+// 建立贊助商專用的 3D 懸浮圖示 (promo = promotion, 避免 AdBlock)
 const createSponsorIcon = (imageUrl: string, name: string) => {
     const svgString = renderToStaticMarkup(
-        <div className="sponsor-marker-container">
+        <div className="promo-marker-container">
             {/* 主圖片區域 */}
-            <div className="sponsor-marker">
+            <div className="promo-marker">
                 <img
                     src={imageUrl}
                     alt={name}
@@ -28,16 +28,16 @@ const createSponsorIcon = (imageUrl: string, name: string) => {
                 />
             </div>
             {/* 底部光暈效果 */}
-            <div className="sponsor-marker-glow"></div>
+            <div className="promo-marker-glow"></div>
             {/* 贊助商標籤 */}
-            <div className="sponsor-marker-badge">
-                <span>⭐ SPONSOR</span>
+            <div className="promo-marker-badge">
+                <span>⭐ STAR</span>
             </div>
         </div>
     );
 
     return L.divIcon({
-        className: 'sponsor-marker-icon',
+        className: 'promo-marker-icon',
         html: svgString,
         iconSize: [120, 160],
         iconAnchor: [60, 150],
@@ -69,7 +69,7 @@ export const SponsorMarker: React.FC<SponsorMarkerProps> = ({ sponsor, onInfoCli
             icon={icon}
             zIndexOffset={500} // 讓贊助商 Marker 顯示在其他 Marker 上方
         >
-            <Popup className="sponsor-popup" minWidth={200}>
+            <Popup className="promo-popup" minWidth={200}>
                 <div className="p-2 text-center">
                     {/* 贊助商圖片 */}
                     <div className="mb-3">

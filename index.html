@@ -102,15 +102,15 @@
     }
 
     /* ========================================
-       贊助商 3D 懸浮 Marker 樣式
+       贊助商 3D 懸浮 Marker 樣式 (promo = promotion)
        ======================================== */
 
-    .sponsor-marker-icon {
+    .promo-marker-icon {
       background: transparent !important;
       border: none !important;
     }
 
-    .sponsor-marker-container {
+    .promo-marker-container {
       position: relative;
       width: 120px;
       height: 160px;
@@ -121,7 +121,7 @@
       pointer-events: none;
     }
 
-    .sponsor-marker {
+    .promo-marker {
       width: 100px;
       height: 120px;
       /* 3D 傾斜效果 */
@@ -129,7 +129,7 @@
       /* 陰影模擬立體 */
       filter: drop-shadow(0 25px 15px rgba(0, 0, 0, 0.35));
       /* 懸浮動畫 */
-      animation: sponsor-float 3s ease-in-out infinite;
+      animation: promo-float 3s ease-in-out infinite;
       /* 全透明背景 - 由管理員提供去背圖片 */
       background: transparent;
       border-radius: 8px;
@@ -139,24 +139,24 @@
       pointer-events: none;
     }
 
-    .sponsor-marker img {
+    .promo-marker img {
       border-radius: 6px;
       background: transparent;
       /* 圖片本身可以被點擊 */
       pointer-events: auto;
     }
 
-    .sponsor-marker-glow {
+    .promo-marker-glow {
       position: absolute;
       bottom: 25px;
       width: 60px;
       height: 12px;
       background: radial-gradient(ellipse, rgba(255, 200, 0, 0.5) 0%, transparent 70%);
       filter: blur(4px);
-      animation: sponsor-glow 3s ease-in-out infinite;
+      animation: promo-glow 3s ease-in-out infinite;
     }
 
-    .sponsor-marker-badge {
+    .promo-marker-badge {
       position: absolute;
       bottom: 5px;
       background: linear-gradient(135deg, #ffd700, #ff8c00);
@@ -171,7 +171,7 @@
       pointer-events: auto;
     }
 
-    @keyframes sponsor-float {
+    @keyframes promo-float {
 
       0%,
       100% {
@@ -183,7 +183,7 @@
       }
     }
 
-    @keyframes sponsor-glow {
+    @keyframes promo-glow {
 
       0%,
       100% {
@@ -198,7 +198,7 @@
     }
 
     /* 贊助商 Popup 樣式 */
-    .sponsor-popup .leaflet-popup-content-wrapper {
+    .promo-popup .leaflet-popup-content-wrapper {
       background: linear-gradient(135deg, #fffbeb, #fef3c7);
       border: 2px solid #fbbf24;
     }
