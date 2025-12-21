@@ -155,7 +155,7 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
     const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
         { id: 'about', label: '關於我們', icon: <Users size={16} /> },
         { id: 'collab', label: '合作贊助', icon: <Heart size={16} /> },
-        { id: 'more', label: '更多功能', icon: <ShoppingBag size={16} /> },
+        { id: 'more', label: '智能換匯', icon: <ShoppingBag size={16} /> },
         { id: 'travel', label: '旅遊預訂', icon: <Plane size={16} /> },
     ];
 

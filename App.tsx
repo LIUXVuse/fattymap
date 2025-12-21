@@ -626,7 +626,7 @@ const App: React.FC = () => {
                         }}
                         className="flex items-center gap-2 px-4 py-2 rounded-lg shadow-lg font-bold transition-all bg-gradient-to-r from-orange-500 to-pink-500 text-white hover:from-orange-400 hover:to-pink-400"
                     >
-                        💱 更多功能
+                        💱 智能換匯
                     </button>
 
                     {/* 旅遊預訂按鈕 - Trip.com 聯盟行銷 */}
