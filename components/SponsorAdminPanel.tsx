@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Sponsor } from '../types';
 import { addSponsorToFirestore, updateSponsorInFirestore, deleteSponsorFromFirestore } from '../services/firebase';
-import { Plus, Edit2, Trash2, X, Save, MapPin, Image, Link, FileText, Power } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Save, MapPin, Image, Link, FileText, Power, Maximize2 } from 'lucide-react';
 
 interface SponsorAdminPanelProps {
     isOpen: boolean;
@@ -17,6 +17,7 @@ interface SponsorFormData {
     linkUrl: string;
     description: string;
     isActive: boolean;
+    scale: string;
 }
 
 const emptyForm: SponsorFormData = {
@@ -26,7 +27,8 @@ const emptyForm: SponsorFormData = {
     lng: '',
     linkUrl: '',
     description: '',
-    isActive: true
+    isActive: true,
+    scale: '1'
 };
 
 export const SponsorAdminPanel: React.FC<SponsorAdminPanelProps> = ({ isOpen, onClose, sponsors }) => {
@@ -55,7 +57,8 @@ export const SponsorAdminPanel: React.FC<SponsorAdminPanelProps> = ({ isOpen, on
             lng: sponsor.location.lng.toString(),
             linkUrl: sponsor.linkUrl || '',
             description: sponsor.description || '',
-            isActive: sponsor.isActive
+            isActive: sponsor.isActive,
+            scale: (sponsor.scale || 1).toString()
         });
         setError(null);
     };
@@ -104,7 +107,8 @@ export const SponsorAdminPanel: React.FC<SponsorAdminPanelProps> = ({ isOpen, on
                 name: formData.name.trim(),
                 imageUrl: formData.imageUrl.trim(),
                 location: { lat, lng },
-                isActive: formData.isActive
+                isActive: formData.isActive,
+                scale: parseFloat(formData.scale) || 1
             };
 
             // 只有非空才加入 (避免 undefined)
@@ -329,6 +333,30 @@ export const SponsorAdminPanel: React.FC<SponsorAdminPanelProps> = ({ isOpen, on
                                 >
                                     <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${formData.isActive ? 'left-7' : 'left-1'}`} />
                                 </button>
+                            </div>
+
+                            {/* Scale Slider */}
+                            <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
+                                <label className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2">
+                                    <Maximize2 size={14} /> 📐 圖示大小
+                                    <span className="ml-auto text-orange-600 font-bold">
+                                        {Math.round(parseFloat(formData.scale) * 100)}%
+                                    </span>
+                                </label>
+                                <input
+                                    type="range"
+                                    min="0.5"
+                                    max="2"
+                                    step="0.1"
+                                    value={formData.scale}
+                                    onChange={e => setFormData({ ...formData, scale: e.target.value })}
+                                    className="w-full h-2 bg-orange-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
+                                />
+                                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>50%</span>
+                                    <span>100%</span>
+                                    <span>200%</span>
+                                </div>
                             </div>
 
                             {/* Buttons */}

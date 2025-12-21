@@ -11,11 +11,34 @@ interface SponsorMarkerProps {
 }
 
 // 建立贊助商專用的 3D 懸浮圖示 (promo = promotion, 避免 AdBlock)
-const createSponsorIcon = (imageUrl: string, name: string) => {
+const createSponsorIcon = (imageUrl: string, name: string, scale: number = 1) => {
+    // 基礎尺寸
+    const baseWidth = 60;
+    const baseHeight = 80;
+    const baseImgWidth = 50;
+    const baseImgHeight = 60;
+
+    // 根據 scale 計算實際尺寸
+    const width = Math.round(baseWidth * scale);
+    const height = Math.round(baseHeight * scale);
+    const imgWidth = Math.round(baseImgWidth * scale);
+    const imgHeight = Math.round(baseImgHeight * scale);
+
     const svgString = renderToStaticMarkup(
-        <div className="promo-marker-container">
+        <div style={{
+            position: 'relative',
+            width: `${width}px`,
+            height: `${height}px`,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            pointerEvents: 'none'
+        }}>
             {/* 主圖片區域 */}
-            <div className="promo-marker">
+            <div className="promo-marker" style={{
+                width: `${imgWidth}px`,
+                height: `${imgHeight}px`
+            }}>
                 <img
                     src={imageUrl}
                     alt={name}
@@ -28,9 +51,17 @@ const createSponsorIcon = (imageUrl: string, name: string) => {
                 />
             </div>
             {/* 底部光暈效果 */}
-            <div className="promo-marker-glow"></div>
+            <div className="promo-marker-glow" style={{
+                width: `${Math.round(30 * scale)}px`,
+                height: `${Math.round(8 * scale)}px`,
+                bottom: `${Math.round(12 * scale)}px`
+            }}></div>
             {/* 贊助商標籤 */}
-            <div className="promo-marker-badge">
+            <div className="promo-marker-badge" style={{
+                fontSize: `${Math.round(7 * scale)}px`,
+                padding: `${Math.round(1 * scale)}px ${Math.round(5 * scale)}px`,
+                bottom: `${Math.round(2 * scale)}px`
+            }}>
                 <span>⭐ STAR</span>
             </div>
         </div>
@@ -39,16 +70,16 @@ const createSponsorIcon = (imageUrl: string, name: string) => {
     return L.divIcon({
         className: 'promo-marker-icon',
         html: svgString,
-        iconSize: [60, 80],
-        iconAnchor: [30, 75],
-        popupAnchor: [0, -70]
+        iconSize: [width, height],
+        iconAnchor: [Math.round(width / 2), Math.round(height * 0.94)],
+        popupAnchor: [0, Math.round(-height * 0.88)]
     });
 };
 
 export const SponsorMarker: React.FC<SponsorMarkerProps> = ({ sponsor, onInfoClick }) => {
     const icon = useMemo(
-        () => createSponsorIcon(sponsor.imageUrl, sponsor.name),
-        [sponsor.imageUrl, sponsor.name]
+        () => createSponsorIcon(sponsor.imageUrl, sponsor.name, sponsor.scale || 1),
+        [sponsor.imageUrl, sponsor.name, sponsor.scale]
     );
 
     const handleInfoClick = () => {

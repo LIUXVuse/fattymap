@@ -89,4 +89,5 @@ export interface Sponsor {
   linkUrl?: string;       // 點擊後連結（可選）
   description?: string;   // 簡短描述（可選）
   isActive: boolean;      // 是否啟用
+  scale?: number;         // 圖示縮放比例 (0.5~2.0)，預設 1.0
 }
