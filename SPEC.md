@@ -1,8 +1,8 @@
 # 技術規格書 (Technical Specification)
 
-![Version](https://img.shields.io/badge/version-1.3.0-green) ![Status](https://img.shields.io/badge/status-穩定版-brightgreen)
+![Version](https://img.shields.io/badge/version-1.4.1-green) ![Status](https://img.shields.io/badge/status-穩定版-brightgreen)
 
-> 最後更新: 2025-12-20
+> 最後更新: 2025-12-21
 
 ## 1. 專案概述
 
@@ -255,7 +255,105 @@ const compressImage = async (file: File): Promise<Blob> => {
 - **Environment Variables**:
   - Firebase Config (API Key, Project ID) 將透過環境變數注入，不直接提交於 Git 中。
 
-## 7. 版本記錄
+## 7. Trip.com 聯盟行銷整合
+
+### 7.1 聯盟設定
+
+```typescript
+const TRIP_AFFILIATE = {
+    allianceId: '7162268',
+    sid: '263802428',
+    hotelSearchboxId: 'S8832714',
+    flightSearchboxId: 'S8830985',
+};
+```
+
+### 7.2 地區資料結構
+
+每個地區包含以下欄位：
+
+```typescript
+interface TravelArea {
+    name: string;       // 顯示名稱
+    code: string;       // 機票連結用的城市 slug
+    cityId: string;     // 酒店連結用的城市數字代碼
+    airportCode: string; // 機票連結用的 IATA 城市/機場代碼
+    emoji: string;      // 顯示圖示
+}
+```
+
+### 7.3 完整城市代碼表
+
+| 國家 | 城市 | cityId (酒店) | airportCode (機票) | 備註 |
+|------|------|--------------|-------------------|------|
+| 🇹🇭 泰國 | 曼谷 | 359 | BKK | |
+| | 芭提雅 | 622 | BKK | 使用曼谷機場 |
+| | 清邁 | 623 | CNX | |
+| | 普吉島 | 725 | HKT | |
+| 🇻🇳 越南 | 胡志明市 | 301 | SGN | |
+| | 河內 | 286 | HAN | |
+| | 峴港 | 1356 | DAD | |
+| 🇵🇭 菲律賓 | 馬尼拉 | province:12620:32 | MNL | 特殊格式 |
+| | 宿霧 | 1239 | CEB | |
+| | 長灘島 | 1391 | MPH | |
+| 🇹🇼 台灣 | 台北 | 617 | TPE | |
+| | 高雄 | 720 | KHH | |
+| | 台中 | 3849 | RMQ | |
+| 🇯🇵 日本 | 東京 | 228 | TYO | 城市代碼非機場代碼 |
+| | 大阪 | 219 | OSA | 城市代碼非機場代碼 |
+| | 京都 | 734 | OSA | 使用大阪機場 |
+| | 沖繩 | 92573 | OKA | |
+| 🇮🇩 印尼 | 峇里島 | 723 | DPS | |
+| | 雅加達 | 524 | JKT | 城市代碼非機場代碼 |
+
+### 7.4 URL 格式
+
+#### 酒店連結
+
+**標準格式**:
+
+```
+https://tw.trip.com/hotels/list?city={cityId}&Allianceid={allianceId}&SID={sid}&trip_sub1=fattymap
+```
+
+**省份格式** (馬尼拉等特殊城市):
+
+```
+https://tw.trip.com/hotels/list?city=-1&provinceId={provinceId}&countryId={countryId}&Allianceid={allianceId}&SID={sid}&trip_sub1=fattymap
+```
+
+#### 機票連結
+
+**SEO 友善格式** (重要！不可使用 search 參數格式):
+
+```
+https://tw.trip.com/flights/taipei-to-{cityCode}/tickets-tpe-{airportCode}?Allianceid={allianceId}&SID={sid}&trip_sub1=fattymap
+```
+
+> ⚠️ **重要**: 日本和印尼城市必須使用城市代碼 (TYO/OSA/JKT) 而非機場代碼 (NRT/KIX/CGK)，否則 Trip.com 無法正確識別目的地。
+
+### 7.5 搜尋框 iFrame
+
+- **酒店搜尋框**: `S8832714` (320x320px)
+- **機票搜尋框**: `S8830985` (320x320px)
+
+## 8. 版本記錄
+
+### v1.4.1 - 2025-12-21
+
+- ✅ **Trip.com 聯盟連結修正**
+  - 機票連結改用 SEO 友善 URL 格式 (`/flights/taipei-to-{city}/tickets-tpe-{code}`)
+  - 日本、印尼機票使用城市代碼 (TYO/OSA/JKT) 而非機場代碼
+  - 所有酒店連結改用數字 cityId (17 個城市)
+  - 特殊處理馬尼拉 (使用 provinceId 格式)
+
+### v1.4.0 - 2025-12-21
+
+- ✅ **Trip.com 聯盟行銷整合**
+  - 新增「🌏 旅遊預訂」按鈕於右上角
+  - 酒店/機票搜尋框 (iFrame 嵌入)
+  - 六國地區酒店推薦：泰國、越南、菲律賓、台灣、日本、印尼
+  - 支持聯盟佣金追蹤
 
 ### v1.3.0 (穩定版) - 2025-12-20
 

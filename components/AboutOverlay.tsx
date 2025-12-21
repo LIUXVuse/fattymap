@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Heart, ShoppingBag, Users, Headphones, Instagram, Globe, ExternalLink, Copy, Check, Bug } from 'lucide-react';
+import { X, Heart, ShoppingBag, Users, Headphones, Instagram, Globe, ExternalLink, Copy, Check, Bug, Plane, Building2, MapPin, ChevronDown, ChevronUp } from 'lucide-react';
 import { CurrencyExchangeCalculator } from './CurrencyExchangeCalculator';
 
 // Spotify 圖示 SVG
@@ -26,14 +26,85 @@ const DiscordIcon = () => (
 interface AboutOverlayProps {
     isOpen: boolean;
     onClose: () => void;
-    initialTab?: 'about' | 'collab' | 'more';  // 新增：指定初始 Tab
+    initialTab?: 'about' | 'collab' | 'more' | 'travel';  // 新增：指定初始 Tab
 }
 
-type TabType = 'about' | 'collab' | 'more';
+type TabType = 'about' | 'collab' | 'more' | 'travel';
+
+// Trip.com 聯盟行銷設定
+const TRIP_AFFILIATE = {
+    allianceId: '7162268',
+    sid: '263802428',
+    hotelSearchboxId: 'S8832714',
+    flightSearchboxId: 'S8830985',
+};
+
+// 國家與地區酒店推薦資料 (cityId 是 Trip.com 的城市數字代碼，airportCode 是 IATA 機場代碼)
+const TRAVEL_REGIONS = [
+    {
+        country: '🇹🇭 泰國',
+        countryCode: 'thailand',
+        areas: [
+            { name: '曼谷', code: 'bangkok', cityId: '359', airportCode: 'BKK', emoji: '🏙️' },
+            { name: '芭提雅', code: 'pattaya', cityId: '622', airportCode: 'BKK', emoji: '🏖️' }, // 使用曼谷機場
+            { name: '清邁', code: 'chiangmai', cityId: '623', airportCode: 'CNX', emoji: '🏔️' },
+            { name: '普吉島', code: 'phuket', cityId: '725', airportCode: 'HKT', emoji: '🏝️' },
+        ],
+    },
+    {
+        country: '🇻🇳 越南',
+        countryCode: 'vietnam',
+        areas: [
+            { name: '胡志明市', code: 'ho-chi-minh-city', cityId: '301', airportCode: 'SGN', emoji: '🌆' },
+            { name: '河內', code: 'hanoi', cityId: '286', airportCode: 'HAN', emoji: '🏛️' },
+            { name: '峴港', code: 'da-nang', cityId: '1356', airportCode: 'DAD', emoji: '🌊' },
+        ],
+    },
+    {
+        country: '🇵🇭 菲律賓',
+        countryCode: 'philippines',
+        areas: [
+            { name: '馬尼拉', code: 'manila', cityId: 'province:12620:32', airportCode: 'MNL', emoji: '🏢' }, // 特殊格式: province:provinceId:countryId
+            { name: '宿霧', code: 'cebu', cityId: '1239', airportCode: 'CEB', emoji: '🐚' },
+            { name: '長灘島', code: 'boracay', cityId: '1391', airportCode: 'MPH', emoji: '🏖️' },
+        ],
+    },
+    {
+        country: '🇹🇼 台灣',
+        countryCode: 'taiwan',
+        areas: [
+            { name: '台北', code: 'taipei', cityId: '617', airportCode: 'TPE', emoji: '🏙️' },
+            { name: '高雄', code: 'kaohsiung', cityId: '720', airportCode: 'KHH', emoji: '⛵' },
+            { name: '台中', code: 'taichung', cityId: '3849', airportCode: 'RMQ', emoji: '☀️' },
+        ],
+    },
+    {
+        country: '🇯🇵 日本',
+        countryCode: 'japan',
+        areas: [
+            { name: '東京', code: 'tokyo', cityId: '228', airportCode: 'TYO', emoji: '🗼' },
+            { name: '大阪', code: 'osaka', cityId: '219', airportCode: 'OSA', emoji: '🏯' },
+            { name: '京都', code: 'kyoto', cityId: '734', airportCode: 'OSA', emoji: '⛩️' }, // 使用大阪機場
+            { name: '沖繩', code: 'okinawa', cityId: '92573', airportCode: 'OKA', emoji: '🌺' },
+        ],
+    },
+    {
+        country: '🇮🇩 印尼',
+        countryCode: 'indonesia',
+        areas: [
+            { name: '峇里島', code: 'bali', cityId: '723', airportCode: 'DPS', emoji: '🌴' },
+            { name: '雅加達', code: 'jakarta', cityId: '524', airportCode: 'JKT', emoji: '🏛️' },
+        ],
+    },
+];
 
 export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, initialTab = 'about' }) => {
     const [activeTab, setActiveTab] = useState<TabType>(initialTab);
     const [copiedField, setCopiedField] = useState<string | null>(null);
+    // 搜尋類型切換 state (酒店/機票)
+    const [searchType, setSearchType] = useState<'hotel' | 'flight'>('hotel');
+    // 展開的國家
+    const [expandedCountry, setExpandedCountry] = useState<string | null>(null);
 
     // 當 initialTab 改變時同步更新
     useEffect(() => {
@@ -50,12 +121,42 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
         }
     };
 
+    // 生成 Trip.com 酒店搜尋連結 (使用城市數字代碼)
+    const getHotelSearchUrl = (cityId: string, areaCode: string) => {
+        // 檢查是否是特殊的 province 格式 (province:provinceId:countryId)
+        if (cityId.startsWith('province:')) {
+            const parts = cityId.split(':');
+            const provinceId = parts[1];
+            const countryId = parts[2];
+            return `https://tw.trip.com/hotels/list?city=-1&provinceId=${provinceId}&countryId=${countryId}&Allianceid=${TRIP_AFFILIATE.allianceId}&SID=${TRIP_AFFILIATE.sid}&trip_sub1=fattymap`;
+        }
+        // 如果有 cityId 就用 cityId，否則 fallback 到 areaCode
+        const cityParam = cityId || areaCode;
+        return `https://tw.trip.com/hotels/list?city=${cityParam}&Allianceid=${TRIP_AFFILIATE.allianceId}&SID=${TRIP_AFFILIATE.sid}&trip_sub1=fattymap`;
+    };
+
+    // 生成 Trip.com 機票搜尋連結 (使用 SEO 友善的 URL 格式)
+    const getFlightSearchUrl = (destCityCode: string, destAirportCode: string) => {
+        // Trip.com 機票搜尋連結格式：從台北出發，使用 SEO 友善格式
+        return `https://tw.trip.com/flights/taipei-to-${destCityCode}/tickets-tpe-${destAirportCode.toLowerCase()}?Allianceid=${TRIP_AFFILIATE.allianceId}&SID=${TRIP_AFFILIATE.sid}&trip_sub1=fattymap`;
+    };
+
+    // 取得預設出發日期 (7天後)
+    const getDefaultDate = () => {
+        const date = new Date();
+        date.setDate(date.getDate() + 7);
+        return date.toISOString().split('T')[0];
+    };
+
+
     if (!isOpen) return null;
+
 
     const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
         { id: 'about', label: '關於我們', icon: <Users size={16} /> },
         { id: 'collab', label: '合作贊助', icon: <Heart size={16} /> },
         { id: 'more', label: '更多功能', icon: <ShoppingBag size={16} /> },
+        { id: 'travel', label: '旅遊預訂', icon: <Plane size={16} /> },
     ];
 
     return (
@@ -247,6 +348,111 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
 
                     {activeTab === 'more' && (
                         <CurrencyExchangeCalculator />
+                    )}
+
+                    {activeTab === 'travel' && (
+                        <div className="space-y-4">
+                            {/* 搜尋類型切換 */}
+                            <div className="flex gap-2 justify-center">
+                                <button
+                                    onClick={() => setSearchType('hotel')}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${searchType === 'hotel'
+                                        ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg'
+                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                        }`}
+                                >
+                                    <Building2 size={16} />
+                                    🏨 搜尋酒店
+                                </button>
+                                <button
+                                    onClick={() => setSearchType('flight')}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${searchType === 'flight'
+                                        ? 'bg-gradient-to-r from-sky-500 to-cyan-500 text-white shadow-lg'
+                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                        }`}
+                                >
+                                    <Plane size={16} />
+                                    ✈️ 搜尋機票
+                                </button>
+                            </div>
+
+                            {/* Trip.com iFrame 搜尋框 */}
+                            <div className="bg-white/60 rounded-2xl p-4 shadow-sm flex justify-center">
+                                <iframe
+                                    src={`https://tw.trip.com/partners/ad/${searchType === 'hotel' ? TRIP_AFFILIATE.hotelSearchboxId : TRIP_AFFILIATE.flightSearchboxId}?Allianceid=${TRIP_AFFILIATE.allianceId}&SID=${TRIP_AFFILIATE.sid}&trip_sub1=fattymap`}
+                                    style={{ width: '320px', height: '320px', border: 'none' }}
+                                    scrolling="no"
+                                    title={searchType === 'hotel' ? 'Trip.com 酒店搜尋' : 'Trip.com 機票搜尋'}
+                                />
+                            </div>
+
+                            {/* 地區酒店/機票推薦 */}
+                            <div className="bg-white/60 rounded-2xl p-4 shadow-sm">
+                                <h3 className="font-bold text-lg mb-3 flex items-center gap-2 text-gray-800">
+                                    <MapPin className="text-red-500" size={20} />
+                                    {searchType === 'hotel' ? '🌏 熱門地區酒店推薦' : '✈️ 熱門航線機票搜尋'}
+                                </h3>
+                                <p className="text-xs text-gray-500 mb-3">
+                                    {searchType === 'hotel'
+                                        ? '點擊地區直接查看 Trip.com 優惠酒店，透過此連結預訂可支持網站營運！'
+                                        : '點擊地區搜尋從台北出發的機票，透過此連結預訂可支持網站營運！'
+                                    }
+                                </p>
+                                <div className="space-y-2">
+                                    {TRAVEL_REGIONS.map((region) => (
+                                        <div key={region.countryCode} className="border border-gray-200 rounded-xl overflow-hidden">
+                                            {/* 國家標題 */}
+                                            <button
+                                                onClick={() => setExpandedCountry(
+                                                    expandedCountry === region.countryCode ? null : region.countryCode
+                                                )}
+                                                className="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-150 transition-colors"
+                                            >
+                                                <span className="font-bold text-gray-800">{region.country}</span>
+                                                {expandedCountry === region.countryCode ? (
+                                                    <ChevronUp size={18} className="text-gray-500" />
+                                                ) : (
+                                                    <ChevronDown size={18} className="text-gray-500" />
+                                                )}
+                                            </button>
+                                            {/* 地區列表 */}
+                                            {expandedCountry === region.countryCode && (
+                                                <div className="p-3 grid grid-cols-2 gap-2 bg-white">
+                                                    {region.areas.map((area) => (
+                                                        <a
+                                                            key={area.code}
+                                                            href={searchType === 'hotel'
+                                                                ? getHotelSearchUrl(area.cityId, area.code)
+                                                                : getFlightSearchUrl(area.code, area.airportCode)
+                                                            }
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${searchType === 'hotel'
+                                                                ? 'bg-blue-50 hover:bg-blue-100 text-blue-700'
+                                                                : 'bg-sky-50 hover:bg-sky-100 text-sky-700'
+                                                                }`}
+                                                        >
+                                                            <span>{area.emoji}</span>
+                                                            <span>{area.name}</span>
+                                                            {searchType === 'hotel' ? (
+                                                                <Building2 size={12} className="ml-auto opacity-50" />
+                                                            ) : (
+                                                                <Plane size={12} className="ml-auto opacity-50" />
+                                                            )}
+                                                        </a>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* 聯盟說明 */}
+                            <div className="text-center text-xs text-gray-400 mt-2">
+                                透過以上連結預訂，我們可獲得小額佣金以支持網站營運，感謝您的支持！💖
+                            </div>
+                        </div>
                     )}
                 </div>
 

@@ -85,7 +85,7 @@ const App: React.FC = () => {
 
     // About Overlay State
     const [isAboutOpen, setIsAboutOpen] = useState(false);
-    const [aboutTab, setAboutTab] = useState<'about' | 'collab' | 'more'>('about');
+    const [aboutTab, setAboutTab] = useState<'about' | 'collab' | 'more' | 'travel'>('about');
 
     // 贊助商管理面板 State (管理員專用)
     const [isSponsorAdminOpen, setIsSponsorAdminOpen] = useState(false);
@@ -627,6 +627,17 @@ const App: React.FC = () => {
                         className="flex items-center gap-2 px-4 py-2 rounded-lg shadow-lg font-bold transition-all bg-gradient-to-r from-orange-500 to-pink-500 text-white hover:from-orange-400 hover:to-pink-400"
                     >
                         💱 更多功能
+                    </button>
+
+                    {/* 旅遊預訂按鈕 - Trip.com 聯盟行銷 */}
+                    <button
+                        onClick={() => {
+                            setAboutTab('travel');
+                            setIsAboutOpen(true);
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg shadow-lg font-bold transition-all bg-gradient-to-r from-sky-500 to-blue-600 text-white hover:from-sky-400 hover:to-blue-500"
+                    >
+                        🌏 旅遊預訂
                     </button>
 
                     {isRoutingMode && (
