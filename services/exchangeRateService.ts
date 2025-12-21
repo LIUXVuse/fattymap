@@ -420,25 +420,48 @@ export function calculateSmartExchange(input: SmartExchangeInput): SmartExchange
     // 如果當地 TWD 賣出價 > 此值，選方案 B；< 此值，選方案 A
     const breakevenRate = planA.amount / amount;
 
-    // 根據目標貨幣選擇參考網站
-    const referenceUrls: Record<string, string> = {
-        THB: 'https://www.superrichthailand.com/#!/en',
-        VND: 'https://www.vietcombank.com.vn/en/exchangerates',
-        PHP: 'https://www.bsp.gov.ph/SitePages/Statistics/ExchangeRate.aspx',
-        JPY: 'https://www.bk.mufg.jp/gdocs/kinri/list_j/kinri/kawase.html',
-        KRW: 'https://www.kebhana.com/cms/rate/index.do',
-        IDR: 'https://www.bi.go.id/en/statistik/informasi-kurs/transaksi-bi/default.aspx',
+    // 根據目標貨幣選擇參考網站和提示
+    const currencyInfo: Record<string, { url: string; tip: string; hasTwd: boolean }> = {
+        THB: {
+            url: 'https://www.superrichthailand.com/#!/en',
+            tip: `去 SuperRich 或 TT Exchange 查 TWD 賣出價，若 > ${breakevenRate.toFixed(3)} 選方案 B，否則選方案 A`,
+            hasTwd: true,
+        },
+        VND: {
+            url: 'https://www.vietcombank.com.vn/en/Personal/Cong-cu-Tien-ich/Ty-gia',
+            tip: `越南銀行通常不收台幣，建議選方案 A（帶 USD 去越南換）`,
+            hasTwd: false,
+        },
+        PHP: {
+            url: 'https://www.bsp.gov.ph/SitePages/Statistics/ExchangeRate.aspx',
+            tip: `菲律賓換匯店若有 TWD 匯率 > ${breakevenRate.toFixed(2)} 選方案 B，否則選方案 A`,
+            hasTwd: false,
+        },
+        JPY: {
+            url: 'https://www.gpa-net.co.jp/exchange/',
+            tip: `日本機場換匯店若有 TWD 匯率 > ${breakevenRate.toFixed(2)} 選方案 B，否則選方案 A`,
+            hasTwd: false,
+        },
+        KRW: {
+            url: 'https://www.kebhana.com/cms/rate/index.do',
+            tip: `韓國換匯店若有 TWD 匯率 > ${breakevenRate.toFixed(2)} 選方案 B，否則選方案 A`,
+            hasTwd: false,
+        },
+        IDR: {
+            url: 'https://www.bi.go.id/en/statistik/informasi-kurs/transaksi-bi/default.aspx',
+            tip: `印尼銀行通常不收台幣，建議選方案 A（帶 USD 去印尼換）`,
+            hasTwd: false,
+        },
     };
 
-    const referenceUrl = referenceUrls[targetCurrency] || 'https://www.x-rates.com/';
+    const info = currencyInfo[targetCurrency] || {
+        url: 'https://www.x-rates.com/',
+        tip: `查詢當地換匯店 TWD → ${targetCurrency} 匯率，若 > ${breakevenRate.toFixed(2)} 選方案 B，否則選方案 A`,
+        hasTwd: false,
+    };
 
-    // 生成智能提示
-    let breakevenTip = '';
-    if (targetCurrency === 'THB') {
-        breakevenTip = `去 SuperRich 或 TT Exchange 查 TWD 賣出價，若 > ${breakevenRate.toFixed(3)} 選方案 B，否則選方案 A`;
-    } else {
-        breakevenTip = `查詢當地換匯店 TWD → ${targetCurrency} 匯率，若 > ${breakevenRate.toFixed(2)} 選方案 B，否則選方案 A`;
-    }
+    const referenceUrl = info.url;
+    const breakevenTip = info.tip;
 
     return {
         plans,
