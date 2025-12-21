@@ -140,6 +140,12 @@ VITE_GOOGLE_PLACES_API_KEY=您的_Google_API_Key
 * ✅ 多點 Google Maps 導航
 * ✅ 留言板功能
 
+### v1.4.2 - 2025-12-21
+
+* ✅ **修復當地體驗連結**
+  * 正確使用 `/things-to-do/experiences/{city}/` URL 格式
+  * 修正胡志明市城市代碼 (`hochiminhcity`)
+
 ### v1.4.1 - 2025-12-21
 
 * ✅ **Trip.com 聯盟連結修正**

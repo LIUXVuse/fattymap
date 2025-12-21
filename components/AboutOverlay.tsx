@@ -55,7 +55,7 @@ const TRAVEL_REGIONS = [
         country: '🇻🇳 越南',
         countryCode: 'vietnam',
         areas: [
-            { name: '胡志明市', code: 'ho-chi-minh-city', cityId: '301', airportCode: 'SGN', emoji: '🌆' },
+            { name: '胡志明市', code: 'hochiminhcity', cityId: '301', airportCode: 'SGN', emoji: '🌆' },
             { name: '河內', code: 'hanoi', cityId: '286', airportCode: 'HAN', emoji: '🏛️' },
             { name: '峴港', code: 'da-nang', cityId: '1356', airportCode: 'DAD', emoji: '🌊' },
         ],
@@ -101,8 +101,8 @@ const TRAVEL_REGIONS = [
 export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, initialTab = 'about' }) => {
     const [activeTab, setActiveTab] = useState<TabType>(initialTab);
     const [copiedField, setCopiedField] = useState<string | null>(null);
-    // 搜尋類型切換 state (酒店/機票)
-    const [searchType, setSearchType] = useState<'hotel' | 'flight'>('hotel');
+    // 搜尋類型切換 state (酒店/機票/當地體驗/機場接送)
+    const [searchType, setSearchType] = useState<'hotel' | 'flight' | 'experience' | 'transfer'>('hotel');
     // 展開的國家
     const [expandedCountry, setExpandedCountry] = useState<string | null>(null);
 
@@ -139,6 +139,16 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
     const getFlightSearchUrl = (destCityCode: string, destAirportCode: string) => {
         // Trip.com 機票搜尋連結格式：從台北出發，使用 SEO 友善格式
         return `https://tw.trip.com/flights/taipei-to-${destCityCode}/tickets-tpe-${destAirportCode.toLowerCase()}?Allianceid=${TRIP_AFFILIATE.allianceId}&SID=${TRIP_AFFILIATE.sid}&trip_sub1=fattymap`;
+    };
+
+    // 生成 Trip.com 當地體驗連結 (正確格式: /things-to-do/experiences/{cityCode}/)
+    const getExperienceUrl = (cityCode: string) => {
+        return `https://tw.trip.com/things-to-do/experiences/${cityCode}/?Allianceid=${TRIP_AFFILIATE.allianceId}&SID=${TRIP_AFFILIATE.sid}&trip_sub1=fattymap`;
+    };
+
+    // 生成 Trip.com 機場接送連結
+    const getTransferUrl = (airportCode: string, cityName: string) => {
+        return `https://tw.trip.com/airport-transfers/index?Allianceid=${TRIP_AFFILIATE.allianceId}&SID=${TRIP_AFFILIATE.sid}&trip_sub1=fattymap`;
     };
 
     // 取得預設出發日期 (7天後)
@@ -352,101 +362,198 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
 
                     {activeTab === 'travel' && (
                         <div className="space-y-4">
-                            {/* 搜尋類型切換 */}
-                            <div className="flex gap-2 justify-center">
-                                <button
-                                    onClick={() => setSearchType('hotel')}
-                                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${searchType === 'hotel'
-                                        ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg'
-                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                        }`}
-                                >
-                                    <Building2 size={16} />
-                                    🏨 搜尋酒店
-                                </button>
-                                <button
-                                    onClick={() => setSearchType('flight')}
-                                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${searchType === 'flight'
-                                        ? 'bg-gradient-to-r from-sky-500 to-cyan-500 text-white shadow-lg'
-                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                        }`}
-                                >
-                                    <Plane size={16} />
-                                    ✈️ 搜尋機票
-                                </button>
-                            </div>
-
-                            {/* Trip.com iFrame 搜尋框 */}
-                            <div className="bg-white/60 rounded-2xl p-4 shadow-sm flex justify-center">
-                                <iframe
-                                    src={`https://tw.trip.com/partners/ad/${searchType === 'hotel' ? TRIP_AFFILIATE.hotelSearchboxId : TRIP_AFFILIATE.flightSearchboxId}?Allianceid=${TRIP_AFFILIATE.allianceId}&SID=${TRIP_AFFILIATE.sid}&trip_sub1=fattymap`}
-                                    style={{ width: '320px', height: '320px', border: 'none' }}
-                                    scrolling="no"
-                                    title={searchType === 'hotel' ? 'Trip.com 酒店搜尋' : 'Trip.com 機票搜尋'}
-                                />
-                            </div>
-
-                            {/* 地區酒店/機票推薦 */}
-                            <div className="bg-white/60 rounded-2xl p-4 shadow-sm">
-                                <h3 className="font-bold text-lg mb-3 flex items-center gap-2 text-gray-800">
-                                    <MapPin className="text-red-500" size={20} />
-                                    {searchType === 'hotel' ? '🌏 熱門地區酒店推薦' : '✈️ 熱門航線機票搜尋'}
-                                </h3>
-                                <p className="text-xs text-gray-500 mb-3">
-                                    {searchType === 'hotel'
-                                        ? '點擊地區直接查看 Trip.com 優惠酒店，透過此連結預訂可支持網站營運！'
-                                        : '點擊地區搜尋從台北出發的機票，透過此連結預訂可支持網站營運！'
-                                    }
-                                </p>
-                                <div className="space-y-2">
-                                    {TRAVEL_REGIONS.map((region) => (
-                                        <div key={region.countryCode} className="border border-gray-200 rounded-xl overflow-hidden">
-                                            {/* 國家標題 */}
-                                            <button
-                                                onClick={() => setExpandedCountry(
-                                                    expandedCountry === region.countryCode ? null : region.countryCode
-                                                )}
-                                                className="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-150 transition-colors"
-                                            >
-                                                <span className="font-bold text-gray-800">{region.country}</span>
-                                                {expandedCountry === region.countryCode ? (
-                                                    <ChevronUp size={18} className="text-gray-500" />
-                                                ) : (
-                                                    <ChevronDown size={18} className="text-gray-500" />
-                                                )}
-                                            </button>
-                                            {/* 地區列表 */}
-                                            {expandedCountry === region.countryCode && (
-                                                <div className="p-3 grid grid-cols-2 gap-2 bg-white">
-                                                    {region.areas.map((area) => (
-                                                        <a
-                                                            key={area.code}
-                                                            href={searchType === 'hotel'
-                                                                ? getHotelSearchUrl(area.cityId, area.code)
-                                                                : getFlightSearchUrl(area.code, area.airportCode)
-                                                            }
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${searchType === 'hotel'
-                                                                ? 'bg-blue-50 hover:bg-blue-100 text-blue-700'
-                                                                : 'bg-sky-50 hover:bg-sky-100 text-sky-700'
-                                                                }`}
-                                                        >
-                                                            <span>{area.emoji}</span>
-                                                            <span>{area.name}</span>
-                                                            {searchType === 'hotel' ? (
-                                                                <Building2 size={12} className="ml-auto opacity-50" />
-                                                            ) : (
-                                                                <Plane size={12} className="ml-auto opacity-50" />
-                                                            )}
-                                                        </a>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
+                            {/* 搜尋類型切換 - 兩排設計 */}
+                            <div className="space-y-2">
+                                {/* 第一排：住宿 & 體驗 */}
+                                <div className="flex gap-2 justify-center">
+                                    <button
+                                        onClick={() => setSearchType('hotel')}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${searchType === 'hotel'
+                                            ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg'
+                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                            }`}
+                                    >
+                                        <Building2 size={16} />
+                                        🏨 搜尋酒店
+                                    </button>
+                                    <button
+                                        onClick={() => setSearchType('experience')}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${searchType === 'experience'
+                                            ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
+                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                            }`}
+                                    >
+                                        <MapPin size={16} />
+                                        🎡 當地體驗
+                                    </button>
+                                </div>
+                                {/* 第二排：交通 */}
+                                <div className="flex gap-2 justify-center">
+                                    <button
+                                        onClick={() => setSearchType('flight')}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${searchType === 'flight'
+                                            ? 'bg-gradient-to-r from-sky-500 to-cyan-500 text-white shadow-lg'
+                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                            }`}
+                                    >
+                                        <Plane size={16} />
+                                        ✈️ 搜尋機票
+                                    </button>
+                                    <button
+                                        onClick={() => setSearchType('transfer')}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${searchType === 'transfer'
+                                            ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg'
+                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                            }`}
+                                    >
+                                        <ExternalLink size={16} />
+                                        🚗 機場接送
+                                    </button>
                                 </div>
                             </div>
+
+                            {/* Trip.com iFrame 搜尋框 - 只對酒店和機票顯示 */}
+                            {(searchType === 'hotel' || searchType === 'flight') && (
+                                <div className="bg-white/60 rounded-2xl p-4 shadow-sm flex justify-center">
+                                    <iframe
+                                        src={`https://tw.trip.com/partners/ad/${searchType === 'hotel' ? TRIP_AFFILIATE.hotelSearchboxId : TRIP_AFFILIATE.flightSearchboxId}?Allianceid=${TRIP_AFFILIATE.allianceId}&SID=${TRIP_AFFILIATE.sid}&trip_sub1=fattymap`}
+                                        style={{ width: '320px', height: '320px', border: 'none' }}
+                                        scrolling="no"
+                                        title={searchType === 'hotel' ? 'Trip.com 酒店搜尋' : 'Trip.com 機票搜尋'}
+                                    />
+                                </div>
+                            )}
+
+                            {/* 當地體驗和機場接送的快速入口 */}
+                            {(searchType === 'experience' || searchType === 'transfer') && (
+                                <div className="bg-white/60 rounded-2xl p-4 shadow-sm text-center">
+                                    <div className={`text-4xl mb-3 ${searchType === 'experience' ? '' : ''}`}>
+                                        {searchType === 'experience' ? '🎡' : '🚗'}
+                                    </div>
+                                    <h4 className="font-bold text-lg text-gray-800 mb-2">
+                                        {searchType === 'experience' ? '探索當地精彩體驗' : '預訂機場接送服務'}
+                                    </h4>
+                                    <p className="text-sm text-gray-600 mb-4">
+                                        {searchType === 'experience'
+                                            ? '一日遊、景點門票、美食體驗、探險活動等'
+                                            : '專車接送、包車服務，輕鬆往返機場'}
+                                    </p>
+                                    <a
+                                        href={searchType === 'experience'
+                                            ? `https://tw.trip.com/things-to-do?Allianceid=${TRIP_AFFILIATE.allianceId}&SID=${TRIP_AFFILIATE.sid}&trip_sub1=fattymap`
+                                            : `https://tw.trip.com/airport-transfers/index?Allianceid=${TRIP_AFFILIATE.allianceId}&SID=${TRIP_AFFILIATE.sid}&trip_sub1=fattymap`
+                                        }
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-white font-bold transition-all hover:scale-105 shadow-lg ${searchType === 'experience'
+                                            ? 'bg-gradient-to-r from-purple-500 to-pink-500'
+                                            : 'bg-gradient-to-r from-orange-500 to-red-500'
+                                            }`}
+                                    >
+                                        <ExternalLink size={18} />
+                                        {searchType === 'experience' ? '瀏覽所有體驗' : '查看機場接送'}
+                                    </a>
+                                </div>
+                            )}
+
+                            {/* 地區推薦列表 - 機場接送不顯示（因為 Trip.com 不支援預填參數） */}
+                            {searchType !== 'transfer' && (
+                                <div className="bg-white/60 rounded-2xl p-4 shadow-sm">
+                                    <h3 className="font-bold text-lg mb-3 flex items-center gap-2 text-gray-800">
+                                        <MapPin className="text-red-500" size={20} />
+                                        {searchType === 'hotel' && '🌏 熱門地區酒店推薦'}
+                                        {searchType === 'flight' && '✈️ 熱門航線機票搜尋'}
+                                        {searchType === 'experience' && '🎡 熱門地區當地體驗'}
+                                    </h3>
+                                    <p className="text-xs text-gray-500 mb-3">
+                                        {searchType === 'hotel' && '點擊地區直接查看 Trip.com 優惠酒店，透過此連結預訂可支持網站營運！'}
+                                        {searchType === 'flight' && '點擊地區搜尋從台北出發的機票，透過此連結預訂可支持網站營運！'}
+                                        {searchType === 'experience' && '點擊地區探索當地一日遊、門票與特色體驗活動！'}
+                                    </p>
+                                    <div className="space-y-2">
+                                        {TRAVEL_REGIONS.map((region) => (
+                                            <div key={region.countryCode} className="border border-gray-200 rounded-xl overflow-hidden">
+                                                {/* 國家標題 */}
+                                                <button
+                                                    onClick={() => setExpandedCountry(
+                                                        expandedCountry === region.countryCode ? null : region.countryCode
+                                                    )}
+                                                    className="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-150 transition-colors"
+                                                >
+                                                    <span className="font-bold text-gray-800">{region.country}</span>
+                                                    {expandedCountry === region.countryCode ? (
+                                                        <ChevronUp size={18} className="text-gray-500" />
+                                                    ) : (
+                                                        <ChevronDown size={18} className="text-gray-500" />
+                                                    )}
+                                                </button>
+                                                {/* 地區列表 */}
+                                                {expandedCountry === region.countryCode && (
+                                                    <div className="p-3 grid grid-cols-2 gap-2 bg-white">
+                                                        {region.areas.map((area) => {
+                                                            // 根據搜尋類型生成不同的 URL
+                                                            const getAreaUrl = () => {
+                                                                switch (searchType) {
+                                                                    case 'hotel':
+                                                                        return getHotelSearchUrl(area.cityId, area.code);
+                                                                    case 'flight':
+                                                                        return getFlightSearchUrl(area.code, area.airportCode);
+                                                                    case 'experience':
+                                                                        return getExperienceUrl(area.code);
+                                                                    case 'transfer':
+                                                                        return getTransferUrl(area.airportCode, area.name);
+                                                                }
+                                                            };
+
+                                                            // 根據搜尋類型設定按鈕樣式
+                                                            const getButtonStyle = () => {
+                                                                switch (searchType) {
+                                                                    case 'hotel':
+                                                                        return 'bg-blue-50 hover:bg-blue-100 text-blue-700';
+                                                                    case 'flight':
+                                                                        return 'bg-sky-50 hover:bg-sky-100 text-sky-700';
+                                                                    case 'experience':
+                                                                        return 'bg-purple-50 hover:bg-purple-100 text-purple-700';
+                                                                    case 'transfer':
+                                                                        return 'bg-orange-50 hover:bg-orange-100 text-orange-700';
+                                                                }
+                                                            };
+
+                                                            // 根據搜尋類型設定圖示
+                                                            const getIcon = () => {
+                                                                switch (searchType) {
+                                                                    case 'hotel':
+                                                                        return <Building2 size={12} className="ml-auto opacity-50" />;
+                                                                    case 'flight':
+                                                                        return <Plane size={12} className="ml-auto opacity-50" />;
+                                                                    case 'experience':
+                                                                        return <MapPin size={12} className="ml-auto opacity-50" />;
+                                                                    case 'transfer':
+                                                                        return <ExternalLink size={12} className="ml-auto opacity-50" />;
+                                                                }
+                                                            };
+
+                                                            return (
+                                                                <a
+                                                                    key={area.code}
+                                                                    href={getAreaUrl()}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${getButtonStyle()}`}
+                                                                >
+                                                                    <span>{area.emoji}</span>
+                                                                    <span>{area.name}</span>
+                                                                    {getIcon()}
+                                                                </a>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
                             {/* 聯盟說明 */}
                             <div className="text-center text-xs text-gray-400 mt-2">
