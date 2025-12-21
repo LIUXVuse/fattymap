@@ -413,6 +413,22 @@ export const CurrencyExchangeCalculator: React.FC = () => {
                                                 )}
                                             </div>
                                         )}
+
+                                        {/* 損益平衡點提示 */}
+                                        {result.breakeven && (
+                                            <div className="p-3 rounded-xl text-xs bg-blue-50 text-blue-800 border border-blue-200">
+                                                <p className="font-bold mb-1">🔍 人肉確認匯率</p>
+                                                <p className="mb-2">{result.breakeven.tip}</p>
+                                                <a
+                                                    href={result.breakeven.referenceUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 underline"
+                                                >
+                                                    👉 查詢當地匯率
+                                                </a>
+                                            </div>
+                                        )}
                                     </div>
                                 );
                             })()}

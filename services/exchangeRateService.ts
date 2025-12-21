@@ -260,6 +260,13 @@ export interface SmartExchangeResult {
     savings: number;
     savingsPercent: number;
     disclaimer: string;       // 免責聲明
+    // 損益平衡點提示
+    breakeven: {
+        rate: number;         // 損益平衡匯率（當地幣 / 1 TWD 或 1 USD）
+        currency: string;     // 相關貨幣
+        tip: string;          // 給用戶的提示
+        referenceUrl: string; // 參考網站
+    } | null;
 }
 
 // 取得貨幣的估算損失率
@@ -404,6 +411,35 @@ export function calculateSmartExchange(input: SmartExchangeInput): SmartExchange
     const savings = bestPlan.amount - worstPlan.amount;
     const savingsPercent = (savings / worstPlan.amount) * 100;
 
+    // ========== 計算損益平衡點 ==========
+    // 比較方案 A（帶 USD）和方案 B（帶 TWD）
+    const planA = plans.find(p => p.id === 'A')!;
+    const planB = plans.find(p => p.id === 'B')!;
+
+    // 損益平衡匯率 = 方案 A 金額 / 用戶台幣金額
+    // 如果當地 TWD 賣出價 > 此值，選方案 B；< 此值，選方案 A
+    const breakevenRate = planA.amount / amount;
+
+    // 根據目標貨幣選擇參考網站
+    const referenceUrls: Record<string, string> = {
+        THB: 'https://www.superrichthailand.com/#!/en',
+        VND: 'https://www.vietcombank.com.vn/en/exchangerates',
+        PHP: 'https://www.bsp.gov.ph/SitePages/Statistics/ExchangeRate.aspx',
+        JPY: 'https://www.bk.mufg.jp/gdocs/kinri/list_j/kinri/kawase.html',
+        KRW: 'https://www.kebhana.com/cms/rate/index.do',
+        IDR: 'https://www.bi.go.id/en/statistik/informasi-kurs/transaksi-bi/default.aspx',
+    };
+
+    const referenceUrl = referenceUrls[targetCurrency] || 'https://www.x-rates.com/';
+
+    // 生成智能提示
+    let breakevenTip = '';
+    if (targetCurrency === 'THB') {
+        breakevenTip = `去 SuperRich 或 TT Exchange 查 TWD 賣出價，若 > ${breakevenRate.toFixed(3)} 選方案 B，否則選方案 A`;
+    } else {
+        breakevenTip = `查詢當地換匯店 TWD → ${targetCurrency} 匯率，若 > ${breakevenRate.toFixed(2)} 選方案 B，否則選方案 A`;
+    }
+
     return {
         plans,
         recommendation: bestPlan?.id || null,
@@ -411,6 +447,12 @@ export function calculateSmartExchange(input: SmartExchangeInput): SmartExchange
         savings,
         savingsPercent,
         disclaimer: '⚠️ 以上為參考值，使用全球中間匯率估算。實際匯率依當地換匯店為準，落差約 ±2-5%。',
+        breakeven: {
+            rate: breakevenRate,
+            currency: targetCurrency,
+            tip: breakevenTip,
+            referenceUrl,
+        },
     };
 }
 
