@@ -112,8 +112,8 @@
 
     .promo-marker-container {
       position: relative;
-      width: 120px;
-      height: 160px;
+      width: 60px;
+      height: 80px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -122,17 +122,17 @@
     }
 
     .promo-marker {
-      width: 100px;
-      height: 120px;
+      width: 50px;
+      height: 60px;
       /* 3D 傾斜效果 */
       transform: perspective(500px) rotateX(8deg);
       /* 陰影模擬立體 */
-      filter: drop-shadow(0 25px 15px rgba(0, 0, 0, 0.35));
+      filter: drop-shadow(0 12px 8px rgba(0, 0, 0, 0.35));
       /* 懸浮動畫 */
       animation: promo-float 3s ease-in-out infinite;
       /* 全透明背景 - 由管理員提供去背圖片 */
       background: transparent;
-      border-radius: 8px;
+      border-radius: 6px;
       overflow: hidden;
       padding: 0;
       /* 讓滑鼠可以穿透透明區域點擊下面的 Marker */
@@ -148,24 +148,24 @@
 
     .promo-marker-glow {
       position: absolute;
-      bottom: 25px;
-      width: 60px;
-      height: 12px;
+      bottom: 12px;
+      width: 30px;
+      height: 8px;
       background: radial-gradient(ellipse, rgba(255, 200, 0, 0.5) 0%, transparent 70%);
-      filter: blur(4px);
+      filter: blur(3px);
       animation: promo-glow 3s ease-in-out infinite;
     }
 
     .promo-marker-badge {
       position: absolute;
-      bottom: 5px;
+      bottom: 2px;
       background: linear-gradient(135deg, #ffd700, #ff8c00);
       color: white;
-      font-size: 9px;
+      font-size: 7px;
       font-weight: bold;
-      padding: 2px 8px;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(255, 165, 0, 0.5);
+      padding: 1px 5px;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(255, 165, 0, 0.5);
       white-space: nowrap;
       /* 徽章可以被點擊 */
       pointer-events: auto;
@@ -179,7 +179,7 @@
       }
 
       50% {
-        transform: perspective(500px) rotateX(8deg) translateY(-8px);
+        transform: perspective(500px) rotateX(8deg) translateY(-4px);
       }
     }
 

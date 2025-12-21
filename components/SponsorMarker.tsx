@@ -39,9 +39,9 @@ const createSponsorIcon = (imageUrl: string, name: string) => {
     return L.divIcon({
         className: 'promo-marker-icon',
         html: svgString,
-        iconSize: [120, 160],
-        iconAnchor: [60, 150],
-        popupAnchor: [0, -140]
+        iconSize: [60, 80],
+        iconAnchor: [30, 75],
+        popupAnchor: [0, -70]
     });
 };
 
