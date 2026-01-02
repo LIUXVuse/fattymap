@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Heart, ShoppingBag, Users, Headphones, Instagram, Globe, ExternalLink, Copy, Check, Bug, Plane, Building2, MapPin, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, Heart, ShoppingBag, Users, Headphones, Instagram, Globe, ExternalLink, Copy, Check, Bug, Plane, Building2, MapPin, ChevronDown, ChevronUp, Search, Loader2 } from 'lucide-react';
 import { CurrencyExchangeCalculator } from './CurrencyExchangeCalculator';
 
 // Spotify 圖示 SVG
@@ -26,10 +26,16 @@ const DiscordIcon = () => (
 interface AboutOverlayProps {
     isOpen: boolean;
     onClose: () => void;
-    initialTab?: 'about' | 'collab' | 'more' | 'travel';  // 新增：指定初始 Tab
+    initialTab?: 'about' | 'collab' | 'more' | 'travel' | 'podcast';  // 新增：指定初始 Tab
 }
 
-type TabType = 'about' | 'collab' | 'more' | 'travel';
+type TabType = 'about' | 'collab' | 'more' | 'travel' | 'podcast';
+
+interface PodcastEpisode {
+    episodeNumber: string;
+    title: string;
+    content: string;
+}
 
 // Trip.com 聯盟行銷設定
 const TRIP_AFFILIATE = {
@@ -106,10 +112,70 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
     // 展開的國家
     const [expandedCountry, setExpandedCountry] = useState<string | null>(null);
 
+    // Podcast 相關 state
+    const [episodes, setEpisodes] = useState<PodcastEpisode[]>([]);
+    const [loadingPodcasts, setLoadingPodcasts] = useState(false);
+    const [podcastSearchQuery, setPodcastSearchQuery] = useState('');
+    const [expandedEpisode, setExpandedEpisode] = useState<string | null>(null);
+
     // 當 initialTab 改變時同步更新
     useEffect(() => {
         setActiveTab(initialTab);
     }, [initialTab]);
+
+    // 動態載入 Podcast 摘要
+    useEffect(() => {
+        const loadEpisodes = async () => {
+            if (activeTab !== 'podcast' || episodes.length > 0) return;
+
+            setLoadingPodcasts(true);
+            try {
+                // 使用 Vite 的 glob import 功能
+                const episodeFiles = import.meta.glob('/doc/*.txt', { as: 'raw' });
+                const loadedEpisodes: PodcastEpisode[] = [];
+
+                for (const path in episodeFiles) {
+                    const content = await episodeFiles[path]() as string;
+
+                    // 從檔案路徑解析集數編號
+                    const fileName = path.split('/').pop() || '';
+                    const episodeMatch = fileName.match(/^(S\d+EP\d+)/i);
+                    const episodeNumber = episodeMatch ? episodeMatch[1].toUpperCase() : fileName;
+
+                    // 解析標題
+                    const lines = content.split('\n');
+                    let title = lines.find(line => line.includes('##'))?.replace(/##/g, '').trim() || '';
+
+                    if (!title) {
+                        title = `第 ${episodeNumber} 集`;
+                    }
+
+                    loadedEpisodes.push({
+                        episodeNumber,
+                        title,
+                        content: content.trim()
+                    });
+                }
+
+                // 按集數倒序排列
+                loadedEpisodes.sort((a, b) => {
+                    const numA = parseInt(a.episodeNumber.match(/\d+$/)?.[0] || '0');
+                    const numB = parseInt(b.episodeNumber.match(/\d+$/)?.[0] || '0');
+                    return numB - numA;
+                });
+
+                setEpisodes(loadedEpisodes);
+            } catch (error) {
+                console.error('載入 Podcast 摘要失敗:', error);
+            } finally {
+                setLoadingPodcasts(false);
+            }
+        };
+
+        if (isOpen && activeTab === 'podcast') {
+            loadEpisodes();
+        }
+    }, [isOpen, activeTab, episodes.length]);
 
     const handleCopy = async (text: string, field: string) => {
         try {
@@ -162,9 +228,22 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
     if (!isOpen) return null;
 
 
+    // Podcast 搜尋過濾
+    const filteredEpisodes = episodes.filter(ep =>
+        ep.episodeNumber.toLowerCase().includes(podcastSearchQuery.toLowerCase()) ||
+        ep.title.toLowerCase().includes(podcastSearchQuery.toLowerCase()) ||
+        ep.content.toLowerCase().includes(podcastSearchQuery.toLowerCase())
+    );
+
+    // 切換展開/收合
+    const toggleExpand = (episodeNumber: string) => {
+        setExpandedEpisode(prev => prev === episodeNumber ? null : episodeNumber);
+    };
+
     const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
         { id: 'about', label: '關於我們', icon: <Users size={16} /> },
         { id: 'collab', label: '合作贊助', icon: <Heart size={16} /> },
+        { id: 'podcast', label: 'Podcast', icon: <Headphones size={16} /> },
         { id: 'more', label: '智能換匯', icon: <ShoppingBag size={16} /> },
         { id: 'travel', label: '旅遊預訂', icon: <Plane size={16} /> },
     ];
@@ -359,6 +438,98 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
                     {activeTab === 'more' && (
                         <CurrencyExchangeCalculator />
                     )}
+
+                    {activeTab === 'podcast' && (
+                        <div className="space-y-4">
+                            {/* 搜尋列 */}
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    value={podcastSearchQuery}
+                                    onChange={(e) => setPodcastSearchQuery(e.target.value)}
+                                    placeholder="搜尋關鍵字（例如：泰國、越南、酒店...）"
+                                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:outline-none bg-white/80 backdrop-blur-sm"
+                                />
+                                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                                    <Search size={18} />
+                                </div>
+                            </div>
+                            {podcastSearchQuery && (
+                                <p className="text-xs text-gray-500">
+                                    找到 {filteredEpisodes.length} 集符合的結果
+                                </p>
+                            )}
+
+                            {/* 集數列表 */}
+                            {loadingPodcasts ? (
+                                <div className="flex flex-col items-center justify-center py-12">
+                                    <Loader2 size={40} className="animate-spin text-purple-500 mb-4" />
+                                    <p className="text-gray-500">載入摘要中...</p>
+                                </div>
+                            ) : filteredEpisodes.length === 0 ? (
+                                <div className="text-center py-12">
+                                    <p className="text-gray-400 text-lg">😢 沒有找到符合的集數</p>
+                                    <p className="text-gray-400 text-sm mt-2">試試其他關鍵字吧！</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {filteredEpisodes.map((episode) => (
+                                        <div
+                                            key={episode.episodeNumber}
+                                            className="bg-white/60 rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-all hover:shadow-md"
+                                        >
+                                            {/* 集數標題列 */}
+                                            <button
+                                                onClick={() => toggleExpand(episode.episodeNumber)}
+                                                className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50/50 transition-colors"
+                                            >
+                                                <div className="flex items-center gap-3 flex-1 text-left">
+                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                                                        <Headphones size={20} className="text-white" />
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-bold text-gray-800">
+                                                            {episode.episodeNumber}
+                                                        </div>
+                                                        <div className="text-sm text-gray-600 line-clamp-1">
+                                                            {episode.title}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {expandedEpisode === episode.episodeNumber ? (
+                                                    <ChevronUp size={20} className="text-gray-400 flex-shrink-0" />
+                                                ) : (
+                                                    <ChevronDown size={20} className="text-gray-400 flex-shrink-0" />
+                                                )}
+                                            </button>
+
+                                            {/* 展開的摘要內容 */}
+                                            {expandedEpisode === episode.episodeNumber && (
+                                                <div className="px-5 pb-5 border-t border-gray-100">
+                                                    <div className="mt-4 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap max-h-96 overflow-y-auto">
+                                                        {episode.content}
+                                                    </div>
+                                                    <div className="mt-4 flex justify-center">
+                                                        <a
+                                                            href="https://open.firstory.me/user/fattyinsider/episodes"
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-full font-bold transition-all shadow-lg hover:scale-105"
+                                                        >
+                                                            <Headphones size={18} />
+                                                            收聽這一集
+                                                            <ExternalLink size={16} />
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
 
                     {activeTab === 'travel' && (
                         <div className="space-y-4">

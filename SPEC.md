@@ -206,6 +206,38 @@ const compressImage = async (file: File): Promise<Blob> => {
 - **CRUD 功能**: 新增、編輯、刪除贊助商
 - **即時預覽**: 圖片 URL 即時預覽
 
+### 4.8 關於我們彈窗 (`components/AboutOverlay.tsx`)
+
+整合多項功能的多頁籤彈窗，包含：
+
+- **關於我們**: 介紹 Podcast 和地圖專案
+- **合作贊助**: 合作邀約資訊和斗內支持
+- **Podcast 摘要**:
+  - 自動載入 `doc/` 資料夾的所有 `.txt` 摘要檔案
+  - 使用 Vite 的 `import.meta.glob` 動態載入
+  - 支援關鍵字搜尋（集數、標題、內容）
+  - 集數展開/收合功能
+  - 一鍵跳轉 Firstory 收聽頁面
+- **智能換匯**: 13 種貨幣即時換算
+- **旅遊預訂**: Trip.com 聯盟行銷整合
+
+**Podcast 資料結構**:
+
+```typescript
+interface PodcastEpisode {
+    episodeNumber: string;  // 例如: "S3EP212"
+    title: string;          // 摘要標題
+    content: string;        // 完整摘要內容
+}
+```
+
+**自動載入機制**:
+
+- 使用 `import.meta.glob('/doc/*.txt', { as: 'raw' })` 載入所有摘要
+- 從檔名解析集數編號（正則: `/^(S\d+EP\d+)/i`）
+- 從內容解析標題（搜尋包含 `##` 的行）
+- 按集數倒序排列（最新集數在前）
+
 ## 5. URL 分享功能
 
 支援透過 URL 參數分享特定回憶或贊助商。

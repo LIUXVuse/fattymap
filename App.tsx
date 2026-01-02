@@ -85,7 +85,7 @@ const App: React.FC = () => {
 
     // About Overlay State
     const [isAboutOpen, setIsAboutOpen] = useState(false);
-    const [aboutTab, setAboutTab] = useState<'about' | 'collab' | 'more' | 'travel'>('about');
+    const [aboutTab, setAboutTab] = useState<'about' | 'collab' | 'more' | 'travel' | 'podcast'>('about');
 
     // 贊助商管理面板 State (管理員專用)
     const [isSponsorAdminOpen, setIsSponsorAdminOpen] = useState(false);
@@ -616,6 +616,17 @@ const App: React.FC = () => {
                     >
                         {isRoutingMode ? <X size={18} /> : <Navigation size={18} />}
                         {isRoutingMode ? '結束導航模式' : '開啟路線規劃'}
+                    </button>
+
+                    {/* Podcast 摘要按鈕 */}
+                    <button
+                        onClick={() => {
+                            setAboutTab('podcast');
+                            setIsAboutOpen(true);
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg shadow-lg font-bold transition-all bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
+                    >
+                        📻 Podcast 摘要
                     </button>
 
                     {/* 更多功能按鈕 - 打開換匯計算器 */}
