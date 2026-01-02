@@ -473,58 +473,62 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
                                 </div>
                             ) : (
                                 <div className="space-y-3">
-                                    {filteredEpisodes.map((episode) => (
-                                        <div
-                                            key={episode.episodeNumber}
-                                            className="bg-white/60 rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-all hover:shadow-md"
-                                        >
-                                            {/* 集數標題列 */}
-                                            <button
-                                                onClick={() => toggleExpand(episode.episodeNumber)}
-                                                className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50/50 transition-colors"
+                                    {filteredEpisodes.map((episode) => {
+                                        // 使用 url 作為唯一識別符，因為有重複的 episodeNumber
+                                        const uniqueId = episode.url || episode.episodeNumber;
+                                        return (
+                                            <div
+                                                key={uniqueId}
+                                                className="bg-white/60 rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-all hover:shadow-md"
                                             >
-                                                <div className="flex items-center gap-3 flex-1 text-left">
-                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-                                                        <Headphones size={20} className="text-white" />
-                                                    </div>
-                                                    <div>
-                                                        <div className="font-bold text-gray-800">
-                                                            {episode.episodeNumber}
+                                                {/* 集數標題列 */}
+                                                <button
+                                                    onClick={() => toggleExpand(uniqueId)}
+                                                    className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50/50 transition-colors"
+                                                >
+                                                    <div className="flex items-center gap-3 flex-1 text-left">
+                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                                                            <Headphones size={20} className="text-white" />
                                                         </div>
-                                                        <div className="text-sm text-gray-600 line-clamp-1">
-                                                            {episode.title}
+                                                        <div>
+                                                            <div className="font-bold text-gray-800">
+                                                                {episode.episodeNumber}
+                                                            </div>
+                                                            <div className="text-sm text-gray-600 line-clamp-1">
+                                                                {episode.title}
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                                {expandedEpisode === episode.episodeNumber ? (
-                                                    <ChevronUp size={20} className="text-gray-400 flex-shrink-0" />
-                                                ) : (
-                                                    <ChevronDown size={20} className="text-gray-400 flex-shrink-0" />
-                                                )}
-                                            </button>
+                                                    {expandedEpisode === uniqueId ? (
+                                                        <ChevronUp size={20} className="text-gray-400 flex-shrink-0" />
+                                                    ) : (
+                                                        <ChevronDown size={20} className="text-gray-400 flex-shrink-0" />
+                                                    )}
+                                                </button>
 
-                                            {/* 展開的摘要內容 */}
-                                            {expandedEpisode === episode.episodeNumber && (
-                                                <div className="px-5 pb-5 border-t border-gray-100">
-                                                    <div className="mt-4 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap max-h-96 overflow-y-auto">
-                                                        {episode.content}
+                                                {/* 展開的摘要內容 */}
+                                                {expandedEpisode === uniqueId && (
+                                                    <div className="px-5 pb-5 border-t border-gray-100">
+                                                        <div className="mt-4 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap max-h-96 overflow-y-auto">
+                                                            {episode.content}
+                                                        </div>
+                                                        <div className="mt-4 flex justify-center">
+                                                            <a
+                                                                href={episode.url || "https://open.firstory.me/user/fattyinsider/episodes"}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-full font-bold transition-all shadow-lg hover:scale-105"
+                                                            >
+                                                                <Headphones size={18} />
+                                                                收聽這一集
+                                                                <ExternalLink size={16} />
+                                                            </a>
+                                                        </div>
                                                     </div>
-                                                    <div className="mt-4 flex justify-center">
-                                                        <a
-                                                            href={episode.url || "https://open.firstory.me/user/fattyinsider/episodes"}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-full font-bold transition-all shadow-lg hover:scale-105"
-                                                        >
-                                                            <Headphones size={18} />
-                                                            收聽這一集
-                                                            <ExternalLink size={16} />
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             )}
                         </div>
