@@ -487,9 +487,16 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
                                                     className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50/50 transition-colors"
                                                 >
                                                     <div className="flex items-center gap-3 flex-1 text-left">
-                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                                                        <a
+                                                            href={episode.url || "https://open.firstory.me/user/fattyinsider/episodes"}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            onClick={(e) => e.stopPropagation()}
+                                                            className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 hover:scale-110 hover:shadow-lg transition-all cursor-pointer"
+                                                            title="點擊收聽這一集"
+                                                        >
                                                             <Headphones size={20} className="text-white" />
-                                                        </div>
+                                                        </a>
                                                         <div>
                                                             <div className="font-bold text-gray-800">
                                                                 {episode.episodeNumber}
