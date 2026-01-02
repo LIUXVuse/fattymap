@@ -35,6 +35,7 @@ interface PodcastEpisode {
     episodeNumber: string;
     title: string;
     content: string;
+    url?: string;  // 新增：Firstory 專屬連結
 }
 
 // Trip.com 聯盟行銷設定
@@ -130,39 +131,35 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
 
             setLoadingPodcasts(true);
             try {
-                // 使用 Vite 的 glob import 功能
-                const episodeFiles = import.meta.glob('/doc/*.txt', { as: 'raw' });
+                // 1. 從 podcast_episodes.json 讀取基本資料
+                const response = await fetch('/podcast_episodes.json');
+                const jsonEpisodes = await response.json();
+
+                // 2. 使用 Vite 的 glob import 載入所有摘要檔案
+                const summaryFiles = import.meta.glob('/doc/*_摘要.txt', { as: 'raw' });
+
                 const loadedEpisodes: PodcastEpisode[] = [];
 
-                for (const path in episodeFiles) {
-                    const content = await episodeFiles[path]() as string;
+                for (const ep of jsonEpisodes) {
+                    // 嘗試載入對應的摘要檔案 (S3EPXX_摘要.txt 格式)
+                    let content = '';
+                    const summaryPath = `/doc/${ep.episodeNumber}_摘要.txt`;
 
-                    // 從檔案路徑解析集數編號
-                    const fileName = path.split('/').pop() || '';
-                    const episodeMatch = fileName.match(/^(S\d+EP\d+)/i);
-                    const episodeNumber = episodeMatch ? episodeMatch[1].toUpperCase() : fileName;
-
-                    // 解析標題
-                    const lines = content.split('\n');
-                    let title = lines.find(line => line.includes('##'))?.replace(/##/g, '').trim() || '';
-
-                    if (!title) {
-                        title = `第 ${episodeNumber} 集`;
+                    if (summaryFiles[summaryPath]) {
+                        try {
+                            content = await summaryFiles[summaryPath]() as string;
+                        } catch (error) {
+                            console.log(`無法載入摘要: ${summaryPath}`);
+                        }
                     }
 
                     loadedEpisodes.push({
-                        episodeNumber,
-                        title,
-                        content: content.trim()
+                        episodeNumber: ep.episodeNumber,
+                        title: ep.title,
+                        content: content || `${ep.title}\n\n發布日期：${ep.pubDate}\n\n(此集尚無摘要)`,
+                        url: ep.url  // 從 JSON 取得專屬連結
                     });
                 }
-
-                // 按集數倒序排列
-                loadedEpisodes.sort((a, b) => {
-                    const numA = parseInt(a.episodeNumber.match(/\d+$/)?.[0] || '0');
-                    const numB = parseInt(b.episodeNumber.match(/\d+$/)?.[0] || '0');
-                    return numB - numA;
-                });
 
                 setEpisodes(loadedEpisodes);
             } catch (error) {
@@ -511,7 +508,7 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
                                                     </div>
                                                     <div className="mt-4 flex justify-center">
                                                         <a
-                                                            href="https://open.firstory.me/user/fattyinsider/episodes"
+                                                            href={episode.url || "https://open.firstory.me/user/fattyinsider/episodes"}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                             className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-full font-bold transition-all shadow-lg hover:scale-105"

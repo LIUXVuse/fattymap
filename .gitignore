@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Podcast 下載工具相關
+venv/
+downloads/
+*.mp3
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
