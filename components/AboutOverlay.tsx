@@ -135,22 +135,25 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
                 const response = await fetch('/podcast_episodes.json');
                 const jsonEpisodes = await response.json();
 
-                // 2. 使用 Vite 的 glob import 載入所有摘要檔案
-                const summaryFiles = import.meta.glob('/doc/*_摘要.txt', { as: 'raw' });
-
                 const loadedEpisodes: PodcastEpisode[] = [];
 
+                // 2. 使用 fetch() 載入每個摘要檔案（從 public/doc 資料夾）
                 for (const ep of jsonEpisodes) {
                     // 嘗試載入對應的摘要檔案 (S3EPXX_摘要.txt 格式)
                     let content = '';
                     const summaryPath = `/doc/${ep.episodeNumber}_摘要.txt`;
 
-                    if (summaryFiles[summaryPath]) {
-                        try {
-                            content = await summaryFiles[summaryPath]() as string;
-                        } catch (error) {
-                            console.log(`無法載入摘要: ${summaryPath}`);
+                    try {
+                        const summaryResponse = await fetch(summaryPath);
+                        if (summaryResponse.ok) {
+                            const text = await summaryResponse.text();
+                            // 檢查是否是有效的摘要內容（不是 HTML，Vite 找不到檔案時會回傳 index.html）
+                            if (!text.trim().startsWith('<!DOCTYPE') && !text.trim().startsWith('<html')) {
+                                content = text;
+                            }
                         }
+                    } catch (error) {
+                        console.log(`無法載入摘要: ${summaryPath}`);
                     }
 
                     loadedEpisodes.push({
