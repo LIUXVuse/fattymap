@@ -4,160 +4,104 @@
 
 ---
 
-## 📋 自動化流程
+## 📋 完整自動化時間表（週一）
+
+| 時間 | 位置 | 動作 |
+|------|------|------|
+| 16:00 | Mac | 下載音檔到 Windows `input/` + 更新 JSON |
+| 16:30 | Windows | 執行 `auto_full_process.bat`（Whisper + 摘要） |
+| 19:30 | Mac | 同步結果到網站 + Git push |
 
 ```
-Mac (週一 16:00)          Windows                    Mac (週二 16:00)
-     │                         │                          │
-     ▼                         │                          │
-下載最新音檔 ─────────► input/S3EPxxx.mp3              │
-     │                         │                          │
-     │              (週一 17:00 或手動觸發)                │
-     │                         │                          │
-     │                         ▼                          │
-     │               run_all_whisper_cuda.bat             │
-     │                         │                          │
-     │                         ▼                          │
-     │               output/S3EPxxx_tw.txt                │
-     │                         │                          │
-     │                  (手動執行或排程)                    │
-     │                         │                          │
-     │                         ▼                          │
-     │                     main.py                        │
-     │                         │                          │
-     │                         ▼                          │
-     │               S3EPxxx_摘要.txt ─────────────────► 同步到網站
-     │                                                    │
-     │                                                    ▼
-     │                                               Git push
+16:00 Mac        16:30 Windows           17:00~19:00           19:30 Mac
+  │                    │                      │                    │
+  ▼                    │                      │                    │
+下載音檔 ────────► Whisper 轉逐字稿          │                    │
+                       │                      │                    │
+                       └────► 產生摘要 ───────┘                    │
+                                              │                    │
+                                      output/_摘要.txt ──────────► 同步 + Git
 ```
 
 ---
 
-## 🔧 設定步驟
+## 🔧 設定步驟（只需做一次）
 
-### 步驟 1：建立 Whisper 處理批次檔
+### 步驟 1：確認批次檔已存在
 
-在 `C:\projects\whisper.cpp\` 建立一個新的批次檔 `auto_process_new.bat`：
+我已經幫你建立了 `auto_full_process.bat` 在：
 
-```batch
-@echo off
-chcp 65001
-echo ===================================
-echo 自動處理新音檔
-echo %date% %time%
-echo ===================================
-
-cd /d C:\projects\whisper.cpp
-
-REM 檢查 input 資料夾是否有 .mp3 檔案
-for %%f in (input\*.mp3) do (
-    echo 發現音檔: %%~nf
-    
-    REM 檢查 output 是否已經有對應的 _tw.txt
-    if not exist "output\%%~nf_tw.txt" (
-        echo 處理中: %%~nf
-        call run_all_whisper_cuda.bat
-        goto :done
-    ) else (
-        echo 已處理過: %%~nf，跳過
-    )
-)
-
-:done
-echo ===================================
-echo 處理完成
-echo ===================================
 ```
+C:\projects\whisper.cpp\auto_full_process.bat
+```
+
+這個批次檔會：
+
+1. 檢查 `input/` 是否有新音檔
+2. 執行 Whisper 轉逐字稿
+3. 複製逐字稿到摘要輸入資料夾
+4. 執行 `main.py` 產生摘要
 
 ---
 
 ### 步驟 2：設定 Windows 排程任務
 
-1. 按 `Win + R`，輸入 `taskschd.msc`，按 Enter 開啟「工作排程器」
+1. 按 `Win + R`，輸入 `taskschd.msc`，按 Enter
 
-2. 在右側點選「建立基本工作」
+2. 在右側點選「**建立基本工作**」
 
-3. **名稱**：`Podcast Whisper 自動處理`
+3. **名稱**：`Podcast 自動處理（Whisper + 摘要）`
 
-4. **觸發程序**：每週
-   - 每週一次
-   - 週一
-   - 時間：17:00（比 Mac 晚 1 小時，確保音檔已下載）
+4. **觸發程序**：選擇「每週」
+   - 每週執行
+   - 勾選「**星期一**」
+   - 時間：`16:30:00`
 
-5. **動作**：啟動程式
-   - 程式或指令碼：`C:\projects\whisper.cpp\auto_process_new.bat`
-   - 開始位置：`C:\projects\whisper.cpp`
+5. **動作**：選擇「啟動程式」
+   - 程式或指令碼：
 
-6. 完成並儲存
+     ```
+     C:\projects\whisper.cpp\auto_full_process.bat
+     ```
 
----
+   - 開始位置：
 
-### 步驟 3：設定摘要自動執行（可選）
+     ```
+     C:\projects\whisper.cpp
+     ```
 
-如果也想自動執行摘要，在 `C:\projects\faty\fatty_talk\S3EP201_204\` 建立 `auto_summary.bat`：
+6. **完成**：勾選「當我按完成時，開啟此工作的內容對話方塊」
 
-```batch
-@echo off
-chcp 65001
-echo ===================================
-echo 自動產生摘要
-echo %date% %time%
-echo ===================================
+7. 在「**一般**」標籤中：
+   - 勾選「**不論使用者登入與否均執行**」（這樣電腦閒置也會執行）
+   - 勾選「**以最高權限執行**」
 
-cd /d C:\projects\faty\fatty_talk\S3EP201_204
-
-REM 啟動虛擬環境（如果有的話）
-if exist ".venv\Scripts\activate.bat" (
-    call .venv\Scripts\activate.bat
-)
-
-REM 複製最新的逐字稿
-for %%f in (C:\projects\whisper.cpp\output\*_tw.txt) do (
-    if not exist "faty_talk\%%~nxf" (
-        echo 複製: %%~nxf
-        copy "%%f" "faty_talk\"
-    )
-)
-
-REM 執行摘要程式
-python src\main.py
-
-echo ===================================
-echo 摘要完成
-echo ===================================
-```
-
-然後再建立一個排程任務：
-
-- 時間：週一 20:00（Whisper 處理完後）
-- 執行：`C:\projects\faty\fatty_talk\S3EP201_204\auto_summary.bat`
+8. 點選「確定」並輸入 Windows 密碼
 
 ---
 
 ## 🔍 手動執行
 
-如果不想等排程，可以手動執行：
+### 測試批次檔
 
-### 1. 執行 Whisper
+在 Windows 上雙擊 `auto_full_process.bat`，或在 CMD 執行：
 
 ```cmd
 cd C:\projects\whisper.cpp
-run_all_whisper_cuda.bat
+auto_full_process.bat
 ```
 
-### 2. 執行摘要
+### 手動觸發 Mac 同步
 
-```cmd
-cd C:\projects\faty\fatty_talk\S3EP201_204
-python src\main.py
+```bash
+launchctl start com.fattymap.podcast-sync
 ```
 
 ---
 
-## ✅ 驗證
+## ✅ 驗證設定
 
-### 檢查 Mac 定時任務
+### 1. 確認 Mac 排程
 
 ```bash
 launchctl list | grep fattymap
@@ -165,18 +109,38 @@ launchctl list | grep fattymap
 
 應該看到：
 
-- `com.fattymap.podcast-update` - 週一 16:00 下載音檔
-- `com.fattymap.podcast-sync` - 週二 16:00 同步結果
+- `com.fattymap.podcast-update` - 週一 16:00
+- `com.fattymap.podcast-sync` - 週一 19:30
 
-### 手動觸發同步
+### 2. 確認 Windows 排程
 
-```bash
-launchctl start com.fattymap.podcast-sync
-```
+打開「工作排程器」，在「工作排程器程式庫」中找到「Podcast 自動處理」
 
-### 查看 log
+### 3. 查看 Mac log
 
 ```bash
 cat ~/Library/Logs/podcast-update.log
 cat ~/Library/Logs/podcast-sync.log
 ```
+
+---
+
+## 📁 相關檔案位置
+
+### Windows
+
+| 檔案 | 路徑 |
+|------|------|
+| 自動化批次檔 | `C:\projects\whisper.cpp\auto_full_process.bat` |
+| Whisper 輸入 | `C:\projects\whisper.cpp\input\` |
+| Whisper 輸出 | `C:\projects\whisper.cpp\output\` |
+| 摘要輸入 | `C:\projects\faty\fatty_talk\S3EP201_204\faty_talk\` |
+| 摘要輸出 | `C:\projects\faty\fatty_talk\S3EP201_204\output\` |
+
+### Mac
+
+| 檔案 | 路徑 |
+|------|------|
+| 下載腳本 | `update_podcast.sh` |
+| 同步腳本 | `sync_podcast_results.sh` |
+| 網站資料 | `public/doc/` |
