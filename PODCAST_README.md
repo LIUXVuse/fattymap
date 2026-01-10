@@ -263,6 +263,35 @@ launchctl load ~/Library/LaunchAgents/com.fattymap.podcast-update.plist
 
 ### 相關檔案
 
-- `update_podcast.sh` - 自動更新腳本
-- `~/Library/LaunchAgents/com.fattymap.podcast-update.plist` - 定時任務設定檔
+- `update_podcast.sh` - 自動更新腳本（下載音檔到 Windows）
+- `sync_podcast_results.sh` - 同步 Windows 處理結果到網站
+- `~/Library/LaunchAgents/com.fattymap.podcast-update.plist` - 週一 16:00 執行
+- `~/Library/LaunchAgents/com.fattymap.podcast-sync.plist` - 週二 16:00 執行
 - `~/Library/Logs/podcast-update.log` - 更新記錄
+- `~/Library/Logs/podcast-sync.log` - 同步記錄
+
+---
+
+## 🔄 完整自動化流程
+
+整個流程需要 Mac 和 Windows 協作：
+
+```
+週一 16:00 (Mac)          週一 17:00+ (Windows)       週二 16:00 (Mac)
+      │                          │                        │
+      ▼                          │                        │
+更新 JSON                        │                        │
+下載音檔到 Windows ────► Whisper 轉逐字稿               │
+      │                          │                        │
+      │                          ▼                        │
+      │                    產生摘要                       │
+      │                          │                        │
+      │                          └────────────────────►  同步到網站
+      │                                                   │
+      │                                                   ▼
+      │                                              Git push
+```
+
+### Windows 設定說明
+
+請參考 [WINDOWS_SETUP.md](./WINDOWS_SETUP.md) 設定 Windows 排程任務。
