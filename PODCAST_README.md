@@ -220,3 +220,49 @@ A: 目前檔名格式固定為 `S3EP01.mp3`（方便跑 whisper），如果需�
 ---
 
 祝你使用愉快！🎉
+
+---
+
+## 🤖 自動更新設定
+
+系統已設定 **每週一下午 4 點** 自動更新 Podcast 資料。
+
+### 查看定時任務狀態
+
+```bash
+launchctl list | grep fattymap
+```
+
+輸出 `0 com.fattymap.podcast-update` 表示任務正常運作。
+
+### 手動觸發更新
+
+如果想要立即更新（不等到週一）：
+
+```bash
+launchctl start com.fattymap.podcast-update
+```
+
+### 查看更新記錄
+
+```bash
+cat ~/Library/Logs/podcast-update.log
+```
+
+### 停用自動更新
+
+```bash
+launchctl unload ~/Library/LaunchAgents/com.fattymap.podcast-update.plist
+```
+
+### 重新啟用自動更新
+
+```bash
+launchctl load ~/Library/LaunchAgents/com.fattymap.podcast-update.plist
+```
+
+### 相關檔案
+
+- `update_podcast.sh` - 自動更新腳本
+- `~/Library/LaunchAgents/com.fattymap.podcast-update.plist` - 定時任務設定檔
+- `~/Library/Logs/podcast-update.log` - 更新記錄
