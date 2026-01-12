@@ -28,24 +28,23 @@ cd "$PROJECT_DIR" || {
 # 計數器
 COPIED_COUNT=0
 
-# 1. 同步 Whisper 逐字稿（_tw.txt 檔案）
-if [ -d "$WHISPER_OUTPUT" ]; then
-    echo "📄 檢查 Whisper 逐字稿..." >> "$LOG_FILE"
-    
-    for file in "$WHISPER_OUTPUT"/*_tw.txt; do
-        if [ -f "$file" ]; then
-            filename=$(basename "$file")
-            # 檢查是否已存在於 public/doc
-            if [ ! -f "$PUBLIC_DOC/$filename" ]; then
-                cp "$file" "$PUBLIC_DOC/"
-                echo "   ✅ 複製: $filename" >> "$LOG_FILE"
-                ((COPIED_COUNT++))
-            fi
-        fi
-    done
-else
-    echo "⚠️ Whisper output 資料夾不可用" >> "$LOG_FILE"
-fi
+# 注意：不再同步逐字稿（_tw.txt），只同步摘要
+# 如果需要逐字稿，可以取消下面的註解
+
+# # 1. 同步 Whisper 逐字稿（_tw.txt 檔案）- 已停用
+# if [ -d "$WHISPER_OUTPUT" ]; then
+#     echo "📄 檢查 Whisper 逐字稿..." >> "$LOG_FILE"
+#     for file in "$WHISPER_OUTPUT"/*_tw.txt; do
+#         if [ -f "$file" ]; then
+#             filename=$(basename "$file")
+#             if [ ! -f "$PUBLIC_DOC/$filename" ]; then
+#                 cp "$file" "$PUBLIC_DOC/"
+#                 echo "   ✅ 複製: $filename" >> "$LOG_FILE"
+#                 ((COPIED_COUNT++))
+#             fi
+#         fi
+#     done
+# fi
 
 # 2. 同步摘要檔案（_摘要.txt 檔案）
 if [ -d "$SUMMARY_OUTPUT" ]; then

@@ -32,7 +32,7 @@
 我已經幫你建立了 `auto_full_process.bat` 在：
 
 ```
-C:\projects\whisper.cpp\auto_full_process.bat
+E:\projects\whisper.cpp\auto_full_process.bat
 ```
 
 這個批次檔會：
@@ -61,13 +61,13 @@ C:\projects\whisper.cpp\auto_full_process.bat
    - 程式或指令碼：
 
      ```
-     C:\projects\whisper.cpp\auto_full_process.bat
+     E:\projects\whisper.cpp\auto_full_process.bat
      ```
 
    - 開始位置：
 
      ```
-     C:\projects\whisper.cpp
+     E:\projects\whisper.cpp
      ```
 
 6. **完成**：勾選「當我按完成時，開啟此工作的內容對話方塊」

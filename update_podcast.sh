@@ -45,43 +45,63 @@ source "$VENV_PATH/bin/activate" && {
         cp "$PROJECT_DIR/podcast_episodes.json" "$PROJECT_DIR/public/podcast_episodes.json"
         echo "✅ JSON 更新成功！" >> "$LOG_FILE"
         
-        # 2. 取得最新集數編號
-        LATEST_EP=$(python -c "import json; eps=json.load(open('podcast_episodes.json')); print(eps[0]['episodeNumber'])" 2>/dev/null)
-        EP_NUM=$(python -c "import json; eps=json.load(open('podcast_episodes.json')); print(eps[0]['episode'])" 2>/dev/null)
-        echo "📺 最新集數: $LATEST_EP" >> "$LOG_FILE"
+        # 2. 取得最新 3 集的資訊
+        echo "📺 檢查最新 3 集..." >> "$LOG_FILE"
         
-        # 3. 先下載到 Mac 本地（速度快！）
-        if [ ! -f "$LOCAL_DOWNLOADS/$LATEST_EP.mp3" ]; then
-            echo "📥 下載最新音檔到 Mac 本地..." >> "$LOG_FILE"
-            python podcast_downloader.py --download --start "$EP_NUM" --end "$EP_NUM" >> "$LOG_FILE" 2>&1
+        # 使用 Python 取得最新 3 集的編號
+        EPISODES_INFO=$(python -c "
+import json
+eps = json.load(open('podcast_episodes.json'))
+for i in range(min(3, len(eps))):
+    print(f\"{eps[i]['episode']}|{eps[i]['episodeNumber']}\")
+" 2>/dev/null)
+        
+        # 3. 下載最新 3 集到 Mac 本地（已有的會跳過）
+        DOWNLOAD_COUNT=0
+        while IFS='|' read -r EP_NUM EP_NAME; do
+            if [ -z "$EP_NUM" ]; then continue; fi
             
-            if [ $? -eq 0 ]; then
-                echo "✅ 音檔已下載到 Mac: $LOCAL_DOWNLOADS/$LATEST_EP.mp3" >> "$LOG_FILE"
-            else
-                echo "❌ 音檔下載失敗" >> "$LOG_FILE"
-            fi
-        else
-            echo "⏭️ Mac 本地已有音檔，跳過下載" >> "$LOG_FILE"
-        fi
-        
-        # 4. 如果 Windows 可用，複製音檔過去（比直接下載到 Windows 快很多！）
-        if [ "$WHISPER_AVAILABLE" = true ]; then
-            if [ -f "$LOCAL_DOWNLOADS/$LATEST_EP.mp3" ]; then
-                if [ -f "$WHISPER_INPUT/$LATEST_EP.mp3" ]; then
-                    echo "⏭️ Windows 已有此音檔，跳過複製" >> "$LOG_FILE"
+            if [ ! -f "$LOCAL_DOWNLOADS/$EP_NAME.mp3" ]; then
+                echo "📥 下載 $EP_NAME 到 Mac 本地..." >> "$LOG_FILE"
+                python podcast_downloader.py --download --start "$EP_NUM" --end "$EP_NUM" >> "$LOG_FILE" 2>&1
+                
+                if [ $? -eq 0 ]; then
+                    echo "   ✅ $EP_NAME.mp3 下載完成" >> "$LOG_FILE"
+                    ((DOWNLOAD_COUNT++))
                 else
-                    echo "📤 複製音檔到 Windows Whisper input..." >> "$LOG_FILE"
-                    cp "$LOCAL_DOWNLOADS/$LATEST_EP.mp3" "$WHISPER_INPUT/"
-                    
-                    if [ $? -eq 0 ]; then
-                        echo "✅ 音檔已複製到 Windows: $WHISPER_INPUT/$LATEST_EP.mp3" >> "$LOG_FILE"
-                    else
-                        echo "❌ 複製到 Windows 失敗" >> "$LOG_FILE"
-                    fi
+                    echo "   ❌ $EP_NAME.mp3 下載失敗" >> "$LOG_FILE"
                 fi
             else
-                echo "⚠️ Mac 本地沒有音檔，無法複製到 Windows" >> "$LOG_FILE"
+                echo "⏭️ $EP_NAME.mp3 已存在，跳過下載" >> "$LOG_FILE"
             fi
+        done <<< "$EPISODES_INFO"
+        
+        echo "📊 本次下載了 $DOWNLOAD_COUNT 個新檔案" >> "$LOG_FILE"
+        
+        # 4. 如果 Windows 可用，複製所有新音檔過去
+        if [ "$WHISPER_AVAILABLE" = true ]; then
+            COPY_COUNT=0
+            while IFS='|' read -r EP_NUM EP_NAME; do
+                if [ -z "$EP_NUM" ]; then continue; fi
+                
+                if [ -f "$LOCAL_DOWNLOADS/$EP_NAME.mp3" ]; then
+                    if [ ! -f "$WHISPER_INPUT/$EP_NAME.mp3" ]; then
+                        echo "📤 複製 $EP_NAME.mp3 到 Windows..." >> "$LOG_FILE"
+                        cp "$LOCAL_DOWNLOADS/$EP_NAME.mp3" "$WHISPER_INPUT/"
+                        
+                        if [ $? -eq 0 ]; then
+                            echo "   ✅ 已複製到 Windows" >> "$LOG_FILE"
+                            ((COPY_COUNT++))
+                        else
+                            echo "   ❌ 複製失敗" >> "$LOG_FILE"
+                        fi
+                    else
+                        echo "⏭️ Windows 已有 $EP_NAME.mp3，跳過" >> "$LOG_FILE"
+                    fi
+                fi
+            done <<< "$EPISODES_INFO"
+            
+            echo "📊 本次複製了 $COPY_COUNT 個檔案到 Windows" >> "$LOG_FILE"
         fi
     else
         echo "❌ JSON 更新失敗" >> "$LOG_FILE"
