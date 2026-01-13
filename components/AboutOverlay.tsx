@@ -124,7 +124,11 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
         setActiveTab(initialTab);
     }, [initialTab]);
 
-    // 動態載入 Podcast 摘要
+    // 漸進式載入 Podcast 摘要：先載入前 20 集，背景自動載入剩餘集數
+    const INITIAL_LOAD_COUNT = 20;
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [totalEpisodeCount, setTotalEpisodeCount] = useState(0);
+
     useEffect(() => {
         const loadEpisodes = async () => {
             if (activeTab !== 'podcast' || episodes.length > 0) return;
@@ -134,12 +138,10 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
                 // 1. 從 podcast_episodes.json 讀取基本資料
                 const response = await fetch('/podcast_episodes.json');
                 const jsonEpisodes = await response.json();
+                setTotalEpisodeCount(jsonEpisodes.length);
 
-                const loadedEpisodes: PodcastEpisode[] = [];
-
-                // 2. 使用 fetch() 載入每個摘要檔案（從 public/doc 資料夾）
-                for (const ep of jsonEpisodes) {
-                    // 嘗試載入對應的摘要檔案 (S3EPXX_摘要.txt 格式)
+                // 2. 輔助函數：載入單集摘要
+                const loadSingleEpisode = async (ep: any): Promise<PodcastEpisode> => {
                     let content = '';
                     const summaryPath = `/doc/${ep.episodeNumber}_摘要.txt`;
 
@@ -147,7 +149,6 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
                         const summaryResponse = await fetch(summaryPath);
                         if (summaryResponse.ok) {
                             const text = await summaryResponse.text();
-                            // 檢查是否是有效的摘要內容（不是 HTML，Vite 找不到檔案時會回傳 index.html）
                             if (!text.trim().startsWith('<!DOCTYPE') && !text.trim().startsWith('<html')) {
                                 content = text;
                             }
@@ -156,18 +157,38 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
                         console.log(`無法載入摘要: ${summaryPath}`);
                     }
 
-                    loadedEpisodes.push({
+                    return {
                         episodeNumber: ep.episodeNumber,
                         title: ep.title,
                         content: content || `${ep.title}\n\n發布日期：${ep.pubDate}\n\n(此集尚無摘要)`,
-                        url: ep.url  // 從 JSON 取得專屬連結
-                    });
-                }
+                        url: ep.url
+                    };
+                };
 
-                setEpisodes(loadedEpisodes);
+                // 3. 先載入前 20 集並立即顯示
+                const firstBatch = jsonEpisodes.slice(0, INITIAL_LOAD_COUNT);
+                const firstLoadedEpisodes = await Promise.all(firstBatch.map(loadSingleEpisode));
+                setEpisodes(firstLoadedEpisodes);
+                setLoadingPodcasts(false);
+
+                // 4. 背景自動載入剩餘集數（不阻塞 UI）
+                if (jsonEpisodes.length > INITIAL_LOAD_COUNT) {
+                    setIsLoadingMore(true);
+                    const remainingEpisodes = jsonEpisodes.slice(INITIAL_LOAD_COUNT);
+
+                    // 批次載入，每批 10 集，避免同時發送太多請求
+                    const BATCH_SIZE = 10;
+                    for (let i = 0; i < remainingEpisodes.length; i += BATCH_SIZE) {
+                        const batch = remainingEpisodes.slice(i, i + BATCH_SIZE);
+                        const batchLoaded = await Promise.all(batch.map(loadSingleEpisode));
+
+                        // 將新載入的集數附加到現有列表
+                        setEpisodes(prev => [...prev, ...batchLoaded]);
+                    }
+                    setIsLoadingMore(false);
+                }
             } catch (error) {
                 console.error('載入 Podcast 摘要失敗:', error);
-            } finally {
                 setLoadingPodcasts(false);
             }
         };
@@ -536,6 +557,14 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
                                             </div>
                                         );
                                     })}
+
+                                    {/* 背景載入更多集數的提示 */}
+                                    {isLoadingMore && (
+                                        <div className="flex items-center justify-center gap-2 py-4 text-gray-500 text-sm">
+                                            <Loader2 size={16} className="animate-spin" />
+                                            <span>載入更多集數中... ({episodes.length}/{totalEpisodeCount})</span>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
