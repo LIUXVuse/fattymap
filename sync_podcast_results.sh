@@ -10,9 +10,9 @@ PROJECT_DIR="/Users/liu/Documents/porject/肥宅老司機前進世界地圖"
 LOG_FILE="$HOME/Library/Logs/podcast-sync.log"
 PUBLIC_DOC="$PROJECT_DIR/public/doc"
 
-# Windows 共享資料夾路徑
-WHISPER_OUTPUT="/Volumes/desktop-0i312mm-1/projects/whisper.cpp/output"
-SUMMARY_OUTPUT="/Volumes/desktop-0i312mm-1/projects/faty/fatty_talk/S3EP201_204/output"
+# Windows 共享資料夾路徑 (使用 IP 位址避免主機名稱解析問題)
+WHISPER_OUTPUT="/Volumes/192.168.1.103/projects/whisper.cpp/output"
+SUMMARY_OUTPUT="/Volumes/192.168.1.103/projects/faty/fatty_talk/S3EP201_204/output"
 
 # 記錄開始時間
 echo "========================================" >> "$LOG_FILE"

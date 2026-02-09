@@ -10,8 +10,8 @@ LOG_FILE="$HOME/Library/Logs/podcast-update.log"
 VENV_PATH="$PROJECT_DIR/venv"
 LOCAL_DOWNLOADS="$PROJECT_DIR/downloads"
 
-# Windows 共享資料夾路徑
-WHISPER_INPUT="/Volumes/desktop-0i312mm-1/projects/whisper.cpp/input"
+# Windows 共享資料夾路徑 (使用 IP 位址避免主機名稱解析問題)
+WHISPER_INPUT="/Volumes/192.168.1.103/projects/whisper.cpp/input"
 
 # 記錄開始時間
 echo "========================================" >> "$LOG_FILE"
