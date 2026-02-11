@@ -9,7 +9,7 @@ import { SponsorAdminPanel } from './components/SponsorAdminPanel';
 import { Memory, Location, MarkerColor, CategoryNode, RegionInfo, PlaceSearchResult, MarkerIconType, Sponsor } from './types';
 import { Menu, X, MapPin, Navigation, Play, RotateCcw, Search, Loader2, LogIn, LogOut, ExternalLink, Info } from 'lucide-react';
 import { searchLocation, getAutocomplete, getPlaceDetails, openGoogleMapsNavigation } from './services/mapService';
-import { auth, signInWithGoogle, logout, subscribeToMemories, subscribeToCategories, initCategoriesIfEmpty, addMemoryToFireStore, updateMemoryInFirestore, deleteMemoryFromFirestore, saveCategoriesToFirestore, uploadImage, subscribeToSponsors } from './services/firebase';
+import { auth, signInWithGoogle, logout, subscribeToMemories, subscribeToCategories, initCategoriesIfEmpty, addMemoryToFireStore, updateMemoryInFirestore, deleteMemoryFromFirestore, saveCategoriesToFirestore, uploadImage, uploadVideo, subscribeToSponsors } from './services/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 
 // 管理員 Email 列表 (簡單實作，實際建議用 Custom Claims)
@@ -213,7 +213,8 @@ const App: React.FC = () => {
     const handleSaveMemory = async (
         data: Omit<Memory, "id" | "creatorId" | "timestamp">,
         photoFiles: File[],
-        customAvatarFile?: File
+        customAvatarFile?: File,
+        videoFiles?: File[]
     ) => {
 
         // 允許匿名發文，若沒登入給一個 Guest ID
@@ -251,7 +252,19 @@ const App: React.FC = () => {
                 ...data,
                 photos: photoUrls,
                 authorAvatar: avatarUrl,
+                videos: data.videos || [], // 保留既有影片 URL
             };
+
+            // 4. 上傳新影片
+            if (videoFiles && videoFiles.length > 0) {
+                const videoUrls: string[] = [...(finalData.videos || [])];
+                for (const file of videoFiles) {
+                    const path = `videos/${userId}/${Date.now()}_${file.name}`;
+                    const url = await uploadVideo(file, path);
+                    videoUrls.push(url);
+                }
+                finalData.videos = videoUrls;
+            }
 
             if (editingMemory) {
                 await updateMemoryInFirestore(editingMemory.id, finalData);

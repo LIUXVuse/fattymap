@@ -175,6 +175,68 @@ export const uploadImage = async (file: File, path: string): Promise<string> => 
   }
 };
 
+// --- Video Upload Service (Cloudinary) ---
+const MAX_VIDEO_SIZE = 20 * 1024 * 1024; // 20MB
+const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
+
+/**
+ * 上傳影片到 Cloudinary
+ * 限制：每個影片最大 20MB，僅支援 MP4/WebM/MOV
+ */
+export const uploadVideo = async (file: File, path: string): Promise<string> => {
+  // 檢查設定
+  if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
+    console.error("Cloudinary 設定缺失", { CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET });
+    alert("系統錯誤：影片上傳服務尚未設定 (Cloudinary)。請聯繫管理員。");
+    throw new Error("Cloudinary config missing");
+  }
+
+  // 檢查檔案大小
+  if (file.size > MAX_VIDEO_SIZE) {
+    const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+    alert(`影片太大了！(${sizeMB} MB)\n上限為 20MB，請壓縮後再試。`);
+    throw new Error(`Video too large: ${sizeMB}MB (max 20MB)`);
+  }
+
+  // 檢查檔案格式
+  if (!ALLOWED_VIDEO_TYPES.includes(file.type)) {
+    alert(`不支援的影片格式：${file.type}\n僅支援 MP4、WebM、MOV 格式。`);
+    throw new Error(`Unsupported video type: ${file.type}`);
+  }
+
+  const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/video/upload`;
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+  formData.append("resource_type", "video");
+
+  const folder = path.substring(0, path.lastIndexOf('/'));
+  if (folder) {
+    formData.append("folder", folder);
+  }
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      body: formData
+    });
+
+    if (!response.ok) {
+      const errData = await response.json();
+      throw new Error(errData.error?.message || "Video upload failed");
+    }
+
+    const data = await response.json();
+    return data.secure_url;
+
+  } catch (error) {
+    console.error("Cloudinary Video Upload Error:", error);
+    throw error;
+  }
+};
+
+
 // --- Firestore Services (Memories) ---
 // 即時監聽 Memories
 export const subscribeToMemories = (callback: (memories: Memory[]) => void) => {

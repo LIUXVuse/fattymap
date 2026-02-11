@@ -1,6 +1,6 @@
 # 肥宅老司機前進世界地圖 (Otaku Old Driver's World Map)
 
-![Version](https://img.shields.io/badge/version-1.0.0-green) ![Status](https://img.shields.io/badge/status-穩定版-brightgreen)
+![Version](https://img.shields.io/badge/version-1.5.0-green) ![Status](https://img.shields.io/badge/status-穩定版-brightgreen)
 
 這是一個基於地圖的互動式足跡紀錄應用程式。專為熱愛探索的使用者設計，結合了 Google Maps 的街景資訊，讓您輕鬆標記美食、景點與住宿，並規劃專屬的「老司機」路線。
 
@@ -23,9 +23,11 @@
   * 開啟導航模式後，依序點擊地圖上的標記點。
   * 自動繪製路徑連線，規劃順遊行程。
   * 支援一鍵跳轉 Google Maps 進行實際導航。
-* **📸 照片紀錄 (自動壓縮)**:
+* **📸 照片與影片紀錄**:
   * 支援上傳多張照片紀錄當地風情。
-  * **自動壓縮大圖**: 超過 9MB 的圖片會自動壓縮，解決 Cloudinary 免費方案的 10MB 限制。
+  * **影片上傳**: 支援 MP4/WebM/MOV 格式，單檔上限 20MB。
+  * **自動壓縮大圖**: 超過 9MB 的圖片會自動壓縮。
+  * **延遲載入**: 所有照片採用 lazy loading，影片採用 preload=none，加快頁面載入。
 * **🎙️ Podcast 節目摘要**:
   * 整合 200+ 集 Podcast 節目摘要於「關於我們」彈窗。
   * 支援關鍵字搜尋，快速找到想回聽的集數。
@@ -50,7 +52,7 @@
 * **部署平台**: Cloudflare Pages (Git Integration)
 * **後端與資料庫**:
   * **Google Firebase**: Authentication (登入), Firestore (資料庫)
-  * **Cloudinary**: Image Hosting (免費圖床，無需綁卡，自動壓縮大圖)
+  * **Cloudinary**: Image & Video Hosting (免費圖床，無需綁卡，自動壓縮大圖)
 
 ## 🚀 快速開始
 
@@ -145,6 +147,11 @@ VITE_GOOGLE_PLACES_API_KEY=您的_Google_API_Key
 * ✅ 隨機探索自動展開圖釘
 * ✅ 多點 Google Maps 導航
 * ✅ 留言板功能
+
+### v1.5.0 - 2026-02-11
+
+* ✅ **照片延遲載入** - 所有 `<img>` 加上 `loading="lazy"` 提升效能
+* ✅ **影片上傳功能** - 支援 MP4/WebM/MOV，單檔上限 20MB
 
 ### v1.4.2 - 2025-12-21
 

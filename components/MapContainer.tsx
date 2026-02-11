@@ -393,7 +393,7 @@ const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, has
                                         className="rounded-lg overflow-hidden border border-gray-200 shadow-sm cursor-pointer hover:opacity-90 transition-opacity"
                                         onClick={() => onImageClick?.(memory.photos, 0)}
                                     >
-                                        <img src={memory.photos[0]} className="w-full h-32 object-cover" alt="story" />
+                                        <img src={memory.photos[0]} className="w-full h-32 object-cover" alt="story" loading="lazy" />
                                     </div>
                                 ) : (
                                     <div className="flex gap-2 overflow-x-auto pb-2">
@@ -403,7 +403,7 @@ const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, has
                                                 className="relative rounded-lg overflow-hidden border border-gray-200 shadow-sm flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity"
                                                 onClick={() => onImageClick?.(memory.photos, idx)}
                                             >
-                                                <img src={photo} className="w-24 h-24 object-cover" alt={`story-${idx + 1}`} />
+                                                <img src={photo} className="w-24 h-24 object-cover" alt={`story-${idx + 1}`} loading="lazy" />
                                                 <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1 rounded">
                                                     {idx + 1}/{memory.photos.length}
                                                 </div>
@@ -411,6 +411,24 @@ const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, has
                                         ))}
                                     </div>
                                 )}
+                            </div>
+                        )}
+
+                        {/* Videos in Popup */}
+                        {memory.videos && memory.videos.length > 0 && (
+                            <div className="mb-2">
+                                <div className="flex gap-2 overflow-x-auto pb-1">
+                                    {memory.videos.map((video, idx) => (
+                                        <div key={`video-${idx}`} className="relative rounded-lg overflow-hidden border border-purple-300 flex-shrink-0 bg-black">
+                                            <video
+                                                src={video}
+                                                className="w-32 h-24 object-cover"
+                                                controls
+                                                preload="none"
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         )}
 

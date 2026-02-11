@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, MapPin, Image as ImageIcon, Check, Palette, Globe, Edit3, Loader2, Plus, Trash2, ChevronRight, Grid, User as UserIcon, Upload } from 'lucide-react';
+import { X, MapPin, Image as ImageIcon, Check, Palette, Globe, Edit3, Loader2, Plus, Trash2, ChevronRight, Grid, User as UserIcon, Upload, Video } from 'lucide-react';
 import { Location, MarkerColor, CategoryNode, RegionInfo, MarkerIconType, Memory } from '../types';
 import { findPlaceDetails } from '../services/mapService';
 import { ICON_MAP } from './MapContainer';
@@ -12,7 +12,7 @@ interface MemoryModalProps {
     initialData?: Memory;
     onClose: () => void;
     // 更新 onSubmit 簽名以配合 Firebase 邏輯
-    onSubmit: (data: Omit<Memory, "id" | "creatorId" | "timestamp">, photoFiles: File[], customAvatarFile?: File) => Promise<void>;
+    onSubmit: (data: Omit<Memory, "id" | "creatorId" | "timestamp">, photoFiles: File[], customAvatarFile?: File, videoFiles?: File[]) => Promise<void>;
     onAddCategory: (name: string, parentId: string | null) => void;
     onDeleteCategory: (id: string) => void;
     currentUser: User | null;
@@ -61,6 +61,11 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
     const [existingPhotos, setExistingPhotos] = useState<string[]>([]);
     const [newPhotoFiles, setNewPhotoFiles] = useState<File[]>([]);
     const [newPhotoPreviews, setNewPhotoPreviews] = useState<string[]>([]);
+
+    // Videos State
+    const [existingVideos, setExistingVideos] = useState<string[]>([]);
+    const [newVideoFiles, setNewVideoFiles] = useState<File[]>([]);
+    const [newVideoPreviews, setNewVideoPreviews] = useState<string[]>([]);
 
     // Map/Category State
     const [markerColor, setMarkerColor] = useState<MarkerColor>('#ef4444');
@@ -111,6 +116,7 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
 
             setContent(initialData.content);
             setExistingPhotos(initialData.photos);
+            setExistingVideos(initialData.videos || []);
             setMarkerColor(initialData.markerColor);
             setMarkerIcon(initialData.markerIcon || 'default');
 
@@ -216,6 +222,38 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
         }
     };
 
+    const MAX_VIDEO_SIZE = 20 * 1024 * 1024; // 20MB
+    const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
+
+    const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            const files = Array.from(e.target.files);
+            const validFiles: File[] = [];
+
+            for (const file of files) {
+                if (file.size > MAX_VIDEO_SIZE) {
+                    const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+                    alert(`「${file.name}」太大了 (${sizeMB} MB)\n影片上限為 20MB，請壓縮後再試。`);
+                    continue;
+                }
+                if (!ALLOWED_VIDEO_TYPES.includes(file.type)) {
+                    alert(`「${file.name}」格式不支援\n僅支援 MP4、WebM、MOV 格式。`);
+                    continue;
+                }
+                validFiles.push(file);
+            }
+
+            setNewVideoFiles(prev => [...prev, ...validFiles]);
+
+            validFiles.forEach(file => {
+                const url = URL.createObjectURL(file);
+                setNewVideoPreviews(prev => [...prev, url]);
+            });
+        }
+        // Reset input to allow re-selecting the same file
+        e.target.value = '';
+    };
+
     const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
@@ -291,6 +329,7 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
                 identityType, // 儲存身分類型，方便編輯時識別
                 content,
                 photos: existingPhotos, // Pass existing URLs
+                videos: existingVideos, // Pass existing video URLs
                 location: currentLocation,
                 markerColor,
                 markerIcon,
@@ -301,7 +340,7 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
                 region: finalRegion
             };
 
-            await onSubmit(submitData, newPhotoFiles, customAvatarFile || undefined);
+            await onSubmit(submitData, newPhotoFiles, customAvatarFile || undefined, newVideoFiles.length > 0 ? newVideoFiles : undefined);
 
         } catch (error) {
             console.error("Submission error:", error);
@@ -634,13 +673,21 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
                             />
                         </div>
 
-                        {/* Photo Upload */}
+                        {/* Photo & Video Upload */}
                         <div className="flex flex-wrap gap-3">
                             <div className="relative">
                                 <input type="file" accept="image/*" multiple onChange={handlePhotoSelect} className="hidden" id="photo-upload" />
                                 <label htmlFor="photo-upload" className="flex items-center gap-2 cursor-pointer bg-white hover:bg-gray-50 text-gray-700 px-4 py-2.5 rounded-lg border border-gray-300 shadow-sm text-sm font-medium">
                                     <ImageIcon size={18} />
                                     <span>新增照片</span>
+                                </label>
+                            </div>
+                            <div className="relative">
+                                <input type="file" accept="video/mp4,video/webm,video/quicktime" multiple onChange={handleVideoSelect} className="hidden" id="video-upload" />
+                                <label htmlFor="video-upload" className="flex items-center gap-2 cursor-pointer bg-white hover:bg-gray-50 text-purple-700 px-4 py-2.5 rounded-lg border border-purple-300 shadow-sm text-sm font-medium">
+                                    <Video size={18} />
+                                    <span>新增影片</span>
+                                    <span className="text-[10px] text-purple-400">(≤20MB)</span>
                                 </label>
                             </div>
                         </div>
@@ -667,6 +714,40 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
                                         }} className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100"><X size={12} /></button>
                                     </div>
                                 ))}
+                            </div>
+                        )}
+
+                        {/* Video Previews */}
+                        {(existingVideos.length > 0 || newVideoPreviews.length > 0) && (
+                            <div className="bg-purple-50 p-3 rounded-lg border border-purple-200 space-y-2">
+                                <div className="text-xs font-bold text-purple-600 flex items-center gap-1"><Video size={12} /> 影片</div>
+                                <div className="flex gap-2 overflow-x-auto">
+                                    {/* Existing Videos (URLs) */}
+                                    {existingVideos.map((v, idx) => (
+                                        <div key={`vexist-${idx}`} className="relative shrink-0 w-28 h-20 group rounded-lg overflow-hidden border border-purple-300">
+                                            <video src={v} className="w-full h-full object-cover" muted />
+                                            <div className="absolute top-0 right-0 bg-blue-500 text-white text-[8px] px-1 rounded-bl">已上傳</div>
+                                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none"><Video size={20} className="text-white drop-shadow-lg" /></div>
+                                            <button type="button" onClick={() => setExistingVideos(prev => prev.filter((_, i) => i !== idx))} className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 z-10"><X size={12} /></button>
+                                        </div>
+                                    ))}
+                                    {/* New Videos (Local Previews) */}
+                                    {newVideoPreviews.map((v, idx) => (
+                                        <div key={`vnew-${idx}`} className="relative shrink-0 w-28 h-20 group rounded-lg overflow-hidden border border-purple-300">
+                                            <video src={v} className="w-full h-full object-cover opacity-80" muted />
+                                            <div className="absolute top-0 right-0 bg-green-500 text-white text-[8px] px-1 rounded-bl">待上傳</div>
+                                            <div className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] px-1 rounded">
+                                                {(newVideoFiles[idx]?.size / 1024 / 1024).toFixed(1)}MB
+                                            </div>
+                                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none"><Video size={20} className="text-white drop-shadow-lg" /></div>
+                                            <button type="button" onClick={() => {
+                                                URL.revokeObjectURL(newVideoPreviews[idx]);
+                                                setNewVideoPreviews(prev => prev.filter((_, i) => i !== idx));
+                                                setNewVideoFiles(prev => prev.filter((_, i) => i !== idx));
+                                            }} className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 z-10"><X size={12} /></button>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         )}
 

@@ -38,7 +38,8 @@ export interface Memory {
   location: Location;
   content: string;
   timestamp: number;
-  photos: string[]; // Firebase Storage URLs
+  photos: string[]; // Cloudinary URLs
+  videos?: string[]; // Cloudinary Video URLs (可選，向下相容)
   markerColor: MarkerColor;
   markerIcon?: MarkerIconType;
   category: {

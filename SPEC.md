@@ -1,8 +1,8 @@
 # 技術規格書 (Technical Specification)
 
-![Version](https://img.shields.io/badge/version-1.4.1-green) ![Status](https://img.shields.io/badge/status-穩定版-brightgreen)
+![Version](https://img.shields.io/badge/version-1.5.0-green) ![Status](https://img.shields.io/badge/status-穩定版-brightgreen)
 
-> 最後更新: 2025-12-21
+> 最後更新: 2026-02-11
 
 ## 1. 專案概述
 
@@ -24,6 +24,7 @@ interface Memory {
   location: Location;   // 地理位置資訊
   content: string;      // 心得內容
   photos: string[];     // 照片 URL 陣列 (Cloudinary URLs)
+  videos?: string[];    // 影片 URL 陣列 (Cloudinary URLs, 可選，向下相容)
   timestamp: number;    // 建立時間
   markerColor: string;  // 標記顏色 (HEX code, e.g., "#ef4444")
   markerIcon?: string;  // 標記圖示代碼 (e.g., "food", "smile")
@@ -124,13 +125,22 @@ interface Sponsor {
 - **Autocomplete**: 輸入時即時回傳地點候選清單 (Debounce 300ms)
 - **Place Details**: 根據 `placeId` 取得完整座標與地址
 
-### 3.3 Cloudinary (圖片儲存)
+### 3.3 Cloudinary (媒體儲存)
+
+#### 圖片
 
 - **上傳模式**: Unsigned Upload (無需後端簽章)
 - **免費方案限制**: 單檔 10MB、總量 25GB
 - **自動壓縮**: 前端會自動將超過 9MB 的圖片壓縮
   - 最大尺寸: 2048px
   - 品質: 從 90% 逐步降低至 30%
+
+#### 影片
+
+- **上傳端點**: `https://api.cloudinary.com/v1_1/{cloud}/video/upload`
+- **單檔限制**: **20MB** (前端檢查)
+- **支援格式**: MP4、WebM、MOV (`video/mp4`, `video/webm`, `video/quicktime`)
+- **效能優化**: 顯示影片時使用 `preload="none"` 和 `loading="lazy"`
 
 ## 4. 前端元件邏輯
 
@@ -370,6 +380,18 @@ https://tw.trip.com/flights/taipei-to-{cityCode}/tickets-tpe-{airportCode}?Allia
 - **機票搜尋框**: `S8830985` (320x320px)
 
 ## 8. 版本記錄
+
+### v1.5.0 - 2026-02-11
+
+- ✅ **照片延遲載入 (Lazy Loading)** - 所有 `<img>` 加上 `loading="lazy"` 提升效能
+  - MemoryFeed 回憶卡片照片
+  - MapContainer 彈出視窗照片
+  - ImageLightbox 縮圖列表
+- ✅ **影片上傳功能** - 支援上傳短影片至回憶
+  - 單檔限制 20MB，支援 MP4/WebM/MOV 格式
+  - 影片預覽與檔案大小即時顯示
+  - 回憶列表、地圖彈出視窗皆可播放影片
+  - 使用 `preload="none"` 避免不必要的頻寬消耗
 
 ### v1.4.1 - 2025-12-21
 

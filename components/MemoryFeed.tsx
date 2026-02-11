@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Memory } from '../types';
-import { MapPin, Image as ImageIcon, ChevronRight, ArrowLeft, Globe, List, Building2, Edit2, Trash2, MessageCircle, Map as MapIcon, Dices } from 'lucide-react';
+import { MapPin, Image as ImageIcon, ChevronRight, ArrowLeft, Globe, List, Building2, Edit2, Trash2, MessageCircle, Map as MapIcon, Dices, Video } from 'lucide-react';
 
 interface MemoryFeedProps {
     memories: Memory[];
@@ -413,7 +413,7 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
                                             <div className="mb-3">
                                                 {memory.photos.length === 1 ? (
                                                     <div className="relative w-full h-32 rounded-lg overflow-hidden border border-gray-200">
-                                                        <img src={memory.photos[0]} alt="memory" className="w-full h-full object-cover" />
+                                                        <img src={memory.photos[0]} alt="memory" className="w-full h-full object-cover" loading="lazy" />
                                                     </div>
                                                 ) : (
                                                     <div className="relative">
@@ -423,7 +423,7 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
                                                                     key={idx}
                                                                     className="relative w-28 h-28 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0"
                                                                 >
-                                                                    <img src={photo} alt={`memory-${idx + 1}`} className="w-full h-full object-cover" />
+                                                                    <img src={photo} alt={`memory-${idx + 1}`} className="w-full h-full object-cover" loading="lazy" />
                                                                     <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
                                                                         {idx + 1}/{memory.photos.length}
                                                                     </div>
@@ -438,6 +438,30 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
                                                         )}
                                                     </div>
                                                 )}
+                                            </div>
+                                        )}
+
+                                        {/* Videos */}
+                                        {memory.videos && memory.videos.length > 0 && (
+                                            <div className="mt-2">
+                                                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-purple-300">
+                                                    {memory.videos.map((video, idx) => (
+                                                        <div
+                                                            key={`video-${idx}`}
+                                                            className="relative w-40 h-28 rounded-lg overflow-hidden border border-purple-300 flex-shrink-0 bg-black"
+                                                        >
+                                                            <video
+                                                                src={video}
+                                                                className="w-full h-full object-cover"
+                                                                controls
+                                                                preload="none"
+                                                            />
+                                                            <div className="absolute top-1 left-1 bg-purple-600/80 text-white text-[9px] px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                                                                <Video size={10} /> {idx + 1}/{memory.videos.length}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
                                         )}
                                     </div>
