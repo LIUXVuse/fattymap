@@ -10,8 +10,19 @@ LOG_FILE="$HOME/Library/Logs/podcast-update.log"
 VENV_PATH="$PROJECT_DIR/venv"
 LOCAL_DOWNLOADS="$PROJECT_DIR/downloads"
 
-# Windows 共享資料夾路徑 (使用 IP 位址避免主機名稱解析問題)
-WHISPER_INPUT="/Volumes/192.168.1.103/projects/whisper.cpp/input"
+# Windows 共享資料夾路徑
+# 優先使用 IP 掛載，fallback 到 hostname 掛載
+WHISPER_INPUT_BY_IP="/Volumes/192.168.1.106/projects/whisper.cpp/input"
+WHISPER_INPUT_BY_HOST="/Volumes/projects/whisper.cpp/input"
+
+# 自動偵測可用的掛載路徑
+if [ -d "$WHISPER_INPUT_BY_IP" ]; then
+    WHISPER_INPUT="$WHISPER_INPUT_BY_IP"
+elif [ -d "$WHISPER_INPUT_BY_HOST" ]; then
+    WHISPER_INPUT="$WHISPER_INPUT_BY_HOST"
+else
+    WHISPER_INPUT="$WHISPER_INPUT_BY_IP"  # 預設用 IP（後面會檢查是否可用）
+fi
 
 # 記錄開始時間
 echo "========================================" >> "$LOG_FILE"

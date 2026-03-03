@@ -10,9 +10,29 @@ PROJECT_DIR="/Users/liu/Documents/porject/肥宅老司機前進世界地圖"
 LOG_FILE="$HOME/Library/Logs/podcast-sync.log"
 PUBLIC_DOC="$PROJECT_DIR/public/doc"
 
-# Windows 共享資料夾路徑 (使用 IP 位址避免主機名稱解析問題)
-WHISPER_OUTPUT="/Volumes/192.168.1.103/projects/whisper.cpp/output"
-SUMMARY_OUTPUT="/Volumes/192.168.1.103/projects/faty/fatty_talk/S3EP201_204/output"
+# Windows 共享資料夾路徑
+# 優先使用 IP 掛載，fallback 到 hostname 掛載
+WHISPER_OUTPUT_BY_IP="/Volumes/192.168.1.106/projects/whisper.cpp/output"
+WHISPER_OUTPUT_BY_HOST="/Volumes/projects/whisper.cpp/output"
+SUMMARY_OUTPUT_BY_IP="/Volumes/192.168.1.106/projects/faty/fatty_talk/S3EP201_204/output"
+SUMMARY_OUTPUT_BY_HOST="/Volumes/projects/faty/fatty_talk/S3EP201_204/output"
+
+# 自動偵測可用的掛載路徑
+if [ -d "$WHISPER_OUTPUT_BY_IP" ]; then
+    WHISPER_OUTPUT="$WHISPER_OUTPUT_BY_IP"
+elif [ -d "$WHISPER_OUTPUT_BY_HOST" ]; then
+    WHISPER_OUTPUT="$WHISPER_OUTPUT_BY_HOST"
+else
+    WHISPER_OUTPUT="$WHISPER_OUTPUT_BY_IP"
+fi
+
+if [ -d "$SUMMARY_OUTPUT_BY_IP" ]; then
+    SUMMARY_OUTPUT="$SUMMARY_OUTPUT_BY_IP"
+elif [ -d "$SUMMARY_OUTPUT_BY_HOST" ]; then
+    SUMMARY_OUTPUT="$SUMMARY_OUTPUT_BY_HOST"
+else
+    SUMMARY_OUTPUT="$SUMMARY_OUTPUT_BY_IP"
+fi
 
 # 記錄開始時間
 echo "========================================" >> "$LOG_FILE"
