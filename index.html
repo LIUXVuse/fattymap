@@ -7,7 +7,8 @@
   <title>肥宅老司機前進世界地圖</title>
 
   <!-- 網站簡介 -->
-  <meta name="description" content="肥宅老司機前進世界地圖 - 記錄全球美食景點的互動地圖" />
+  <meta name="description" content="肥宅老司機前進世界地圖｜台灣旅人記錄全球美食景點的互動地圖，涵蓋泰國、越南、日本等亞洲旅遊景點，並附有 200+ 集旅遊 Podcast 節目摘要。" />
+  <link rel="canonical" href="https://fattymap.pages.dev/" />
 
   <!-- Open Graph 標籤（Facebook、LINE、Discord 等） -->
   <meta property="og:type" content="website" />
@@ -22,6 +23,41 @@
   <meta name="twitter:title" content="肥宅老司機前進世界地圖" />
   <meta name="twitter:description" content="肥宅老司機前進世界地圖 - 記錄全球美食景點的互動地圖" />
   <meta name="twitter:image" content="https://i.meee.com.tw/Xo1WINx.jpg" />
+  <!-- Schema.org 結構化資料 -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://fattymap.pages.dev/#website",
+        "url": "https://fattymap.pages.dev",
+        "name": "肥宅老司機前進世界地圖",
+        "alternateName": "FattyMap - Asia Food & Travel Map",
+        "description": "台灣旅人記錄全球美食景點的互動旅遊地圖，結合 Podcast 節目分享旅遊體驗",
+        "inLanguage": "zh-TW",
+        "author": { "@id": "https://fattymap.pages.dev/#author" }
+      },
+      {
+        "@type": "Person",
+        "@id": "https://fattymap.pages.dev/#author",
+        "name": "肥宅老司機",
+        "description": "熱愛美食與旅遊的台灣旅人，主持旅遊 Podcast 節目超過 200 集，足跡遍及泰國、越南、菲律賓、日本、印尼等亞洲各地",
+        "url": "https://fattymap.pages.dev",
+        "knowsAbout": ["旅遊", "美食", "亞洲旅遊", "背包客", "台灣旅遊"]
+      },
+      {
+        "@type": "PodcastSeries",
+        "@id": "https://fattymap.pages.dev/#podcast",
+        "name": "肥宅老司機前進世界地圖",
+        "description": "台灣旅人分享亞洲各地旅遊美食體驗的 Podcast 節目",
+        "inLanguage": "zh-TW",
+        "author": { "@id": "https://fattymap.pages.dev/#author" },
+        "url": "https://fattymap.pages.dev"
+      }
+    ]
+  }
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
