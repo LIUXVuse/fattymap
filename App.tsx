@@ -7,7 +7,7 @@ import { ImageLightbox } from './components/ImageLightbox';
 import { AboutOverlay } from './components/AboutOverlay';
 import { SponsorAdminPanel } from './components/SponsorAdminPanel';
 import { Memory, Location, MarkerColor, CategoryNode, RegionInfo, PlaceSearchResult, MarkerIconType, Sponsor } from './types';
-import { Menu, X, MapPin, Navigation, Play, RotateCcw, Search, Loader2, LogIn, LogOut, ExternalLink, Info } from 'lucide-react';
+import { Menu, X, MapPin, Navigation, Play, RotateCcw, Search, Loader2, LogIn, LogOut, ExternalLink, Info, LocateFixed } from 'lucide-react';
 import { searchLocation, getAutocomplete, getPlaceDetails, openGoogleMapsNavigation } from './services/mapService';
 import { auth, signInWithGoogle, logout, subscribeToMemories, subscribeToCategories, initCategoriesIfEmpty, addMemoryToFireStore, updateMemoryInFirestore, deleteMemoryFromFirestore, saveCategoriesToFirestore, uploadImage, uploadVideo, subscribeToSponsors } from './services/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
@@ -611,100 +611,104 @@ const App: React.FC = () => {
                 <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2 items-end">
                     <button
                         onClick={toggleDraggablePinMode}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow-lg font-bold transition-all ${isDraggablePinMode
+                        className={`flex items-center gap-2 px-2.5 py-2.5 md:px-4 md:py-2 rounded-lg shadow-lg font-bold transition-all ${isDraggablePinMode
                             ? 'bg-red-600 text-white ring-4 ring-red-200'
                             : 'bg-white text-gray-700 hover:bg-gray-50'
                             }`}
                     >
                         <MapPin size={18} className={isDraggablePinMode ? 'animate-bounce' : ''} />
-                        {isDraggablePinMode ? '請拖曳地圖上的紅釘' : '放置圖釘'}
+                        <span className="hidden md:inline">{isDraggablePinMode ? '請拖曳地圖上的紅釘' : '放置圖釘'}</span>
                     </button>
 
                     <button
                         onClick={toggleRoutingMode}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow-lg font-bold transition-all ${isRoutingMode
+                        className={`flex items-center gap-2 px-2.5 py-2.5 md:px-4 md:py-2 rounded-lg shadow-lg font-bold transition-all ${isRoutingMode
                             ? 'bg-blue-600 text-white ring-4 ring-blue-200'
                             : 'bg-white text-gray-700 hover:bg-gray-50'
                             }`}
                     >
                         {isRoutingMode ? <X size={18} /> : <Navigation size={18} />}
-                        {isRoutingMode ? '結束導航模式' : '開啟路線規劃'}
+                        <span className="hidden md:inline">{isRoutingMode ? '結束導航模式' : '開啟路線規劃'}</span>
                     </button>
 
                     {/* Podcast 摘要按鈕 */}
                     <button
-                        onClick={() => {
-                            setAboutTab('podcast');
-                            setIsAboutOpen(true);
-                        }}
-                        className="flex items-center gap-2 px-4 py-2 rounded-lg shadow-lg font-bold transition-all bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
+                        onClick={() => { setAboutTab('podcast'); setIsAboutOpen(true); }}
+                        className="flex items-center gap-2 px-2.5 py-2.5 md:px-4 md:py-2 rounded-lg shadow-lg font-bold transition-all bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
                     >
-                        📻 Podcast 摘要
+                        <span>📻</span>
+                        <span className="hidden md:inline">Podcast 摘要</span>
                     </button>
 
-                    {/* 更多功能按鈕 - 打開換匯計算器 */}
+                    {/* 換匯計算器 */}
                     <button
-                        onClick={() => {
-                            setAboutTab('more');
-                            setIsAboutOpen(true);
-                        }}
-                        className="flex items-center gap-2 px-4 py-2 rounded-lg shadow-lg font-bold transition-all bg-gradient-to-r from-orange-500 to-pink-500 text-white hover:from-orange-400 hover:to-pink-400"
+                        onClick={() => { setAboutTab('more'); setIsAboutOpen(true); }}
+                        className="flex items-center gap-2 px-2.5 py-2.5 md:px-4 md:py-2 rounded-lg shadow-lg font-bold transition-all bg-gradient-to-r from-orange-500 to-pink-500 text-white hover:from-orange-400 hover:to-pink-400"
                     >
-                        💱 智能換匯
+                        <span>💱</span>
+                        <span className="hidden md:inline">智能換匯</span>
                     </button>
 
-                    {/* 旅遊預訂按鈕 - Trip.com 聯盟行銷 */}
+                    {/* 旅遊預訂 */}
                     <button
-                        onClick={() => {
-                            setAboutTab('travel');
-                            setIsAboutOpen(true);
-                        }}
-                        className="flex items-center gap-2 px-4 py-2 rounded-lg shadow-lg font-bold transition-all bg-gradient-to-r from-sky-500 to-blue-600 text-white hover:from-sky-400 hover:to-blue-500"
+                        onClick={() => { setAboutTab('travel'); setIsAboutOpen(true); }}
+                        className="flex items-center gap-2 px-2.5 py-2.5 md:px-4 md:py-2 rounded-lg shadow-lg font-bold transition-all bg-gradient-to-r from-sky-500 to-blue-600 text-white hover:from-sky-400 hover:to-blue-500"
                     >
-                        🌏 旅遊預訂
+                        <span>🌏</span>
+                        <span className="hidden md:inline">旅遊預訂</span>
                     </button>
 
                     {isRoutingMode && (
-                        <div className="bg-white p-4 rounded-xl shadow-xl border border-gray-100 w-64 animate-in slide-in-from-top-4">
-                            <h3 className="font-bold text-gray-800 mb-2 flex items-center gap-2">
-                                <Play size={16} className="text-green-500 fill-current" />
-                                規劃您的旅程
+                        <div className="bg-white p-3 md:p-4 rounded-xl shadow-xl border border-gray-100 w-48 md:w-64 animate-in slide-in-from-top-4">
+                            <h3 className="font-bold text-gray-800 mb-1.5 flex items-center gap-2 text-sm">
+                                <Play size={14} className="text-green-500 fill-current" />
+                                規劃旅程
                             </h3>
-                            <p className="text-xs text-gray-500 mb-3">
-                                請依序點擊地圖上的標記點來建立路線。
-                            </p>
-                            <div className="flex flex-col gap-2 mb-3 max-h-32 overflow-y-auto">
+                            <div className="flex flex-col gap-1.5 mb-2 max-h-24 md:max-h-32 overflow-y-auto">
                                 {routePoints.length === 0 ? (
-                                    <span className="text-sm text-gray-400 italic py-2 text-center border-2 border-dashed border-gray-200 rounded">尚未選擇地點</span>
+                                    <span className="text-xs text-gray-400 italic py-2 text-center border-2 border-dashed border-gray-200 rounded">尚未選擇地點</span>
                                 ) : (
                                     routePoints.map((id, index) => {
                                         const m = memories.find(mem => mem.id === id);
                                         return (
-                                            <div key={id} className="text-sm bg-blue-50 text-blue-800 px-2 py-1 rounded flex justify-between items-center">
+                                            <div key={id} className="text-xs bg-blue-50 text-blue-800 px-2 py-1 rounded flex justify-between items-center">
                                                 <span className="truncate flex-1">{index + 1}. {m?.location.name}</span>
-                                                <button onClick={() => handleMarkerClick(id)} className="text-blue-400 hover:text-blue-600 ml-2"><X size={12} /></button>
+                                                <button onClick={() => handleMarkerClick(id)} className="text-blue-400 hover:text-blue-600 ml-1"><X size={11} /></button>
                                             </div>
                                         )
                                     })
                                 )}
                             </div>
-                            <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-                                <span className="text-xs font-bold text-blue-600">總計: {routePoints.length} 個點</span>
-                                <button onClick={() => setRoutePoints([])} className="text-xs text-gray-500 hover:text-red-500 flex items-center gap-1"><RotateCcw size={12} /> 重置</button>
+                            <div className="flex justify-between items-center pt-1.5 border-t border-gray-100">
+                                <span className="text-xs font-bold text-blue-600">{routePoints.length} 個點</span>
+                                <button onClick={() => setRoutePoints([])} className="text-xs text-gray-500 hover:text-red-500 flex items-center gap-1"><RotateCcw size={11} /> 重置</button>
                             </div>
-                            {/* 開始導航按鈕 */}
                             {routePoints.length > 0 && (
                                 <button
                                     onClick={handleStartNavigation}
-                                    className="mt-3 w-full py-2 px-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg"
+                                    className="mt-2 w-full py-2 px-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all shadow text-xs"
                                 >
-                                    <ExternalLink size={16} />
-                                    開始 Google Maps 導航
+                                    <ExternalLink size={13} />
+                                    Google Maps 導航
                                 </button>
                             )}
                         </div>
                     )}
                 </div>
+
+                {/* 回到我的位置按鈕（手機右下角） */}
+                <button
+                    onClick={() => {
+                        navigator.geolocation?.getCurrentPosition(
+                            (pos) => setMapCenter([pos.coords.latitude, pos.coords.longitude]),
+                            () => alert('無法取得定位，請確認已授權位置權限')
+                        );
+                    }}
+                    className="absolute bottom-20 right-4 z-[1000] md:bottom-8 bg-white text-blue-600 p-3 rounded-full shadow-lg border border-gray-200 hover:bg-blue-50 active:scale-95 transition-all"
+                    title="回到我的位置"
+                >
+                    <LocateFixed size={20} />
+                </button>
 
                 <AppMap
                     memories={memories}

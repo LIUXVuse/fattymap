@@ -73,6 +73,16 @@
       overflow: hidden;
     }
 
+    /* 手機觸控優化：移除點擊高亮、減少延遲 */
+    * {
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    /* 地圖本身需要允許雙指縮放 */
+    .leaflet-container {
+      touch-action: none;
+    }
+
     /* 自定義滾動條 */
     ::-webkit-scrollbar {
       width: 8px;

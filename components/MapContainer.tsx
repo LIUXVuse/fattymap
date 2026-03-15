@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { MapContainer as LeafletMap, TileLayer, Marker, Popup, useMapEvents, useMap, Polyline } from 'react-leaflet';
+import { MapContainer as LeafletMap, TileLayer, Marker, Popup, useMapEvents, useMap, Polyline, Circle, CircleMarker } from 'react-leaflet';
 import L from 'leaflet';
 import { Memory, MarkerIconType, Sponsor } from '../types';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -253,6 +253,48 @@ const MapUpdater: React.FC<{ center: [number, number] }> = ({ center }) => {
     }, [center, map]);
 
     return null;
+};
+
+// 使用者目前位置藍點
+const UserLocationMarker: React.FC = () => {
+    const [position, setPosition] = useState<[number, number] | null>(null);
+    const [accuracy, setAccuracy] = useState<number>(0);
+
+    useEffect(() => {
+        if (!navigator.geolocation) return;
+
+        const watchId = navigator.geolocation.watchPosition(
+            (pos) => {
+                setPosition([pos.coords.latitude, pos.coords.longitude]);
+                setAccuracy(pos.coords.accuracy);
+            },
+            null,
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+        );
+
+        return () => navigator.geolocation.clearWatch(watchId);
+    }, []);
+
+    if (!position) return null;
+
+    return (
+        <>
+            {/* 定位精準度範圍圈 */}
+            <Circle
+                center={position}
+                radius={accuracy}
+                pathOptions={{ color: '#3b82f6', fillColor: '#93c5fd', fillOpacity: 0.15, weight: 1 }}
+            />
+            {/* 藍色實心圓點（你在這裡） */}
+            <CircleMarker
+                center={position}
+                radius={9}
+                pathOptions={{ color: 'white', fillColor: '#3b82f6', fillOpacity: 1, weight: 3 }}
+            >
+                <Popup>📍 你在這裡</Popup>
+            </CircleMarker>
+        </>
+    );
 };
 
 // Draggable Pin Component
@@ -590,6 +632,9 @@ export const AppMap: React.FC<MapContainerProps> = ({
                     url="https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=zh-TW"
                     subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
                     maxZoom={20}
+                    updateWhenZooming={false}
+                    updateWhenIdle={true}
+                    keepBuffer={1}
                 />
 
                 <MapEvents onClick={handleMapClick} isRouting={isRoutingMode} isDragging={isDraggablePinMode} />
@@ -645,6 +690,9 @@ export const AppMap: React.FC<MapContainerProps> = ({
                         onPopupOpen={onPopupOpen}
                     />
                 ))}
+
+                {/* 使用者目前位置藍點 */}
+                <UserLocationMarker />
 
                 {/* 贊助商 Markers */}
                 {sponsors.filter(s => s.isActive).map((sponsor) => (
