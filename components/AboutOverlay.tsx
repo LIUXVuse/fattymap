@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Heart, ShoppingBag, Users, Headphones, Instagram, Globe, ExternalLink, Copy, Check, Bug, Plane, Building2, MapPin, ChevronDown, ChevronUp, Search, Loader2 } from 'lucide-react';
 import { CurrencyExchangeCalculator } from './CurrencyExchangeCalculator';
+import { SimRankPanel } from './SimRankPanel';
 
 // Spotify 圖示 SVG
 const SpotifyIcon = () => (
@@ -29,7 +30,7 @@ interface AboutOverlayProps {
     initialTab?: 'about' | 'collab' | 'more' | 'travel' | 'podcast';  // 新增：指定初始 Tab
 }
 
-type TabType = 'about' | 'collab' | 'more' | 'travel' | 'podcast';
+type TabType = 'about' | 'collab' | 'more' | 'travel' | 'podcast' | 'sim';
 
 interface PodcastEpisode {
     episodeNumber: string;
@@ -266,6 +267,7 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
         { id: 'collab', label: '合作贊助', icon: <Heart size={16} /> },
         { id: 'podcast', label: 'Podcast', icon: <Headphones size={16} /> },
         { id: 'more', label: '智能換匯', icon: <ShoppingBag size={16} /> },
+        { id: 'sim', label: 'SIM卡', icon: <span className="text-sm">📶</span> },
         { id: 'travel', label: '旅遊預訂', icon: <Plane size={16} /> },
     ];
 
@@ -317,13 +319,13 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
                     </p>
                 </div>
 
-                {/* Tab 切換 */}
-                <div className="flex justify-center gap-2 px-6 mb-4">
+                {/* Tab 切換 — 手機可左右滑動 */}
+                <div className="flex gap-1.5 px-4 mb-4 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${activeTab === tab.id
+                            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap ${activeTab === tab.id
                                 ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg'
                                 : 'bg-gray-100/80 text-gray-600 hover:bg-gray-200/80'
                                 }`}
@@ -458,6 +460,10 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
 
                     {activeTab === 'more' && (
                         <CurrencyExchangeCalculator />
+                    )}
+
+                    {activeTab === 'sim' && (
+                        <SimRankPanel />
                     )}
 
                     {activeTab === 'podcast' && (

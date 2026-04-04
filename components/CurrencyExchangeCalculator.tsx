@@ -30,6 +30,8 @@ interface MultiRatesState {
     thailandRates: Record<string, ExchangeRateData>;
     globalRates: Record<string, number>;
     estimatedRates: Record<string, ExchangeRateData>;
+    twBanksUSD: Array<{ bank: string; usdSell: number }>;
+    vcbRates: Record<string, number>;
     lastUpdate: string;
 }
 
@@ -48,17 +50,16 @@ export const CurrencyExchangeCalculator: React.FC = () => {
         setIsLoading(true);
         setError(null);
         try {
-            // BOT API Token 從環境變數讀取
-            const botApiToken = import.meta.env.VITE_BOT_API_TOKEN;
-            console.log('BOT Token 是否存在:', !!botApiToken);
+            const rates = await getAllRates();
+            console.log('台灣銀行匯率數量:', Object.keys(rates.taiwanRates).length);
+            console.log('台灣銀行匯率清單:', Object.keys(rates.taiwanRates));
+            console.log('台灣各銀行 USD:', rates.twBanksUSD);
 
-            const rates = await getAllRates(botApiToken);
-            console.log('台灣匯率數量:', Object.keys(rates.taiwanRates).length);
-            console.log('泰國匯率數量:', Object.keys(rates.thailandRates).length);
-            console.log('台灣匯率清單:', Object.keys(rates.taiwanRates));
-            console.log('泰國匯率清單:', Object.keys(rates.thailandRates));
-
-            setMultiRates(rates);
+            setMultiRates({
+                ...rates,
+                twBanksUSD: rates.twBanksUSD ?? [],
+                vcbRates: rates.vcbRates ?? {},
+            });
 
             // 格式化更新時間
             if (rates.lastUpdate) {
@@ -87,14 +88,10 @@ export const CurrencyExchangeCalculator: React.FC = () => {
     const getRateInfo = (currency: string): { rate: number; source: RateSource; sourceName: string } | null => {
         if (!multiRates) return null;
 
-        // 優先順序：台灣銀行 > 泰國央行 > 全球中間匯率
+        // 優先順序：台灣銀行（真實牌告價）> 全球中間匯率（估算）
         if (multiRates.taiwanRates[currency]) {
             const tw = multiRates.taiwanRates[currency];
             return { rate: tw.midRate, source: tw.source, sourceName: tw.sourceName };
-        }
-        if (multiRates.thailandRates[currency]) {
-            const th = multiRates.thailandRates[currency];
-            return { rate: th.midRate, source: th.source, sourceName: th.sourceName };
         }
         if (multiRates.globalRates[currency]) {
             return {
@@ -165,8 +162,11 @@ export const CurrencyExchangeCalculator: React.FC = () => {
         return calculateSmartExchange({
             amount: amountNum,
             targetCurrency: toCurrency,
+            taiwanRates: multiRates.taiwanRates,
             thailandRates: multiRates.thailandRates,
             globalRates: multiRates.globalRates,
+            vcbRates: multiRates.vcbRates,
+            twBanksUSD: multiRates.twBanksUSD,
         });
     };
 
@@ -204,8 +204,7 @@ export const CurrencyExchangeCalculator: React.FC = () => {
 
             {/* 資料來源說明 */}
             <div className="flex flex-wrap gap-2 text-[10px]">
-                <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full">🇹🇼 台灣銀行</span>
-                <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">🇹🇭 泰國央行</span>
+                <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full">🇹🇼 台灣銀行（真實牌告）</span>
                 <span className="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">📊 估算值</span>
             </div>
 
@@ -246,13 +245,13 @@ export const CurrencyExchangeCalculator: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* 快速金額按鈕 */}
-                        <div className="flex gap-2 mb-3">
+                        {/* 快速金額按鈕 — 手機 3×2，平板以上單列 */}
+                        <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 mb-3">
                             {quickAmounts.map(qa => (
                                 <button
                                     key={qa}
                                     onClick={() => setAmount(qa)}
-                                    className={`flex-1 py-1.5 text-xs rounded-lg font-medium transition-all ${amount === qa
+                                    className={`py-1.5 text-xs rounded-lg font-medium transition-all ${amount === qa
                                         ? 'bg-blue-500 text-white'
                                         : 'bg-white/70 text-gray-600 hover:bg-white'
                                         }`}
@@ -344,8 +343,6 @@ export const CurrencyExchangeCalculator: React.FC = () => {
                                 const result = getSmartComparison();
                                 if (!result) return null;
 
-                                const toFlag = CURRENCIES.find(c => c.code === toCurrency)?.flag || '';
-
                                 return (
                                     <div className="p-3 pt-0 space-y-3">
                                         {/* 免責聲明 */}
@@ -355,52 +352,57 @@ export const CurrencyExchangeCalculator: React.FC = () => {
                                         </div>
 
                                         {/* 三個方案卡片 */}
-                                        {result.plans.map((plan) => (
-                                            <div
-                                                key={plan.id}
-                                                className={`p-3 rounded-xl border-2 transition-all ${!plan.isAvailable
-                                                    ? 'border-gray-300 bg-gray-100 opacity-60'
-                                                    : result.recommendation === plan.id
-                                                        ? 'border-green-400 bg-green-50'
-                                                        : 'border-gray-200 bg-white/70'
-                                                    }`}
-                                            >
-                                                <div className="flex items-center justify-between mb-1">
-                                                    <span className="font-bold text-sm flex items-center gap-1">
-                                                        {result.recommendation === plan.id && plan.isAvailable && '✅ '}
-                                                        {!plan.isAvailable && '❌ '}
-                                                        {plan.name}
-                                                    </span>
-                                                    <div className="flex items-center gap-1">
-                                                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${plan.source === 'bot_thailand'
-                                                            ? 'bg-blue-100 text-blue-700'
-                                                            : 'bg-yellow-100 text-yellow-700'
-                                                            }`}>
-                                                            {plan.sourceName}
+                                        {result.plans.map((plan) => {
+                                            const isRecommended = result.recommendation === plan.id && plan.isAvailable;
+                                            const isWorst = result.worstPlanId === plan.id && plan.isAvailable;
+                                            const cardClass = !plan.isAvailable
+                                                ? 'border-gray-300 bg-gray-100 opacity-60'
+                                                : isRecommended
+                                                    ? 'border-green-400 bg-green-50'
+                                                    : isWorst
+                                                        ? 'border-red-300 bg-red-50'
+                                                        : 'border-gray-200 bg-white/70';
+                                            const sourceClass = plan.source === 'taiwan_bank'
+                                                ? 'bg-green-100 text-green-700'
+                                                : 'bg-yellow-100 text-yellow-700';
+
+                                            return (
+                                                <div key={plan.id} className={`p-3 rounded-xl border-2 transition-all ${cardClass}`}>
+                                                    <div className="flex items-center justify-between mb-1">
+                                                        <span className="font-bold text-sm flex items-center gap-1">
+                                                            {isRecommended && '✅ '}
+                                                            {isWorst && <span className="text-red-500">❌ </span>}
+                                                            {!plan.isAvailable && '🚫 '}
+                                                            {plan.name}
                                                         </span>
-                                                        <span className="text-[10px] text-gray-400">
-                                                            {plan.errorMargin}
-                                                        </span>
+                                                        <div className="flex items-center gap-1">
+                                                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${sourceClass}`}>
+                                                                {plan.sourceName}
+                                                            </span>
+                                                            <span className="text-[10px] text-gray-400">
+                                                                {plan.errorMargin}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-xs text-gray-500 mb-1">
+                                                        {plan.description}
+                                                    </div>
+                                                    <div className="text-xs text-gray-600 mb-2">
+                                                        {plan.steps.map((step, i) => (
+                                                            <span key={i}>
+                                                                {CURRENCIES.find(c => c.code === step)?.flag || ''} {step}
+                                                                {i < plan.steps.length - 1 && ' → '}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                    <div className={`text-lg font-bold ${isWorst ? 'text-red-600' : 'text-gray-800'}`}>
+                                                        {plan.isAvailable
+                                                            ? `≈ ${plan.amount.toLocaleString('zh-TW', { maximumFractionDigits: 0 })} ${toCurrency}`
+                                                            : '台灣銀行可能沒有此貨幣'}
                                                     </div>
                                                 </div>
-                                                <div className="text-xs text-gray-500 mb-1">
-                                                    {plan.description}
-                                                </div>
-                                                <div className="text-xs text-gray-600 mb-2">
-                                                    {plan.steps.map((step, i) => (
-                                                        <span key={i}>
-                                                            {CURRENCIES.find(c => c.code === step)?.flag || ''} {step}
-                                                            {i < plan.steps.length - 1 && ' → '}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                                <div className="text-lg font-bold text-gray-800">
-                                                    {plan.isAvailable
-                                                        ? `≈ ${plan.amount.toLocaleString('zh-TW', { maximumFractionDigits: 0 })} ${toCurrency}`
-                                                        : '台灣銀行可能沒有此貨幣'}
-                                                </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
 
                                         {/* 建議 */}
                                         {result.bestPlan && (
@@ -432,6 +434,30 @@ export const CurrencyExchangeCalculator: React.FC = () => {
                                     </div>
                                 );
                             })()}
+                        </div>
+                    )}
+
+                    {/* 台灣各銀行 USD 現鈔賣出比較 */}
+                    {multiRates?.twBanksUSD && multiRates.twBanksUSD.length > 0 && (
+                        <div className="bg-gradient-to-br from-green-50 to-teal-50 rounded-xl border border-green-100 p-3">
+                            <div className="font-bold text-green-700 text-xs mb-2">🏦 台灣各銀行 USD 現鈔賣出（越低越划算）</div>
+                            <div className="space-y-1.5">
+                                {[...multiRates.twBanksUSD]
+                                    .sort((a, b) => a.usdSell - b.usdSell)
+                                    .map((bank, i) => (
+                                        <div key={bank.bank} className="flex items-center justify-between text-xs">
+                                            <span className="text-gray-600 flex items-center gap-1">
+                                                {i === 0 && <span className="text-yellow-500">★</span>}
+                                                {bank.bank}
+                                            </span>
+                                            <span className={`font-bold ${i === 0 ? 'text-green-600' : 'text-gray-700'}`}>
+                                                {bank.usdSell.toFixed(2)} TWD
+                                            </span>
+                                        </div>
+                                    ))
+                                }
+                            </div>
+                            <div className="text-[10px] text-gray-400 mt-1.5">資料來源：台灣銀行今日現鈔牌告</div>
                         </div>
                     )}
 
