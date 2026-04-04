@@ -282,7 +282,7 @@ export const CurrencyExchangeCalculator: React.FC = () => {
                                 >
                                     {CURRENCIES.map(c => (
                                         <option key={c.code} value={c.code}>
-                                            {c.flag} {c.code}
+                                            {c.flag} {c.name} ({c.code})
                                         </option>
                                     ))}
                                 </select>
@@ -336,7 +336,7 @@ export const CurrencyExchangeCalculator: React.FC = () => {
                                 >
                                     {CURRENCIES.map(c => (
                                         <option key={c.code} value={c.code}>
-                                            {c.flag} {c.code}
+                                            {c.flag} {c.name} ({c.code})
                                         </option>
                                     ))}
                                 </select>
