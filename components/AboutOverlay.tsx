@@ -281,7 +281,7 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
 
             {/* 白玻璃面板 */}
             <div
-                className="relative w-full max-w-2xl max-h-[85vh] overflow-hidden"
+                className="relative w-full max-w-2xl md:max-w-3xl max-h-[92vh] overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
                 style={{
                     background: 'rgba(255, 255, 255, 0.85)',
@@ -337,7 +337,7 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
                 </div>
 
                 {/* 內容區域 */}
-                <div className="px-6 pb-6 overflow-y-auto max-h-[45vh]">
+                <div className="px-6 pb-6 overflow-y-auto max-h-[62vh]">
                     {activeTab === 'about' && (
                         <div className="space-y-4 text-gray-700">
                             {/* 關於肥宅老司機 */}

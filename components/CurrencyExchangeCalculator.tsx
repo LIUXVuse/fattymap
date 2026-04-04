@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ArrowRightLeft, RefreshCw, TrendingUp, Loader2, ChevronDown, ChevronUp, Lightbulb, Info } from 'lucide-react';
+import { ArrowRightLeft, RefreshCw, TrendingUp, Loader2, ChevronDown, ChevronUp, Lightbulb, Info, Share2, Check } from 'lucide-react';
 import {
     getAllRates,
     calculateSmartExchange,
@@ -44,6 +44,7 @@ export const CurrencyExchangeCalculator: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [lastUpdate, setLastUpdate] = useState<string>('');
     const [isComparisonOpen, setIsComparisonOpen] = useState<boolean>(true); // 預設展開
+    const [shareCopied, setShareCopied] = useState(false);
 
     // 獲取多來源匯率
     const fetchRates = useCallback(async () => {
@@ -170,6 +171,36 @@ export const CurrencyExchangeCalculator: React.FC = () => {
         });
     };
 
+    // 分享換匯結果
+    const shareRate = async () => {
+        const result = calculateResult();
+        const rate = getCurrentRate();
+        const fromFlag = CURRENCIES.find(c => c.code === fromCurrency)?.flag || '';
+        const toFlag = CURRENCIES.find(c => c.code === toCurrency)?.flag || '';
+        const bestUsd = multiRates?.twBanksUSD?.length
+            ? [...multiRates.twBanksUSD].sort((a, b) => a.usdSell - b.usdSell)[0]
+            : null;
+
+        const text = [
+            `💱 換匯試算`,
+            `${parseInt(amount).toLocaleString()} ${fromFlag}${fromCurrency} ≈ ${result} ${toFlag}${toCurrency}`,
+            `匯率：1 ${fromCurrency} = ${rate} ${toCurrency}`,
+            bestUsd ? `🏦 台灣最優 USD：${bestUsd.bank} ${bestUsd.usdSell.toFixed(2)}` : '',
+            ``,
+            `📊 智能換匯工具：https://fattymap.pages.dev`,
+            `（老司機地圖 — 出國必備工具）`,
+        ].filter(Boolean).join('\n');
+
+        if (navigator.share) {
+            try { await navigator.share({ title: '換匯試算', text, url: 'https://fattymap.pages.dev' }); return; } catch { /* cancelled */ }
+        }
+        try {
+            await navigator.clipboard.writeText(text);
+            setShareCopied(true);
+            setTimeout(() => setShareCopied(false), 2000);
+        } catch { /* fallback failed */ }
+    };
+
     // 交換貨幣
     const swapCurrencies = () => {
         setFromCurrency(toCurrency);
@@ -192,14 +223,27 @@ export const CurrencyExchangeCalculator: React.FC = () => {
                 <h3 className="font-bold text-lg flex items-center gap-2">
                     💱 智能換匯
                 </h3>
-                <button
-                    onClick={fetchRates}
-                    disabled={isLoading}
-                    className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 disabled:opacity-50"
-                >
-                    <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
-                    更新匯率
-                </button>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={shareRate}
+                        disabled={isLoading || !multiRates}
+                        className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-800 disabled:opacity-40 transition-colors"
+                        title="分享換匯結果"
+                    >
+                        {shareCopied
+                            ? <><Check size={14} className="text-green-500" /><span className="text-green-500">已複製</span></>
+                            : <><Share2 size={14} />分享</>
+                        }
+                    </button>
+                    <button
+                        onClick={fetchRates}
+                        disabled={isLoading}
+                        className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 disabled:opacity-50"
+                    >
+                        <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
+                        更新匯率
+                    </button>
+                </div>
             </div>
 
             {/* 資料來源說明 */}

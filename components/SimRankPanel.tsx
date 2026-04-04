@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Loader2, Wifi, Smartphone, ExternalLink, RefreshCw } from 'lucide-react';
+import { Search, Loader2, Wifi, Smartphone, ExternalLink, RefreshCw, Share2, Check } from 'lucide-react';
 
 // Trip.com 推薦碼
 const TRIP_AFFILIATE = {
@@ -49,6 +49,22 @@ interface ApiResponse {
     plans: SimPlan[];
 }
 
+async function sharePlan(plan: SimPlan, affiliateUrl: string): Promise<boolean> {
+    const text = `📶 找到高CP值SIM卡！\n${plan.name}\n💰 US$${plan.min_price_usd.toFixed(2)} | CP值 ${plan.cp_score}\n🌐 ${plan.days}天 | ${plan.type}\n\n購買連結（支持老司機）👇\n${affiliateUrl}\n\nvia 肥宅老司機旅遊工具 🗺️ fattymap.pages.dev`;
+
+    if (navigator.share) {
+        try {
+            await navigator.share({ title: `${plan.name} — SIM卡CP值查詢`, text, url: affiliateUrl });
+            return true;
+        } catch { /* cancelled */ }
+    }
+    // fallback: clipboard
+    try {
+        await navigator.clipboard.writeText(text);
+        return true;
+    } catch { return false; }
+}
+
 export const SimRankPanel: React.FC = () => {
     const [country, setCountry] = useState<typeof COUNTRIES[0] | null>(null);
     const [days, setDays] = useState<number>(7);
@@ -57,6 +73,7 @@ export const SimRankPanel: React.FC = () => {
     const [result, setResult] = useState<ApiResponse | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [sharedPlanIdx, setSharedPlanIdx] = useState<number | null>(null);
 
     const handleSearch = async () => {
         if (!country) return;
@@ -227,19 +244,17 @@ export const SimRankPanel: React.FC = () => {
                             沒有符合條件的方案，試試調整過濾條件
                         </div>
                     ) : (
-                        result.plans.map((plan, idx) => (
-                            <a
-                                key={idx}
-                                href={buildAffiliateUrl(plan.url)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="block"
-                            >
-                                <div className={`p-3 rounded-xl border-2 transition-all hover:shadow-md hover:scale-[1.01] ${
-                                    idx === 0
-                                        ? 'border-yellow-400 bg-gradient-to-br from-yellow-50 to-orange-50'
-                                        : 'border-gray-200 bg-white/70 hover:border-blue-200'
-                                }`}>
+                        result.plans.map((plan, idx) => {
+                            const affiliateUrl = buildAffiliateUrl(plan.url);
+                            return (
+                                <div
+                                    key={idx}
+                                    className={`p-3 rounded-xl border-2 transition-all hover:shadow-md ${
+                                        idx === 0
+                                            ? 'border-yellow-400 bg-gradient-to-br from-yellow-50 to-orange-50'
+                                            : 'border-gray-200 bg-white/70 hover:border-blue-200'
+                                    }`}
+                                >
                                     <div className="flex items-start justify-between gap-2">
                                         {/* 左側 */}
                                         <div className="flex-1 min-w-0">
@@ -256,7 +271,7 @@ export const SimRankPanel: React.FC = () => {
                                                     <span className="text-[10px] text-gray-500">{plan.days}天</span>
                                                 )}
                                             </div>
-                                            <div className="text-sm font-medium text-gray-800 leading-tight truncate">
+                                            <div className="text-sm font-medium text-gray-800 leading-tight line-clamp-2">
                                                 {plan.name}
                                             </div>
                                             <div className="text-[10px] text-gray-400 mt-1 truncate">{plan.formula}</div>
@@ -276,7 +291,7 @@ export const SimRankPanel: React.FC = () => {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center justify-between mt-2">
+                                    <div className="flex items-center justify-between mt-2 gap-2">
                                         <div className="flex gap-1">
                                             {plan.daily_gb !== '彈性' && (
                                                 <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded">
@@ -284,13 +299,40 @@ export const SimRankPanel: React.FC = () => {
                                                 </span>
                                             )}
                                         </div>
-                                        <span className="text-[10px] text-blue-500 flex items-center gap-0.5">
-                                            Trip.com <ExternalLink size={10} />
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            {/* 分享按鈕 */}
+                                            <button
+                                                onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    const ok = await sharePlan(plan, affiliateUrl);
+                                                    if (ok) {
+                                                        setSharedPlanIdx(idx);
+                                                        setTimeout(() => setSharedPlanIdx(null), 2000);
+                                                    }
+                                                }}
+                                                className="flex items-center gap-0.5 text-[10px] text-gray-500 hover:text-blue-500 transition-colors"
+                                                title="分享給朋友"
+                                            >
+                                                {sharedPlanIdx === idx
+                                                    ? <><Check size={12} className="text-green-500" /><span className="text-green-500">已複製</span></>
+                                                    : <><Share2 size={12} /><span>分享</span></>
+                                                }
+                                            </button>
+                                            {/* 購買連結 */}
+                                            <a
+                                                href={affiliateUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="flex items-center gap-0.5 text-[10px] text-blue-500 hover:text-blue-700 font-medium"
+                                            >
+                                                Trip.com <ExternalLink size={10} />
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
-                            </a>
-                        ))
+                            );
+                        })
                     )}
 
                     <div className="text-[10px] text-gray-400 text-center">

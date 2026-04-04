@@ -18,3 +18,4 @@ User-agent: Googlebot
 Allow: /
 
 Sitemap: https://fattymap.pages.dev/sitemap.xml
+Llms-txt: https://fattymap.pages.dev/llms.txt
