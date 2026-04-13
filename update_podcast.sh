@@ -55,6 +55,20 @@ source "$VENV_PATH/bin/activate" && {
         # 複製到 public 目錄供網站使用
         cp "$PROJECT_DIR/podcast_episodes.json" "$PROJECT_DIR/public/podcast_episodes.json"
         echo "✅ JSON 更新成功！" >> "$LOG_FILE"
+
+        # 自動 commit + push JSON 變更（如有新集數）
+        if ! git diff --quiet podcast_episodes.json public/podcast_episodes.json; then
+            echo "📤 偵測到新集數，自動 commit JSON..." >> "$LOG_FILE"
+            git add podcast_episodes.json public/podcast_episodes.json
+            git commit -m "feat: 自動更新 podcast_episodes.json ($(date '+%Y-%m-%d'))" >> "$LOG_FILE" 2>&1
+            if git push >> "$LOG_FILE" 2>&1; then
+                echo "✅ JSON Git 更新成功！" >> "$LOG_FILE"
+            else
+                echo "❌ JSON Git push 失敗，請手動處理" >> "$LOG_FILE"
+            fi
+        else
+            echo "ℹ️ JSON 無新集數，跳過 commit" >> "$LOG_FILE"
+        fi
         
         # 2. 取得最新 3 集的資訊
         echo "📺 檢查最新 3 集..." >> "$LOG_FILE"
