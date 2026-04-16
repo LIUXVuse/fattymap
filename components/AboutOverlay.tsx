@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Heart, ShoppingBag, Users, Headphones, Instagram, Globe, ExternalLink, Copy, Check, Bug, Plane, Building2, MapPin, ChevronDown, ChevronUp, Search, Loader2 } from 'lucide-react';
 import { CurrencyExchangeCalculator } from './CurrencyExchangeCalculator';
 import { SimRankPanel } from './SimRankPanel';
+import { DestinationInfoPanel } from './DestinationInfoPanel';
 
 // Spotify 圖示 SVG
 const SpotifyIcon = () => (
@@ -27,10 +28,10 @@ const DiscordIcon = () => (
 interface AboutOverlayProps {
     isOpen: boolean;
     onClose: () => void;
-    initialTab?: 'about' | 'collab' | 'more' | 'travel' | 'podcast';  // 新增：指定初始 Tab
+    initialTab?: 'about' | 'collab' | 'more' | 'travel' | 'podcast' | 'sim' | 'info';  // 新增：指定初始 Tab
 }
 
-type TabType = 'about' | 'collab' | 'more' | 'travel' | 'podcast' | 'sim';
+type TabType = 'about' | 'collab' | 'more' | 'travel' | 'podcast' | 'sim' | 'info';
 
 interface PodcastEpisode {
     episodeNumber: string;
@@ -600,6 +601,7 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
         { id: 'podcast', label: 'Podcast', icon: <Headphones size={16} /> },
         { id: 'more', label: '智能換匯', icon: <ShoppingBag size={16} /> },
         { id: 'sim', label: 'SIM卡', icon: <span className="text-sm">📶</span> },
+        { id: 'info', label: '旅遊情報', icon: <span className="text-sm">🌏</span> },
         { id: 'travel', label: '旅遊預訂', icon: <Plane size={16} /> },
     ];
 
@@ -796,6 +798,10 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
 
                     {activeTab === 'sim' && (
                         <SimRankPanel />
+                    )}
+
+                    {activeTab === 'info' && (
+                        <DestinationInfoPanel />
                     )}
 
                     {activeTab === 'podcast' && (
