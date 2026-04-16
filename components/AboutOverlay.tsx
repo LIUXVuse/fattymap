@@ -39,6 +39,204 @@ interface PodcastEpisode {
     url?: string;  // 新增：Firstory 專屬連結
 }
 
+// 外站比價機場清單（按地區分組，出發地 & 目的地共用）
+// ⚠️ 值必須與 flight-hack/api/server.py Airport enum 完全一致
+const FH_AIRPORT_GROUPS: { group: string; airports: { label: string; value: string }[] }[] = [
+    {
+        group: '🇹🇼 台灣',
+        airports: [
+            { label: '台北桃園 (TPE)', value: 'TPE｜台北桃園' },
+            { label: '台北松山 (TSA)', value: 'TSA｜台北松山' },
+            { label: '高雄 (KHH)', value: 'KHH｜高雄' },
+            { label: '台中 (RMQ)', value: 'RMQ｜台中' },
+        ],
+    },
+    {
+        group: '🇯🇵 日本',
+        airports: [
+            { label: '東京全部 NRT+HND (TYO)', value: 'TYO｜東京（含NRT/HND）' },
+            { label: '東京成田 (NRT)', value: 'NRT｜東京成田' },
+            { label: '東京羽田 (HND)', value: 'HND｜東京羽田' },
+            { label: '大阪全部 KIX+ITM (OSA)', value: 'OSA｜大阪（含KIX/ITM）' },
+            { label: '大阪關西 (KIX)', value: 'KIX｜大阪關西' },
+            { label: '大阪伊丹 (ITM)', value: 'ITM｜大阪伊丹' },
+            { label: '福岡 (FUK)', value: 'FUK｜福岡' },
+            { label: '沖繩 (OKA)', value: 'OKA｜沖繩' },
+            { label: '札幌千歲 (CTS)', value: 'CTS｜札幌千歲' },
+            { label: '名古屋 (NGO)', value: 'NGO｜名古屋' },
+            { label: '廣島 (HIJ)', value: 'HIJ｜廣島' },
+            { label: '鹿兒島 (KOJ)', value: 'KOJ｜鹿兒島' },
+        ],
+    },
+    {
+        group: '🇰🇷 韓國',
+        airports: [
+            { label: '首爾全部 ICN+GMP (SEL)', value: 'SEL｜首爾（含ICN/GMP）' },
+            { label: '首爾仁川 (ICN)', value: 'ICN｜首爾仁川' },
+            { label: '首爾金浦 (GMP)', value: 'GMP｜首爾金浦' },
+            { label: '釜山 (PUS)', value: 'PUS｜釜山' },
+        ],
+    },
+    {
+        group: '🇭🇰 香港 / 🇲🇴 澳門',
+        airports: [
+            { label: '香港 (HKG)', value: 'HKG｜香港' },
+            { label: '澳門 (MFM)', value: 'MFM｜澳門' },
+        ],
+    },
+    {
+        group: '🇹🇭 泰國',
+        airports: [
+            { label: '曼谷素萬那普 (BKK)', value: 'BKK｜曼谷素萬那普' },
+            { label: '曼谷廊曼 (DMK)', value: 'DMK｜曼谷廊曼' },
+            { label: '普吉島 (HKT)', value: 'HKT｜普吉島' },
+            { label: '清邁 (CNX)', value: 'CNX｜清邁' },
+        ],
+    },
+    {
+        group: '🇸🇬 新加坡',
+        airports: [
+            { label: '新加坡樟宜 (SIN)', value: 'SIN｜新加坡' },
+        ],
+    },
+    {
+        group: '🇲🇾 馬來西亞',
+        airports: [
+            { label: '吉隆坡 (KUL)', value: 'KUL｜吉隆坡' },
+            { label: '檳城 (PEN)', value: 'PEN｜檳城' },
+        ],
+    },
+    {
+        group: '🇻🇳 越南',
+        airports: [
+            { label: '胡志明市 (SGN)', value: 'SGN｜胡志明市' },
+            { label: '河內 (HAN)', value: 'HAN｜河內' },
+            { label: '峴港 (DAD)', value: 'DAD｜峴港' },
+        ],
+    },
+    {
+        group: '🇵🇭 菲律賓',
+        airports: [
+            { label: '馬尼拉 (MNL)', value: 'MNL｜馬尼拉' },
+            { label: '宿霧 (CEB)', value: 'CEB｜宿霧' },
+        ],
+    },
+    {
+        group: '🇮🇩 印尼',
+        airports: [
+            { label: '雅加達 (CGK)', value: 'CGK｜雅加達' },
+            { label: '峇里島 (DPS)', value: 'DPS｜峇里島' },
+            { label: '泗水 (SUB)', value: 'SUB｜泗水' },
+        ],
+    },
+    {
+        group: '🇦🇪 中東',
+        airports: [
+            { label: '杜拜 (DXB)', value: 'DXB｜杜拜' },
+            { label: '多哈 (DOH)', value: 'DOH｜多哈' },
+            { label: '阿布扎比 (AUH)', value: 'AUH｜阿布扎比' },
+        ],
+    },
+    {
+        group: '🇹🇷 土耳其',
+        airports: [
+            { label: '伊斯坦堡 (IST)', value: 'IST｜伊斯坦堡' },
+        ],
+    },
+    {
+        group: '🇬🇧 英國',
+        airports: [
+            { label: '倫敦全部 LHR+LGW+STN (LON)', value: 'LON｜倫敦（含LHR/LGW/STN）' },
+            { label: '倫敦希斯洛 (LHR)', value: 'LHR｜倫敦希斯洛' },
+            { label: '倫敦蓋威克 (LGW)', value: 'LGW｜倫敦蓋威克' },
+        ],
+    },
+    {
+        group: '🇫🇷 法國',
+        airports: [
+            { label: '巴黎戴高樂 (CDG)', value: 'CDG｜巴黎戴高樂' },
+        ],
+    },
+    {
+        group: '🇩🇪 德國',
+        airports: [
+            { label: '法蘭克福 (FRA)', value: 'FRA｜法蘭克福' },
+            { label: '慕尼黑 (MUC)', value: 'MUC｜慕尼黑' },
+        ],
+    },
+    {
+        group: '🇳🇱 荷蘭',
+        airports: [
+            { label: '阿姆斯特丹 (AMS)', value: 'AMS｜阿姆斯特丹' },
+        ],
+    },
+    {
+        group: '🇮🇹 義大利',
+        airports: [
+            { label: '羅馬 (FCO)', value: 'FCO｜羅馬' },
+            { label: '米蘭 (MXP)', value: 'MXP｜米蘭' },
+        ],
+    },
+    {
+        group: '🇪🇸 西班牙',
+        airports: [
+            { label: '馬德里 (MAD)', value: 'MAD｜馬德里' },
+            { label: '巴塞隆納 (BCN)', value: 'BCN｜巴塞隆納' },
+        ],
+    },
+    {
+        group: '🇨🇭 瑞士',
+        airports: [
+            { label: '蘇黎世 (ZRH)', value: 'ZRH｜蘇黎世' },
+        ],
+    },
+    {
+        group: '🇦🇹 奧地利',
+        airports: [
+            { label: '維也納 (VIE)', value: 'VIE｜維也納' },
+        ],
+    },
+    {
+        group: '🇺🇸 美國',
+        airports: [
+            { label: '紐約全部 JFK+EWR+LGA (NYC)', value: 'NYC｜紐約（含JFK/EWR/LGA）' },
+            { label: '紐約甘迺迪 (JFK)', value: 'JFK｜紐約甘迺迪' },
+            { label: '紐約紐瓦克 (EWR)', value: 'EWR｜紐約紐瓦克' },
+            { label: '洛杉磯 (LAX)', value: 'LAX｜洛杉磯' },
+            { label: '舊金山 (SFO)', value: 'SFO｜舊金山' },
+            { label: '芝加哥 (ORD)', value: 'ORD｜芝加哥' },
+            { label: '西雅圖 (SEA)', value: 'SEA｜西雅圖' },
+            { label: '邁阿密 (MIA)', value: 'MIA｜邁阿密' },
+            { label: '丹佛 (DEN)', value: 'DEN｜丹佛' },
+            { label: '波士頓 (BOS)', value: 'BOS｜波士頓' },
+            { label: '拉斯維加斯 (LAS)', value: 'LAS｜拉斯維加斯' },
+        ],
+    },
+    {
+        group: '🇨🇦 加拿大',
+        airports: [
+            { label: '溫哥華 (YVR)', value: 'YVR｜溫哥華' },
+            { label: '多倫多 (YYZ)', value: 'YYZ｜多倫多' },
+            { label: '卡加利 (YYC)', value: 'YYC｜卡加利' },
+        ],
+    },
+    {
+        group: '🇦🇺 澳洲',
+        airports: [
+            { label: '雪梨 (SYD)', value: 'SYD｜雪梨' },
+            { label: '墨爾本 (MEL)', value: 'MEL｜墨爾本' },
+            { label: '布里斯本 (BNE)', value: 'BNE｜布里斯本' },
+            { label: '柏斯 (PER)', value: 'PER｜柏斯' },
+        ],
+    },
+    {
+        group: '🇳🇿 紐西蘭',
+        airports: [
+            { label: '奧克蘭 (AKL)', value: 'AKL｜奧克蘭' },
+        ],
+    },
+];
+
 // Trip.com 聯盟行銷設定
 const TRIP_AFFILIATE = {
     allianceId: '7162268',
@@ -109,10 +307,32 @@ const TRAVEL_REGIONS = [
 export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, initialTab = 'about' }) => {
     const [activeTab, setActiveTab] = useState<TabType>(initialTab);
     const [copiedField, setCopiedField] = useState<string | null>(null);
-    // 搜尋類型切換 state (酒店/機票/當地體驗/機場接送)
-    const [searchType, setSearchType] = useState<'hotel' | 'flight' | 'experience' | 'transfer'>('hotel');
+    // 搜尋類型切換 state (酒店/機票/當地體驗/機場接送/外站比價)
+    const [searchType, setSearchType] = useState<'hotel' | 'flight' | 'experience' | 'transfer' | 'flight-hack'>('hotel');
     // 展開的國家
     const [expandedCountry, setExpandedCountry] = useState<string | null>(null);
+
+    // ── 外站比價 state ─────────────────────────────────────
+    const [fhOrigin, setFhOrigin] = useState('TPE｜台北桃園');
+    const [fhDest, setFhDest] = useState('TYO｜東京（含NRT/HND）');
+    const [fhDate, setFhDate] = useState(() => {
+        const d = new Date(); d.setDate(d.getDate() + 30);
+        return d.toISOString().split('T')[0];
+    });
+    const [fhReturnDate, setFhReturnDate] = useState('');
+    const [fhBaggage, setFhBaggage] = useState(20);
+    type FhStatus = 'idle' | 'loading-direct' | 'done-direct' | 'loading-outer' | 'done-outer' | 'error';
+    const [fhStatus, setFhStatus] = useState<FhStatus>('idle');
+    const [fhDirectResult, setFhDirectResult] = useState<any>(null);
+    const [fhReturnResult, setFhReturnResult] = useState<any>(null);
+    const [fhOuterResult, setFhOuterResult] = useState<any>(null);
+    const [fhJobId, setFhJobId] = useState<string | null>(null);
+    const [fhElapsed, setFhElapsed] = useState(0);
+    const [fhError, setFhError] = useState('');
+    const [fhShowMore, setFhShowMore] = useState(false);
+    const [fhShowAdvanced, setFhShowAdvanced] = useState(false);
+    const [fhDepartHour, setFhDepartHour] = useState('');   // '' = 不限；格式 HH-HH
+    const [fhArriveHour, setFhArriveHour] = useState('');   // '' = 不限
 
     // Podcast 相關 state
     const [episodes, setEpisodes] = useState<PodcastEpisode[]>([]);
@@ -247,8 +467,120 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
     };
 
 
-    if (!isOpen) return null;
+    // ── 外站比價 API ───────────────────────────────────────
+    const FH_API = 'https://flight.twgolddigger.com';
 
+    const fhSearchDirect = async () => {
+        setFhStatus('loading-direct');
+        setFhDirectResult(null);
+        setFhReturnResult(null);
+        setFhOuterResult(null);
+        setFhError('');
+        setFhShowMore(false);
+        try {
+            const outParams = new URLSearchParams({
+                origin: fhOrigin,
+                destination: fhDest,
+                date: fhDate,
+                mode: 'direct｜只查直飛（最快，約15秒）',
+                baggage: String(fhBaggage),
+                top_n: '5',
+                ...(fhDepartHour ? { depart_hour: fhDepartHour } : {}),
+                ...(fhArriveHour ? { arrive_hour: fhArriveHour } : {}),
+            });
+            const retParams = fhReturnDate ? new URLSearchParams({
+                origin: fhDest,
+                destination: fhOrigin,
+                date: fhReturnDate,
+                mode: 'direct｜只查直飛（最快，約15秒）',
+                baggage: String(fhBaggage),
+                top_n: '5',
+                ...(fhArriveHour ? { depart_hour: fhArriveHour } : {}),  // 回程：抵達時段反過來當出發
+                ...(fhDepartHour ? { arrive_hour: fhDepartHour } : {}),
+            }) : null;
+            const [outData, retData] = await Promise.all([
+                fetch(`${FH_API}/search?${outParams}`).then(r => r.json()),
+                retParams ? fetch(`${FH_API}/search?${retParams}`).then(r => r.json()) : Promise.resolve(null),
+            ]);
+            if (outData.detail) {
+                const msg = Array.isArray(outData.detail)
+                    ? outData.detail.map((e: any) => e.msg ?? JSON.stringify(e)).join('; ')
+                    : String(outData.detail);
+                throw new Error(msg);
+            }
+            setFhDirectResult(outData);
+            if (retData && !retData.detail) setFhReturnResult(retData);
+            setFhStatus('done-direct');
+        } catch (e: any) {
+            setFhError(e.message || '查詢失敗');
+            setFhStatus('error');
+        }
+    };
+
+    const fhSearchOuter = async () => {
+        setFhStatus('loading-outer');
+        setFhDirectResult(null);  // 清除上一輪直飛，外站完成後會帶入新的直飛基準
+        setFhReturnResult(null);
+        setFhOuterResult(null);
+        setFhElapsed(0);
+        setFhError('');
+        setFhShowMore(false);
+        try {
+            const params = new URLSearchParams({
+                origin: fhOrigin,
+                destination: fhDest,
+                date: fhDate,
+                mode: 'mix｜直飛＋外站合併排名（推薦，較慢）',
+                baggage: String(fhBaggage),
+                top_n: '10',
+                ...(fhDepartHour ? { depart_hour: fhDepartHour } : {}),
+                ...(fhArriveHour ? { arrive_hour: fhArriveHour } : {}),
+            });
+            const res = await fetch(`${FH_API}/search?${params}`);
+            const data = await res.json();
+            if (data.status === 'pending' && data.job_id) {
+                setFhJobId(data.job_id);
+            } else {
+                const msg = Array.isArray(data.detail)
+                    ? data.detail.map((e: any) => e.msg ?? JSON.stringify(e)).join('; ')
+                    : String(data.detail ?? '未知錯誤');
+                throw new Error(msg);
+            }
+        } catch (e: any) {
+            setFhError(e.message || '查詢失敗');
+            setFhStatus('error');
+        }
+    };
+
+    // 輪詢 job 結果
+    useEffect(() => {
+        if (fhStatus !== 'loading-outer' || !fhJobId) return;
+        let cancelled = false;
+        const poll = async () => {
+            if (cancelled) return;
+            try {
+                const res = await fetch(`${FH_API}/jobs/${fhJobId}`);
+                const data = await res.json();
+                if (cancelled) return;
+                if (data.status === 'pending') {
+                    setFhElapsed(data.elapsed_sec || 0);
+                    setTimeout(poll, 15000);
+                } else if (data.status === 'error') {
+                    setFhError(data.detail || '查詢失敗');
+                    setFhStatus('error');
+                } else {
+                    setFhOuterResult(data);
+                    setFhStatus('done-outer');
+                }
+            } catch {
+                if (!cancelled) { setFhError('網路錯誤'); setFhStatus('error'); }
+            }
+        };
+        const t = setTimeout(poll, 15000);
+        return () => { cancelled = true; clearTimeout(t); };
+    }, [fhStatus, fhJobId]);
+
+    if (!isOpen) return null;
 
     // Podcast 搜尋過濾
     const filteredEpisodes = episodes.filter(ep =>
@@ -605,7 +937,7 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
                                     </button>
                                 </div>
                                 {/* 第二排：交通 */}
-                                <div className="flex gap-2 justify-center">
+                                <div className="flex gap-2 justify-center flex-wrap">
                                     <button
                                         onClick={() => setSearchType('flight')}
                                         className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${searchType === 'flight'
@@ -626,11 +958,21 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
                                         <ExternalLink size={16} />
                                         🚗 機場接送
                                     </button>
+                                    <button
+                                        onClick={() => setSearchType('flight-hack')}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${searchType === 'flight-hack'
+                                            ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg'
+                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                            }`}
+                                    >
+                                        <span>💰</span>
+                                        外站比價
+                                    </button>
                                 </div>
                             </div>
 
                             {/* Trip.com iFrame 搜尋框 - 只對酒店和機票顯示 */}
-                            {(searchType === 'hotel' || searchType === 'flight') && (
+                            {(searchType === 'hotel' || searchType === 'flight') && searchType !== 'flight-hack' && (
                                 <div className="bg-white/60 rounded-2xl p-4 shadow-sm flex justify-center">
                                     <iframe
                                         src={`https://tw.trip.com/partners/ad/${searchType === 'hotel' ? TRIP_AFFILIATE.hotelSearchboxId : TRIP_AFFILIATE.flightSearchboxId}?Allianceid=${TRIP_AFFILIATE.allianceId}&SID=${TRIP_AFFILIATE.sid}&trip_sub1=fattymap`}
@@ -673,8 +1015,8 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
                                 </div>
                             )}
 
-                            {/* 地區推薦列表 - 機場接送不顯示（因為 Trip.com 不支援預填參數） */}
-                            {searchType !== 'transfer' && (
+                            {/* 地區推薦列表 - 機場接送與外站比價不顯示 */}
+                            {searchType !== 'transfer' && searchType !== 'flight-hack' && (
                                 <div className="bg-white/60 rounded-2xl p-4 shadow-sm">
                                     <h3 className="font-bold text-lg mb-3 flex items-center gap-2 text-gray-800">
                                         <MapPin className="text-red-500" size={20} />
@@ -769,6 +1111,329 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
                                             </div>
                                         ))}
                                     </div>
+                                </div>
+                            )}
+
+                            {/* ── 外站比價 UI ── */}
+                            {searchType === 'flight-hack' && (
+                                <div className="space-y-3">
+                                    {/* 搜尋表單 */}
+                                    <div className="bg-white/60 rounded-2xl p-4 shadow-sm space-y-3">
+                                        {/* 出發地 + 目的地 */}
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label className="text-xs text-gray-500 mb-1 block">🛫 出發地</label>
+                                                <select
+                                                    value={fhOrigin}
+                                                    onChange={e => setFhOrigin(e.target.value)}
+                                                    className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                                                >
+                                                    {FH_AIRPORT_GROUPS.map(g => (
+                                                        <optgroup key={g.group} label={g.group}>
+                                                            {g.airports.map(a => (
+                                                                <option key={a.value} value={a.value}>{a.label}</option>
+                                                            ))}
+                                                        </optgroup>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="text-xs text-gray-500 mb-1 block">🛬 目的地</label>
+                                                <select
+                                                    value={fhDest}
+                                                    onChange={e => setFhDest(e.target.value)}
+                                                    className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                                                >
+                                                    {FH_AIRPORT_GROUPS.map(g => (
+                                                        <optgroup key={g.group} label={g.group}>
+                                                            {g.airports.map(a => (
+                                                                <option key={a.value} value={a.value}>{a.label}</option>
+                                                            ))}
+                                                        </optgroup>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        {/* 去程日期 + 回程日期 */}
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label className="text-xs text-gray-500 mb-1 block">📅 去程日期</label>
+                                                <input
+                                                    type="date"
+                                                    value={fhDate}
+                                                    onChange={e => setFhDate(e.target.value)}
+                                                    className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="text-xs text-gray-500 mb-1 flex items-center gap-1">
+                                                    📅 回程日期
+                                                    {fhReturnDate && (
+                                                        <button onClick={() => setFhReturnDate('')} className="ml-1 text-red-400 hover:text-red-600 font-bold">✕</button>
+                                                    )}
+                                                </label>
+                                                <input
+                                                    type="date"
+                                                    value={fhReturnDate}
+                                                    onChange={e => setFhReturnDate(e.target.value)}
+                                                    min={fhDate}
+                                                    placeholder="選填"
+                                                    className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* 行李 */}
+                                        <div className="flex items-center gap-3">
+                                            <label className="text-xs text-gray-500 whitespace-nowrap">🧳 托運行李</label>
+                                            <select
+                                                value={fhBaggage}
+                                                onChange={e => setFhBaggage(Number(e.target.value))}
+                                                className="flex-1 px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                                            >
+                                                <option value={0}>僅手提</option>
+                                                <option value={15}>15 kg</option>
+                                                <option value={20}>20 kg</option>
+                                                <option value={25}>25 kg</option>
+                                                <option value={30}>30 kg</option>
+                                            </select>
+                                        </div>
+
+                                        {/* 進階設定 toggle */}
+                                        <button
+                                            onClick={() => setFhShowAdvanced(v => !v)}
+                                            className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                                        >
+                                            {fhShowAdvanced ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                                            進階設定（時段篩選）
+                                            {(fhDepartHour || fhArriveHour) && <span className="ml-1 text-emerald-500">●</span>}
+                                        </button>
+
+                                        {/* 進階：出發 & 抵達時段 */}
+                                        {fhShowAdvanced && (
+                                            <div className="grid grid-cols-2 gap-2 bg-gray-50 rounded-xl p-3">
+                                                <div>
+                                                    <label className="text-xs text-gray-500 mb-1 block">🕐 去程出發時段</label>
+                                                    <select
+                                                        value={fhDepartHour}
+                                                        onChange={e => setFhDepartHour(e.target.value)}
+                                                        className="w-full px-2 py-1.5 rounded-lg border border-gray-200 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                                                    >
+                                                        <option value="">不限</option>
+                                                        <option value="0-6">清晨 00:00–06:00</option>
+                                                        <option value="6-12">早上 06:00–12:00</option>
+                                                        <option value="12-18">下午 12:00–18:00</option>
+                                                        <option value="18-24">晚上 18:00–24:00</option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label className="text-xs text-gray-500 mb-1 block">🕐 去程抵達時段</label>
+                                                    <select
+                                                        value={fhArriveHour}
+                                                        onChange={e => setFhArriveHour(e.target.value)}
+                                                        className="w-full px-2 py-1.5 rounded-lg border border-gray-200 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                                                    >
+                                                        <option value="">不限</option>
+                                                        <option value="0-6">清晨 00:00–06:00</option>
+                                                        <option value="6-12">早上 06:00–12:00</option>
+                                                        <option value="12-18">下午 12:00–18:00</option>
+                                                        <option value="18-24">晚上 18:00–24:00</option>
+                                                    </select>
+                                                </div>
+                                                <p className="col-span-2 text-xs text-gray-400">※ 時段篩選影響去程；回程出發/抵達時段相反方向套用</p>
+                                            </div>
+                                        )}
+
+                                        {/* 按鈕 */}
+                                        <div className="flex gap-2 pt-1">
+                                            <button
+                                                onClick={fhSearchDirect}
+                                                disabled={fhStatus === 'loading-direct' || fhStatus === 'loading-outer'}
+                                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 disabled:opacity-50 text-white text-sm font-bold transition-all"
+                                            >
+                                                {fhStatus === 'loading-direct' ? <Loader2 size={15} className="animate-spin" /> : <Plane size={15} />}
+                                                {fhReturnDate ? '查去回直飛（~30秒）' : '查直飛（15秒）'}
+                                            </button>
+                                            <button
+                                                onClick={fhSearchOuter}
+                                                disabled={fhStatus === 'loading-direct' || fhStatus === 'loading-outer'}
+                                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white text-sm font-bold transition-all"
+                                            >
+                                                {fhStatus === 'loading-outer' ? <Loader2 size={15} className="animate-spin" /> : <span>💰</span>}
+                                                查外站方案
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* loading 外站中 */}
+                                    {fhStatus === 'loading-outer' && (
+                                        <div className="bg-emerald-50 rounded-2xl p-4 text-center space-y-2">
+                                            <Loader2 size={28} className="animate-spin text-emerald-500 mx-auto" />
+                                            <p className="text-sm font-bold text-emerald-700">正在掃描 22 個外站城市...</p>
+                                            <p className="text-xs text-emerald-600">已等待 {fhElapsed} 秒，約需 3-5 分鐘</p>
+                                            <p className="text-xs text-gray-400">外站完成後自動顯示結果</p>
+                                        </div>
+                                    )}
+
+                                    {/* 錯誤 */}
+                                    {fhStatus === 'error' && (
+                                        <div className="bg-red-50 rounded-2xl p-4 text-center text-sm text-red-600">
+                                            ⚠️ {fhError}
+                                        </div>
+                                    )}
+
+                                    {/* 去程直飛結果 */}
+                                    {(fhStatus === 'done-direct' || fhStatus === 'done-outer') && (() => {
+                                        const results: any[] = fhDirectResult?.results ??
+                                            (fhOuterResult?.direct ? [fhOuterResult.direct] : []);
+                                        if (results.length === 0) return null;
+                                        return (
+                                            <div className="bg-white/60 rounded-2xl p-4 shadow-sm">
+                                                <h4 className="font-bold text-sm text-gray-700 mb-3 flex items-center gap-1">
+                                                    <Plane size={14} className="text-sky-500" />
+                                                    ✈️ 去程直飛 Top {Math.min(results.length, 5)}
+                                                </h4>
+                                                <div className="space-y-2">
+                                                    {results.slice(0, 5).map((r: any, i: number) => (
+                                                        <div key={i} className={`rounded-xl px-4 py-3 flex items-center justify-between ${i === 0 ? 'bg-sky-50 border border-sky-200' : 'bg-gray-50'}`}>
+                                                            <div className="flex-1 min-w-0">
+                                                                {i === 0 && <div className="text-xs font-bold text-sky-600 mb-0.5">🥇 最低價</div>}
+                                                                <div className="font-bold text-gray-800 text-sm">{r.airlines}</div>
+                                                                <div className="text-xs text-gray-500">{r.duration} · {r.stops === 0 ? '直飛' : `${r.stops}轉`}</div>
+                                                                {r.departure && (
+                                                                    <div className="text-xs text-gray-400 mt-0.5">
+                                                                        起 {r.departure} → 降 {r.arrival}
+                                                                    </div>
+                                                                )}
+                                                                {r.baggage_note && (
+                                                                    <div className="text-xs text-amber-600 mt-0.5">{r.baggage_note}</div>
+                                                                )}
+                                                            </div>
+                                                            <div className="text-right ml-3 flex-shrink-0">
+                                                                <div className={`text-lg font-black ${i === 0 ? 'text-sky-700' : 'text-gray-700'}`}>
+                                                                    NT${(r.total ?? r.price_twd).toLocaleString()}
+                                                                </div>
+                                                                <a href={r.book_url} target="_blank" rel="noopener noreferrer"
+                                                                    className="text-xs text-sky-500 hover:underline">Google Flights →</a>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
+
+                                    {/* 回程直飛結果 */}
+                                    {(fhStatus === 'done-direct' || fhStatus === 'done-outer') && fhReturnResult?.results?.length > 0 && (
+                                        <div className="bg-white/60 rounded-2xl p-4 shadow-sm">
+                                            <h4 className="font-bold text-sm text-gray-700 mb-3 flex items-center gap-1">
+                                                <Plane size={14} className="text-indigo-500" />
+                                                ↩️ 回程直飛 Top {Math.min(fhReturnResult.results.length, 5)}
+                                            </h4>
+                                            <div className="space-y-2">
+                                                {fhReturnResult.results.slice(0, 5).map((r: any, i: number) => (
+                                                    <div key={i} className={`rounded-xl px-4 py-3 flex items-center justify-between ${i === 0 ? 'bg-indigo-50 border border-indigo-200' : 'bg-gray-50'}`}>
+                                                        <div className="flex-1 min-w-0">
+                                                            {i === 0 && <div className="text-xs font-bold text-indigo-600 mb-0.5">🥇 最低價</div>}
+                                                            <div className="font-bold text-gray-800 text-sm">{r.airlines}</div>
+                                                            <div className="text-xs text-gray-500">{r.duration} · {r.stops === 0 ? '直飛' : `${r.stops}轉`}</div>
+                                                            {r.departure && (
+                                                                <div className="text-xs text-gray-400 mt-0.5">
+                                                                    起 {r.departure} → 降 {r.arrival}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div className="text-right ml-3 flex-shrink-0">
+                                                            <div className={`text-lg font-black ${i === 0 ? 'text-indigo-700' : 'text-gray-700'}`}>
+                                                                NT${(r.total ?? r.price_twd).toLocaleString()}
+                                                            </div>
+                                                            <a href={r.book_url} target="_blank" rel="noopener noreferrer"
+                                                                className="text-xs text-indigo-500 hover:underline">Google Flights →</a>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* 外站比較結果 */}
+                                    {fhStatus === 'done-outer' && fhOuterResult && (() => {
+                                        const baseline = fhOuterResult.direct?.price_twd ?? fhOuterResult.direct_baseline?.price_twd ?? 0;
+                                        const combined: any[] = fhOuterResult.combined ?? [];
+                                        const outerOnly = combined.filter((r: any) => r.origin !== (fhOrigin.split('｜')[0] || 'TPE'));
+                                        const sorted = [...outerOnly].sort((a, b) => (a.total ?? a.price_twd) - (b.total ?? b.price_twd));
+                                        const display = fhShowMore ? sorted : sorted.slice(0, 3);
+
+                                        if (sorted.length === 0) return (
+                                            <div className="bg-gray-50 rounded-2xl p-4 text-center text-sm text-gray-500">
+                                                😮 沒有找到比直飛更便宜的外站方案
+                                            </div>
+                                        );
+
+                                        return (
+                                            <div className="bg-white/60 rounded-2xl p-4 shadow-sm space-y-2">
+                                                <h4 className="font-bold text-sm text-gray-700 mb-1 flex items-center gap-1">
+                                                    <span>💰</span> 外站比價方案（比直飛便宜）
+                                                </h4>
+                                                {baseline > 0 && (
+                                                    <p className="text-xs text-gray-400 mb-2">直飛基準 NT${baseline.toLocaleString()}，以下皆更便宜</p>
+                                                )}
+                                                {display.map((r: any, i: number) => {
+                                                    const total = r.total ?? r.price_twd;
+                                                    const saving = baseline ? baseline - total : (r.saving_twd ?? 0);
+                                                    const isTop = i === 0;
+                                                    return (
+                                                        <div key={i} className={`rounded-xl px-4 py-3 ${isTop ? 'bg-emerald-50 border border-emerald-200' : 'bg-gray-50'}`}>
+                                                            <div className="flex items-start justify-between">
+                                                                <div className="flex-1 min-w-0">
+                                                                    {isTop && <div className="text-xs font-bold text-emerald-600 mb-0.5">🏆 最優惠</div>}
+                                                                    <div className="font-bold text-gray-800 text-sm">{r.airlines}</div>
+                                                                    <div className="text-xs text-gray-500 mt-0.5">
+                                                                        定位段 <span className="font-bold text-orange-600">{fhOrigin.split('｜')[0] ?? 'TPE'}→{r.origin}</span> 再飛目的地 · {r.duration || '-'}
+                                                                    </div>
+                                                                    {r.price_twd && r.total && r.total !== r.price_twd && (
+                                                                        <div className="text-xs text-gray-400 mt-0.5">
+                                                                            外站票 NT${r.price_twd.toLocaleString()} + 定位費 NT${(r.total - r.price_twd).toLocaleString()}
+                                                                        </div>
+                                                                    )}
+                                                                    {r.departure && (
+                                                                        <div className="text-xs text-gray-400 mt-0.5">
+                                                                            起 {r.departure} → 降 {r.arrival}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                                <div className="text-right ml-3 flex-shrink-0">
+                                                                    <div className={`text-lg font-black ${isTop ? 'text-emerald-700' : 'text-gray-700'}`}>
+                                                                        NT${total.toLocaleString()}
+                                                                    </div>
+                                                                    {saving > 0 && (
+                                                                        <div className="text-xs font-bold text-emerald-600">省 {saving.toLocaleString()} 元</div>
+                                                                    )}
+                                                                    {r.book_url && (
+                                                                        <a href={r.book_url} target="_blank" rel="noopener noreferrer"
+                                                                            className="text-xs text-emerald-500 hover:underline">查看 →</a>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                                {sorted.length > 3 && (
+                                                    <button
+                                                        onClick={() => setFhShowMore(v => !v)}
+                                                        className="w-full text-sm text-emerald-600 font-bold py-2 hover:bg-emerald-50 rounded-xl transition-colors flex items-center justify-center gap-1"
+                                                    >
+                                                        {fhShowMore ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                                        {fhShowMore ? '收起' : `顯示更多方案（共 ${sorted.length} 個）`}
+                                                    </button>
+                                                )}
+                                                <p className="text-xs text-gray-400 text-center pt-1">
+                                                    ⚠️ 外站票需自行安排定位段，購票前請確認航班規則
+                                                </p>
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
                             )}
 

@@ -1,60 +1,73 @@
 # HANDOVER — 肥宅老司機前進世界地圖
 
-> 上次更新：2026-04-04
-> 當前狀態：v1.6.0 — 換匯計算器已接上 opencli 真實匯率 API，下一步：新增 SIM 卡查詢元件
+> 上次更新：2026-04-15  
+> 當前狀態：v1.7.1 穩定版，外站比價 UI 全面升級
 
 ---
 
-## ✅ 本次完成（Step 1）
+## ✅ 已完成功能清單
 
-### 換匯計算器強化（接上 opencli API）
-
-**`services/exchangeRateService.ts`** — 完整重寫匯率來源邏輯：
-- 新增 `fetchOpenCliRates()` — 呼叫 `https://opencli-api.liupony2000.workers.dev/api/forex`
-- 台灣銀行匯率：從 opencli `bot` 陣列取得**真實現鈔賣出牌告價**，取代原本永遠回空的 FinMind
-- Vietcombank 匯率：從 opencli `vcb` 陣列取得，用於越南方案計算
-- 保留 ExchangeRate-API（全球中間匯率）做跨幣計算基礎
-- `SmartExchangeInput` 新增 `twBanksUSD` 和 `vcbRates` 參數
-- **Plan A（帶USD去當地換）**：現在用 `twBanksUSD` 最低賣出價的銀行，而非只用台灣銀行
-- **Plan C（台灣直換）**：有台灣銀行資料時，直接用 `cashSell / amount` 精確計算，非估算
-
-**`components/CurrencyExchangeCalculator.tsx`**：
-- `MultiRatesState` 新增 `twBanksUSD` 和 `vcbRates`
-- 新增「台灣各銀行 USD 現鈔賣出比較」面板（依最低排序，標示最優）
-- `calculateSmartExchange()` 現在接收完整的 `twBanksUSD` 和 `vcbRates`
-
-### 對齊 opencli best.ts 邏輯
-- 方案A 用最優銀行 USD 賣出，並乘以 0.99（當地換匯所手續費估算）
-- VND 方案B 用 Vietcombank 真實買入 USD 匯率 × 0.99
-
----
-
-## 🔴 下一個對話要做（高優先）
-
-### Step 2：新增 SIM 卡查詢元件
-
-新增 `components/SimRankPanel.tsx`，讓使用者可以在出發前查詢目的地的 SIM 卡 CP 值。
-
-```ts
-const res = await fetch(
-  'https://opencli-api.liupony2000.workers.dev/api/sim-rank?country=Vietnam&days=7&sim_type=esim&no_real_name=true'
-);
-const { plans } = await res.json();
-// plans[i] = { name, price, duration, speed, simType, ... }
-```
-
-可能的 UI 位置：地圖右側面板，旅遊資訊抽屜內（跟換匯計算器放一起）
-
----
-
-## API 端點（直接可用，無需金鑰）
-
-| 端點 | 說明 |
+| 版本 | 功能 |
 |------|------|
-| `GET /api/forex` | 今日匯率，每天自動快取一次 |
-| `GET /api/sim-rank?country=Vietnam&days=7` | SIM 卡 CP 值排名 |
+| v1.0 | 地圖標記、Google 登入、匿名發文、多點導航、搜尋建議 |
+| v1.4 | Trip.com 聯盟整合（旅遊預訂分頁）|
+| v1.5 | 照片延遲載入、影片上傳 |
+| v1.6 | 換匯計算器接 opencli API 真實匯率 |
+| v1.7 | **外站比價整合**（`components/AboutOverlay.tsx`）|
 
-完整文件：`/Users/liu/Documents/porject/opencli/api/worker.ts`
+---
+
+## ✅ 本次完成（v1.7.1）
+
+### 外站比價 UI 全面升級（`components/AboutOverlay.tsx`）
+
+根據使用者測試回饋修正的 6 個問題：
+
+| # | 問題 | 修正 |
+|---|------|------|
+| 1 | 出發地固定 TPE 無法調整 | 新增出發地下拉（同機場清單）|
+| 2 | 沒有回程日期 | 新增回程日期欄（選填），查直飛時同步查回程 |
+| 3 | 直飛只顯示 1 筆 | 改為顯示 Top 5，每筆都有起飛/降落時間 |
+| 4 | 換目的地後舊直飛留著 | `fhSearchOuter` 開始即清除 `fhDirectResult` |
+| 5 | 起飛/降落時間未顯示 | 所有航班卡片顯示 `departure` / `arrival` |
+| 6 | 外站定位段不清楚 | 外站卡片明確標示「定位段 TPE→SIN，再飛 SIN→LHR」|
+
+**新增 state**：
+- `fhOrigin` — 出發地（預設 `TPE｜台北桃園`）
+- `fhReturnDate` — 回程日期（選填）
+- `fhReturnResult` — 回程直飛查詢結果
+
+**新增常數**：`FH_AIRPORTS`（30 個機場，出發地與目的地共用）
+
+---
+
+## 🔴 下一個對話要做
+
+1. **SIM 卡查詢元件**（已規劃很久，還沒做）
+   ```ts
+   fetch('https://opencli-api.liupony2000.workers.dev/api/sim-rank?country=Vietnam&days=7')
+   ```
+
+2. **deploy 到線上**（功能確認 OK 後）：
+   ```bash
+   cd "/Users/liu/Documents/porject/肥宅老司機前進世界地圖"
+   git add -A && git commit -m "v1.7.1: 外站比價 UI 升級" && git push
+   ```
+
+3. **外站比價進一步優化**（低優先）：
+   - 查外站方案時也查回程外站（目前回程只查直飛）
+   - 地圖點擊時自動帶入目的地城市
+
+---
+
+## 🔗 相關 API 端點（直接可用，無金鑰）
+
+| 服務 | URL | 說明 |
+|------|-----|------|
+| 機票比價 | `https://flight.twgolddigger.com/search` | 外站票，TPE 出發 |
+| 機票輪詢 | `https://flight.twgolddigger.com/jobs/{id}` | outer/mix 非同步結果 |
+| 匯率 | `https://opencli-api.liupony2000.workers.dev/api/forex` | 台銀真實牌告匯率 |
+| SIM卡 | `https://opencli-api.liupony2000.workers.dev/api/sim-rank` | SIM 卡 CP 值排名 |
 
 ---
 
@@ -65,12 +78,14 @@ cd "/Users/liu/Documents/porject/肥宅老司機前進世界地圖"
 npm run dev
 ```
 
+部署：push 到 git，Cloudflare Pages 自動 CI/CD  
+線上網址：`https://fattymap.pages.dev/`
+
 ---
 
 ## ⚠️ 注意事項
 
-1. opencli API 無金鑰保護（公開）—流量暴增再加限流
-2. 匯率每天第一次呼叫時才抓取（冷啟動約 2-3 秒），之後當天都是快取
-3. SIM 卡每次即時查詢 trip.com，約 0.5-1 秒
-4. `bot` 陣列只有台灣銀行的資料（非多銀行比較）。多銀行比較只限 USD，在 `twBanksUSD` 裡
-5. opencli `compare.ts` CLI 有完整多銀行比較，但尚未暴露到 API 端點
+1. flight-hack API 架在自己的 Mac（開機自啟）。Mac 關機 API 就掛，外站比價功能失效
+2. `https://flight.twgolddigger.com` CORS 已開 `*`，前端直接呼叫沒問題
+3. Trip.com 聯盟 ID 在 `AboutOverlay.tsx` 的 `TRIP_AFFILIATE` 常數
+4. Cloudflare Pages 環境變數要在 CF Pages 後台設定（不是 .env 檔）
