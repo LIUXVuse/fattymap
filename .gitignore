@@ -17,6 +17,9 @@ venv/
 downloads/
 *.mp3
 
+# AI 工作筆記（Claude 的 session context，不屬於產品文件）
+HANDOVER.md
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

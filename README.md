@@ -1,6 +1,6 @@
 # 肥宅老司機前進世界地圖 (Otaku Old Driver's World Map)
 
-![Version](https://img.shields.io/badge/version-1.5.0-green) ![Status](https://img.shields.io/badge/status-穩定版-brightgreen)
+![Version](https://img.shields.io/badge/version-1.7.1-green) ![Status](https://img.shields.io/badge/status-穩定版-brightgreen)
 
 這是一個基於地圖的互動式足跡紀錄應用程式。專為熱愛探索的使用者設計，結合了 Google Maps 的街景資訊，讓您輕鬆標記美食、景點與住宿，並規劃專屬的「老司機」路線。
 
@@ -38,6 +38,17 @@
   * 內建酒店/機票搜尋框，直接查詢 Trip.com 優惠方案。
   * 六國熱門地區酒店推薦：泰國、越南、菲律賓、台灣、日本、印尼。
   * 點擊地區直接跳轉 Trip.com 查看優惠酒店。
+* **💱 智能換匯計算器**:
+  * 串接台灣銀行真實牌告匯率。
+  * 支援多種幣別即時換算。
+* **📶 SIM 卡 CP 值查詢**:
+  * 依目的地國家、天數查詢最划算的旅遊 SIM 卡方案。
+* **💰 外站機票比價**:
+  * 整合自架 flight-hack API（Google Flights Playwright 抓取）。
+  * **直飛查詢**：顯示前 5 名含起降時間，約 15 秒。
+  * **外站比價**：掃描 22 個外站城市，計算含定位費的真實總價，約 3-5 分鐘。
+  * 支援去程＋回程同時查詢、時段篩選（早上/下午/晚上）。
+  * 62 個全球機場選項，依國家分組顯示。
 * **🎲 隨機探索**:
   * 點擊左上角 Banner 可隨機傳送到一個回憶。
   * **自動展開圖釘**: 隨機探索或點擊側邊欄回憶時，地圖會自動移動並展開該圖釘的 Popup。
@@ -147,6 +158,27 @@ VITE_GOOGLE_PLACES_API_KEY=您的_Google_API_Key
 * ✅ 隨機探索自動展開圖釘
 * ✅ 多點 Google Maps 導航
 * ✅ 留言板功能
+
+### v1.7.1 - 2026-04-16
+
+* ✅ **外站比價 UI 全面升級**
+  * 出發地可選（不再固定 TPE）
+  * 回程日期選填，自動查回程直飛
+  * 直飛顯示前 5 名 + 起降時間
+  * 時段篩選（進階設定）
+  * 外站結果顯示定位段說明與費用拆分
+  * 機場選單擴充至 62 個，依國家分組
+
+### v1.7.0 - 2026-04-15
+
+* ✅ **外站機票比價整合**（`components/AboutOverlay.tsx`）
+  * 呼叫自架 flight-hack API (`https://flight.twgolddigger.com`)
+  * 直飛查詢約 15 秒；外站比價 3-5 分鐘（非同步輪詢）
+  * 最優惠方案 🏆 標示 + 省多少錢
+
+### v1.6.0 - 2026-04-01
+
+* ✅ **換匯計算器接真實匯率** - 串接台灣銀行牌告匯率 API
 
 ### v1.5.0 - 2026-02-11
 
