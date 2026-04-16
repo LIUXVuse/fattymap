@@ -226,11 +226,17 @@ export const DestinationInfoPanel: React.FC = () => {
     const [weather, setWeather] = useState<{
         temp: number;
         weathercode: number;
-        humidity: number;
-        windspeed: number;
+        tempMax?: number;
+        tempMin?: number;
+        humidity?: number;
+        windspeed?: number;
+        precipitation?: number;
     } | null>(null);
     const [weatherLoading, setWeatherLoading] = useState(false);
     const [weatherError, setWeatherError] = useState('');
+    const [weatherLabel, setWeatherLabel] = useState('即時天氣');
+    // 快取 geocoding 結果，避免換日期時重複查
+    const geoCacheRef = useRef<{ cityEn: string; lat: number; lon: number } | null>(null);
 
     // 彈性日期查詢狀態
     const [flexOrigin, setFlexOrigin] = useState('TPE｜台北桃園');
@@ -244,15 +250,23 @@ export const DestinationInfoPanel: React.FC = () => {
     const [flexJobId, setFlexJobId] = useState('');
     const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-    // 切換目的地時自動查天氣
+    // 切換目的地時自動查即時天氣
     useEffect(() => {
         if (!selectedDest) {
             setWeather(null);
             setWeatherError('');
+            setWeatherLabel('即時天氣');
+            geoCacheRef.current = null;
             return;
         }
-        fetchWeather(selectedDest.cityEn);
+        fetchWeather(selectedDest.cityEn, null);
     }, [selectedKey]);
+
+    // 填寫出發日時，自動切換天氣到「出發日」
+    useEffect(() => {
+        if (!selectedDest || !flexStart) return;
+        fetchWeather(selectedDest.cityEn, flexStart);
+    }, [flexStart]);
 
     // 清理 polling
     useEffect(() => {
@@ -261,33 +275,90 @@ export const DestinationInfoPanel: React.FC = () => {
         };
     }, []);
 
-    async function fetchWeather(cityEn: string) {
+    // targetDate = null → 查即時天氣；填日期 → 看天數決定用預報或歷史
+    async function fetchWeather(cityEn: string, targetDate: string | null) {
         setWeatherLoading(true);
         setWeather(null);
         setWeatherError('');
+
         try {
-            // Step1: geocoding
-            const geoRes = await fetch(
-                `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityEn)}&count=1&language=en&format=json`
-            );
-            const geoData = await geoRes.json();
-            if (!geoData.results?.length) {
-                setWeatherError('找不到城市座標');
-                return;
+            // Step1: geocoding（有快取就直接用）
+            let lat: number, lon: number;
+            if (geoCacheRef.current?.cityEn === cityEn) {
+                lat = geoCacheRef.current.lat;
+                lon = geoCacheRef.current.lon;
+            } else {
+                const geoRes = await fetch(
+                    `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityEn)}&count=1&language=en&format=json`
+                );
+                const geoData = await geoRes.json();
+                if (!geoData.results?.length) {
+                    setWeatherError('找不到城市座標');
+                    return;
+                }
+                lat = geoData.results[0].latitude;
+                lon = geoData.results[0].longitude;
+                geoCacheRef.current = { cityEn, lat, lon };
             }
-            const { latitude, longitude } = geoData.results[0];
-            // Step2: weather
-            const wxRes = await fetch(
-                `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,weathercode,windspeed_10m&timezone=auto`
-            );
-            const wxData = await wxRes.json();
-            const c = wxData.current;
-            setWeather({
-                temp: Math.round(c.temperature_2m),
-                weathercode: c.weathercode,
-                humidity: c.relative_humidity_2m,
-                windspeed: Math.round(c.windspeed_10m),
-            });
+
+            if (!targetDate) {
+                // 即時天氣
+                const wxRes = await fetch(
+                    `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weathercode,windspeed_10m&timezone=auto`
+                );
+                const wxData = await wxRes.json();
+                const c = wxData.current;
+                setWeather({
+                    temp: Math.round(c.temperature_2m),
+                    weathercode: c.weathercode,
+                    humidity: c.relative_humidity_2m,
+                    windspeed: Math.round(c.windspeed_10m),
+                });
+                setWeatherLabel('即時天氣');
+            } else {
+                // 計算距今幾天
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const target = new Date(targetDate);
+                const diffDays = Math.round((target.getTime() - today.getTime()) / 86400000);
+
+                if (diffDays >= 0 && diffDays <= 15) {
+                    // 16天內：用預報 API
+                    const wxRes = await fetch(
+                        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,weathercode,precipitation_sum&timezone=auto&start_date=${targetDate}&end_date=${targetDate}`
+                    );
+                    const wxData = await wxRes.json();
+                    const d = wxData.daily;
+                    const avg = Math.round((d.temperature_2m_max[0] + d.temperature_2m_min[0]) / 2);
+                    setWeather({
+                        temp: avg,
+                        tempMax: Math.round(d.temperature_2m_max[0]),
+                        tempMin: Math.round(d.temperature_2m_min[0]),
+                        weathercode: d.weathercode[0],
+                        precipitation: d.precipitation_sum[0],
+                    });
+                    setWeatherLabel(`出發日預報 ${targetDate}`);
+                } else {
+                    // 超過 16 天：用去年同期歷史資料
+                    const lastYear = new Date(targetDate);
+                    lastYear.setFullYear(lastYear.getFullYear() - 1);
+                    const lyStr = lastYear.toISOString().split('T')[0];
+                    const wxRes = await fetch(
+                        `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${lyStr}&end_date=${lyStr}&daily=temperature_2m_max,temperature_2m_min,weathercode,precipitation_sum&timezone=auto`
+                    );
+                    const wxData = await wxRes.json();
+                    const d = wxData.daily;
+                    const avg = Math.round((d.temperature_2m_max[0] + d.temperature_2m_min[0]) / 2);
+                    setWeather({
+                        temp: avg,
+                        tempMax: Math.round(d.temperature_2m_max[0]),
+                        tempMin: Math.round(d.temperature_2m_min[0]),
+                        weathercode: d.weathercode[0],
+                        precipitation: d.precipitation_sum[0],
+                    });
+                    setWeatherLabel(`去年同期參考 (${lyStr})`);
+                }
+            }
         } catch (e) {
             setWeatherError('天氣查詢失敗');
         } finally {
@@ -415,7 +486,9 @@ export const DestinationInfoPanel: React.FC = () => {
                 <div className="grid grid-cols-2 gap-3">
                     {/* 天氣卡 */}
                     <div className="rounded-2xl bg-gradient-to-br from-sky-50 to-blue-100 border border-blue-200 p-4">
-                        <div className="text-xs font-semibold text-blue-600 mb-2">🌤️ 當地即時天氣</div>
+                        <div className="text-xs font-semibold text-blue-600 mb-2">
+                            🌤️ {weatherLabel}
+                        </div>
                         {weatherLoading && (
                             <div className="flex items-center gap-2 text-blue-500 text-sm">
                                 <Loader2 size={14} className="animate-spin" />
@@ -435,8 +508,19 @@ export const DestinationInfoPanel: React.FC = () => {
                                     {getWeatherDesc(weather.weathercode).desc}
                                 </div>
                                 <div className="text-xs text-blue-500 mt-1.5 space-y-0.5">
-                                    <div>💧 濕度 {weather.humidity}%</div>
-                                    <div>💨 風速 {weather.windspeed} km/h</div>
+                                    {weather.tempMax !== undefined && weather.tempMin !== undefined ? (
+                                        <>
+                                            <div>🌡️ 最高 {weather.tempMax}° / 最低 {weather.tempMin}°</div>
+                                            {weather.precipitation !== undefined && (
+                                                <div>🌧️ 降雨 {weather.precipitation.toFixed(1)} mm</div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <>
+                                            {weather.humidity !== undefined && <div>💧 濕度 {weather.humidity}%</div>}
+                                            {weather.windspeed !== undefined && <div>💨 風速 {weather.windspeed} km/h</div>}
+                                        </>
+                                    )}
                                 </div>
                             </>
                         )}
