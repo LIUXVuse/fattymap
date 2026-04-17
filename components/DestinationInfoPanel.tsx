@@ -384,6 +384,7 @@ export const DestinationInfoPanel: React.FC = () => {
     const [flexError, setFlexError] = useState('');
     const [flexJobId, setFlexJobId] = useState('');
     const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const pollCountRef = useRef(0);
 
     // 切換目的地時自動查即時天氣
     useEffect(() => {
@@ -501,6 +502,14 @@ export const DestinationInfoPanel: React.FC = () => {
         }
     }
 
+    function cancelFlex() {
+        if (pollRef.current) clearInterval(pollRef.current);
+        pollCountRef.current = 0;
+        setFlexLoading(false);
+        setFlexJobId('');
+        setFlexError('已取消查詢');
+    }
+
     async function searchFlex() {
         if (!selectedDest) return;
         if (!flexStart || !flexEnd) {
@@ -508,6 +517,7 @@ export const DestinationInfoPanel: React.FC = () => {
             return;
         }
         if (pollRef.current) clearInterval(pollRef.current);
+        pollCountRef.current = 0;
         setFlexLoading(true);
         setFlexResult(null);
         setFlexError('');
@@ -540,18 +550,29 @@ export const DestinationInfoPanel: React.FC = () => {
 
             if (data.status === 'pending' && data.job_id) {
                 setFlexJobId(data.job_id);
-                // 開始輪詢
+                // 開始輪詢，最多 40 次（40×15s = 10分鐘）
+                const MAX_POLLS = 40;
                 pollRef.current = setInterval(async () => {
+                    pollCountRef.current += 1;
+                    if (pollCountRef.current > MAX_POLLS) {
+                        clearInterval(pollRef.current!);
+                        setFlexLoading(false);
+                        setFlexJobId('');
+                        setFlexError('查詢逾時（超過10分鐘）。建議縮短日期區間，例如2-3週內。');
+                        return;
+                    }
                     try {
                         const pollRes = await fetch(`${FH_API}/jobs/${data.job_id}`);
                         const pollData = await pollRes.json();
                         if (pollData.status === 'done') {
                             clearInterval(pollRef.current!);
+                            pollCountRef.current = 0;
                             setFlexLoading(false);
                             setFlexJobId('');
                             setFlexResult(pollData.result);
                         } else if (pollData.status === 'error') {
                             clearInterval(pollRef.current!);
+                            pollCountRef.current = 0;
                             setFlexLoading(false);
                             setFlexJobId('');
                             setFlexError(pollData.error ?? '查詢失敗');
@@ -767,23 +788,44 @@ export const DestinationInfoPanel: React.FC = () => {
                                 <span className="text-[10px] text-gray-400 pl-4">適合日韓東南亞短程</span>
                             </div>
                         </div>
-                        <button
-                            onClick={searchFlex}
-                            disabled={flexLoading || !flexStart || !flexEnd}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {flexLoading ? (
-                                <><Loader2 size={12} className="animate-spin" />查詢中...</>
-                            ) : (
-                                <><Search size={12} />查最便宜</>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={searchFlex}
+                                disabled={flexLoading || !flexStart || !flexEnd}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {flexLoading ? (
+                                    <><Loader2 size={12} className="animate-spin" />掃描中</>
+                                ) : (
+                                    <><Search size={12} />查最便宜</>
+                                )}
+                            </button>
+                            {flexLoading && (
+                                <button
+                                    onClick={cancelFlex}
+                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-600 text-xs font-bold transition-colors"
+                                >
+                                    ✕ 取消
+                                </button>
                             )}
-                        </button>
-                    </div>
-                    {flexLoading && flexJobId && (
-                        <div className="text-xs text-orange-600 bg-orange-100 rounded-lg px-3 py-2">
-                            ⏳ 掃描中（約 3-5 分鐘），每 15 秒自動更新…
                         </div>
-                    )}
+                    </div>
+                    {flexLoading && flexJobId && (() => {
+                        const days = flexStart && flexEnd
+                            ? Math.round((new Date(flexEnd).getTime() - new Date(flexStart).getTime()) / 86400000) + 1
+                            : 0;
+                        const minMin = Math.ceil(days * 5 / 60);
+                        const maxMin = Math.ceil(days * 15 / 60);
+                        return (
+                            <div className="text-xs text-orange-600 bg-orange-100 rounded-lg px-3 py-2 space-y-1">
+                                <div>⏳ 掃描中，每 15 秒自動更新…</div>
+                                <div className="text-orange-500">
+                                    共 {days} 天 · 預估 {minMin}-{maxMin} 分鐘
+                                    {days > 20 && <span className="ml-1 text-red-500">（範圍較大，建議縮短至 2-3 週）</span>}
+                                </div>
+                            </div>
+                        );
+                    })()}
                     {flexError && (
                         <div className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">{flexError}</div>
                     )}
