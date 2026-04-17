@@ -753,16 +753,19 @@ export const DestinationInfoPanel: React.FC = () => {
                                     <option value={2}>托運 2件</option>
                                 </select>
                             </label>
-                            <label className="flex items-center gap-1 text-xs text-gray-600 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={flexNonstop}
-                                    onChange={(e) => setFlexNonstop(e.target.checked)}
-                                    disabled={flexLoading}
-                                    className="rounded disabled:opacity-50"
-                                />
-                                避開聯航
-                            </label>
+                            <div className="flex flex-col gap-0.5">
+                                <label className="flex items-center gap-1 text-xs text-gray-600 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={flexNonstop}
+                                        onChange={(e) => setFlexNonstop(e.target.checked)}
+                                        disabled={flexLoading}
+                                        className="rounded disabled:opacity-50"
+                                    />
+                                    僅限直飛（不中轉）
+                                </label>
+                                <span className="text-[10px] text-gray-400 pl-4">適合日韓東南亞短程</span>
+                            </div>
                         </div>
                         <button
                             onClick={searchFlex}
