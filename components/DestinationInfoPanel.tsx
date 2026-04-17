@@ -68,6 +68,37 @@ const DEST_GROUPS: {
         ],
     },
     {
+        group: '🇲🇲 緬甸',
+        dests: [
+            { label: '仰光', country: 'MM', cityEn: 'Yangon', airport: 'RGN｜仰光' },
+        ],
+    },
+    {
+        group: '🇰🇭 柬埔寨',
+        dests: [
+            { label: '金邊', country: 'KH', cityEn: 'Phnom Penh', airport: 'PNH｜金邊' },
+            { label: '暹粒', country: 'KH', cityEn: 'Siem Reap', airport: 'REP｜暹粒' },
+        ],
+    },
+    {
+        group: '🇱🇦 寮國',
+        dests: [
+            { label: '永珍', country: 'LA', cityEn: 'Vientiane', airport: 'VTE｜永珍' },
+        ],
+    },
+    {
+        group: '🇱🇰 斯里蘭卡',
+        dests: [
+            { label: '可倫坡', country: 'LK', cityEn: 'Colombo', airport: 'CMB｜可倫坡' },
+        ],
+    },
+    {
+        group: '🇳🇵 尼泊爾',
+        dests: [
+            { label: '加德滿都', country: 'NP', cityEn: 'Kathmandu', airport: 'KTM｜加德滿都' },
+        ],
+    },
+    {
         group: '🇮🇩 印尼',
         dests: [
             { label: '雅加達', country: 'ID', cityEn: 'Jakarta', airport: 'CGK｜雅加達' },
@@ -75,10 +106,37 @@ const DEST_GROUPS: {
         ],
     },
     {
+        group: '🇮🇳 印度',
+        dests: [
+            { label: '新德里', country: 'IN', cityEn: 'New Delhi', airport: 'DEL｜新德里' },
+            { label: '孟買', country: 'IN', cityEn: 'Mumbai', airport: 'BOM｜孟買' },
+            { label: '班加羅爾', country: 'IN', cityEn: 'Bangalore', airport: 'BLR｜班加羅爾' },
+        ],
+    },
+    {
+        group: '🇨🇳 中國大陸',
+        dests: [
+            { label: '北京', country: 'CN', cityEn: 'Beijing', airport: 'PEK｜北京首都' },
+            { label: '上海', country: 'CN', cityEn: 'Shanghai', airport: 'PVG｜上海浦東' },
+            { label: '廣州', country: 'CN', cityEn: 'Guangzhou', airport: 'CAN｜廣州' },
+            { label: '成都', country: 'CN', cityEn: 'Chengdu', airport: 'CTU｜成都' },
+            { label: '昆明', country: 'CN', cityEn: 'Kunming', airport: 'KMG｜昆明' },
+        ],
+    },
+    {
         group: '🇦🇪 中東',
         dests: [
             { label: '杜拜', country: 'AE', cityEn: 'Dubai', airport: 'DXB｜杜拜' },
             { label: '多哈', country: 'QA', cityEn: 'Doha', airport: 'DOH｜多哈' },
+            { label: '特拉維夫', country: 'IL', cityEn: 'Tel Aviv', airport: 'TLV｜特拉維夫' },
+        ],
+    },
+    {
+        group: '🌍 非洲',
+        dests: [
+            { label: '開羅', country: 'EG', cityEn: 'Cairo', airport: 'CAI｜開羅' },
+            { label: '約翰尼斯堡', country: 'ZA', cityEn: 'Johannesburg', airport: 'JNB｜約翰尼斯堡' },
+            { label: '奈洛比', country: 'KE', cityEn: 'Nairobi', airport: 'NBO｜奈洛比' },
         ],
     },
     {
@@ -106,6 +164,32 @@ const DEST_GROUPS: {
         ],
     },
     {
+        group: '🇮🇹 義大利',
+        dests: [
+            { label: '羅馬', country: 'IT', cityEn: 'Rome', airport: 'FCO｜羅馬' },
+            { label: '米蘭', country: 'IT', cityEn: 'Milan', airport: 'MXP｜米蘭' },
+        ],
+    },
+    {
+        group: '🇵🇹 葡萄牙',
+        dests: [
+            { label: '里斯本', country: 'PT', cityEn: 'Lisbon', airport: 'LIS｜里斯本' },
+        ],
+    },
+    {
+        group: '🇬🇷 希臘',
+        dests: [
+            { label: '雅典', country: 'GR', cityEn: 'Athens', airport: 'ATH｜雅典' },
+        ],
+    },
+    {
+        group: '🇪🇸 西班牙',
+        dests: [
+            { label: '馬德里', country: 'ES', cityEn: 'Madrid', airport: 'MAD｜馬德里' },
+            { label: '巴塞隆納', country: 'ES', cityEn: 'Barcelona', airport: 'BCN｜巴塞隆納' },
+        ],
+    },
+    {
         group: '🇨🇭 瑞士',
         dests: [
             { label: '蘇黎世', country: 'CH', cityEn: 'Zurich', airport: 'ZRH｜蘇黎世' },
@@ -118,10 +202,20 @@ const DEST_GROUPS: {
         ],
     },
     {
-        group: '🇪🇸 西班牙',
+        group: '🇸🇪🇩🇰🇳🇴🇫🇮 北歐',
         dests: [
-            { label: '馬德里', country: 'ES', cityEn: 'Madrid', airport: 'MAD｜馬德里' },
-            { label: '巴塞隆納', country: 'ES', cityEn: 'Barcelona', airport: 'BCN｜巴塞隆納' },
+            { label: '斯德哥爾摩', country: 'SE', cityEn: 'Stockholm', airport: 'ARN｜斯德哥爾摩' },
+            { label: '哥本哈根', country: 'DK', cityEn: 'Copenhagen', airport: 'CPH｜哥本哈根' },
+            { label: '奧斯陸', country: 'NO', cityEn: 'Oslo', airport: 'OSL｜奧斯陸' },
+            { label: '赫爾辛基', country: 'FI', cityEn: 'Helsinki', airport: 'HEL｜赫爾辛基' },
+        ],
+    },
+    {
+        group: '🇵🇱🇨🇿🇭🇺 東歐',
+        dests: [
+            { label: '華沙', country: 'PL', cityEn: 'Warsaw', airport: 'WAW｜華沙' },
+            { label: '布拉格', country: 'CZ', cityEn: 'Prague', airport: 'PRG｜布拉格' },
+            { label: '布達佩斯', country: 'HU', cityEn: 'Budapest', airport: 'BUD｜布達佩斯' },
         ],
     },
     {
@@ -131,6 +225,19 @@ const DEST_GROUPS: {
             { label: '洛杉磯', country: 'US', cityEn: 'Los Angeles', airport: 'LAX｜洛杉磯' },
             { label: '舊金山', country: 'US', cityEn: 'San Francisco', airport: 'SFO｜舊金山' },
             { label: '拉斯維加斯', country: 'US', cityEn: 'Las Vegas', airport: 'LAS｜拉斯維加斯' },
+        ],
+    },
+    {
+        group: '🇲🇽 墨西哥',
+        dests: [
+            { label: '墨西哥城', country: 'MX', cityEn: 'Mexico City', airport: 'MEX｜墨西哥城' },
+            { label: '坎昆', country: 'MX', cityEn: 'Cancun', airport: 'CUN｜坎昆' },
+        ],
+    },
+    {
+        group: '🇧🇷 巴西',
+        dests: [
+            { label: '聖保羅', country: 'BR', cityEn: 'Sao Paulo', airport: 'GRU｜聖保羅' },
         ],
     },
     {
@@ -182,6 +289,34 @@ const VISA_DATA: Record<string, VisaInfo> = {
     US: { type: '需申請', fee: '約 USD 14 (ESTA)', note: 'ESTA 電子旅行授權，最多90天，需提前上網申請' },
     AU: { type: '需申請', fee: '約 AUD 20 (ETA)', note: 'ETA 電子旅行授權，可線上申請，12個月多次入境' },
     NZ: { type: '需申請', fee: '約 NZD 23 (NZeTA)', note: 'NZeTA 電子旅行授權，需提前申請' },
+    // 東南亞補充
+    MM: { type: '電子簽', days: 28, fee: '約 USD 50', note: 'e-Visa 需提前申請，單次入境' },
+    KH: { type: '電子簽', days: 30, fee: '約 USD 36', note: 'e-Visa 線上申請，落地簽也可辦' },
+    LA: { type: '落地簽', days: 30, fee: '約 USD 35', note: '可辦落地簽，或事先申請 e-Visa' },
+    LK: { type: '電子簽', days: 30, fee: '約 USD 20 (ETA)', note: '需提前申請電子旅行授權' },
+    NP: { type: '落地簽', days: 15, fee: '約 USD 30', note: '抵達後辦落地簽，15/30/90天不同費用' },
+    // 印度
+    IN: { type: '電子簽', days: 60, fee: '約 USD 25 (e-Visa)', note: '需提前申請 e-Visa，可多次入境' },
+    // 中國大陸
+    CN: { type: '需申請', note: '一般需辦理中國簽證，部分城市過境可享免簽政策（如上海、廣州144小時過境免簽）' },
+    // 中東/非洲
+    IL: { type: '免簽', days: 90, note: '台灣護照免簽入境以色列，停留最多90天' },
+    EG: { type: '落地簽', days: 30, fee: '約 USD 25', note: '抵達後可辦落地簽，或事先辦理' },
+    ZA: { type: '免簽', days: 30, note: '台灣護照免簽入境南非' },
+    KE: { type: '電子簽', days: 90, fee: '約 USD 50 (eTA)', note: '需事先申請 e-Travel Authorization' },
+    // 歐洲
+    PT: { type: '免簽', days: 90, note: '申根免簽，同法國規則' },
+    GR: { type: '免簽', days: 90, note: '申根免簽' },
+    SE: { type: '免簽', days: 90, note: '申根免簽' },
+    DK: { type: '免簽', days: 90, note: '申根免簽' },
+    NO: { type: '免簽', days: 90, note: '申根免簽（挪威為申根成員）' },
+    FI: { type: '免簽', days: 90, note: '申根免簽' },
+    PL: { type: '免簽', days: 90, note: '申根免簽' },
+    CZ: { type: '免簽', days: 90, note: '申根免簽' },
+    HU: { type: '免簽', days: 90, note: '申根免簽' },
+    // 美洲
+    MX: { type: '免簽', days: 180, note: '台灣護照可免簽入境墨西哥，最多180天' },
+    BR: { type: '免簽', days: 90, note: '2023年起台灣護照可免簽入境巴西' },
 };
 
 // WMO 天氣碼轉文字

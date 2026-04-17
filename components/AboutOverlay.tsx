@@ -123,6 +123,58 @@ const FH_AIRPORT_GROUPS: { group: string; airports: { label: string; value: stri
         ],
     },
     {
+        group: '🇲🇲 緬甸',
+        airports: [
+            { label: '仰光 (RGN)', value: 'RGN｜仰光' },
+        ],
+    },
+    {
+        group: '🇰🇭 柬埔寨',
+        airports: [
+            { label: '金邊 (PNH)', value: 'PNH｜金邊' },
+            { label: '暹粒 (REP)', value: 'REP｜暹粒' },
+        ],
+    },
+    {
+        group: '🇱🇦 寮國',
+        airports: [
+            { label: '永珍 (VTE)', value: 'VTE｜永珍' },
+        ],
+    },
+    {
+        group: '🇱🇰 斯里蘭卡',
+        airports: [
+            { label: '可倫坡 (CMB)', value: 'CMB｜可倫坡' },
+        ],
+    },
+    {
+        group: '🇳🇵 尼泊爾',
+        airports: [
+            { label: '加德滿都 (KTM)', value: 'KTM｜加德滿都' },
+        ],
+    },
+    {
+        group: '🇮🇳 印度',
+        airports: [
+            { label: '新德里 (DEL)', value: 'DEL｜新德里' },
+            { label: '孟買 (BOM)', value: 'BOM｜孟買' },
+            { label: '班加羅爾 (BLR)', value: 'BLR｜班加羅爾' },
+        ],
+    },
+    {
+        group: '🇨🇳 中國大陸',
+        airports: [
+            { label: '北京首都 (PEK)', value: 'PEK｜北京首都' },
+            { label: '上海浦東 (PVG)', value: 'PVG｜上海浦東' },
+            { label: '上海虹橋 (SHA)', value: 'SHA｜上海虹橋' },
+            { label: '廣州 (CAN)', value: 'CAN｜廣州' },
+            { label: '深圳 (SZX)', value: 'SZX｜深圳' },
+            { label: '成都 (CTU)', value: 'CTU｜成都' },
+            { label: '昆明 (KMG)', value: 'KMG｜昆明' },
+            { label: '廈門 (XMN)', value: 'XMN｜廈門' },
+        ],
+    },
+    {
         group: '🇮🇩 印尼',
         airports: [
             { label: '雅加達 (CGK)', value: 'CGK｜雅加達' },
@@ -136,6 +188,15 @@ const FH_AIRPORT_GROUPS: { group: string; airports: { label: string; value: stri
             { label: '杜拜 (DXB)', value: 'DXB｜杜拜' },
             { label: '多哈 (DOH)', value: 'DOH｜多哈' },
             { label: '阿布扎比 (AUH)', value: 'AUH｜阿布扎比' },
+            { label: '特拉維夫 (TLV)', value: 'TLV｜特拉維夫' },
+        ],
+    },
+    {
+        group: '🌍 非洲',
+        airports: [
+            { label: '開羅 (CAI)', value: 'CAI｜開羅' },
+            { label: '約翰尼斯堡 (JNB)', value: 'JNB｜約翰尼斯堡' },
+            { label: '奈洛比 (NBO)', value: 'NBO｜奈洛比' },
         ],
     },
     {
@@ -179,10 +240,34 @@ const FH_AIRPORT_GROUPS: { group: string; airports: { label: string; value: stri
         ],
     },
     {
+        group: '🇵🇹 葡萄牙',
+        airports: [
+            { label: '里斯本 (LIS)', value: 'LIS｜里斯本' },
+        ],
+    },
+    {
+        group: '🇬🇷 希臘',
+        airports: [
+            { label: '雅典 (ATH)', value: 'ATH｜雅典' },
+        ],
+    },
+    {
         group: '🇪🇸 西班牙',
         airports: [
             { label: '馬德里 (MAD)', value: 'MAD｜馬德里' },
             { label: '巴塞隆納 (BCN)', value: 'BCN｜巴塞隆納' },
+        ],
+    },
+    {
+        group: '🇧🇪 比利時',
+        airports: [
+            { label: '布魯塞爾 (BRU)', value: 'BRU｜布魯塞爾' },
+        ],
+    },
+    {
+        group: '🇮🇪 愛爾蘭',
+        airports: [
+            { label: '都柏林 (DUB)', value: 'DUB｜都柏林' },
         ],
     },
     {
@@ -195,6 +280,23 @@ const FH_AIRPORT_GROUPS: { group: string; airports: { label: string; value: stri
         group: '🇦🇹 奧地利',
         airports: [
             { label: '維也納 (VIE)', value: 'VIE｜維也納' },
+        ],
+    },
+    {
+        group: '🇸🇪🇩🇰🇳🇴🇫🇮 北歐',
+        airports: [
+            { label: '斯德哥爾摩 (ARN)', value: 'ARN｜斯德哥爾摩' },
+            { label: '哥本哈根 (CPH)', value: 'CPH｜哥本哈根' },
+            { label: '奧斯陸 (OSL)', value: 'OSL｜奧斯陸' },
+            { label: '赫爾辛基 (HEL)', value: 'HEL｜赫爾辛基' },
+        ],
+    },
+    {
+        group: '🇵🇱🇨🇿🇭🇺 東歐',
+        airports: [
+            { label: '華沙 (WAW)', value: 'WAW｜華沙' },
+            { label: '布拉格 (PRG)', value: 'PRG｜布拉格' },
+            { label: '布達佩斯 (BUD)', value: 'BUD｜布達佩斯' },
         ],
     },
     {
@@ -234,6 +336,20 @@ const FH_AIRPORT_GROUPS: { group: string; airports: { label: string; value: stri
         group: '🇳🇿 紐西蘭',
         airports: [
             { label: '奧克蘭 (AKL)', value: 'AKL｜奧克蘭' },
+        ],
+    },
+    {
+        group: '🇲🇽 墨西哥',
+        airports: [
+            { label: '墨西哥城 (MEX)', value: 'MEX｜墨西哥城' },
+            { label: '坎昆 (CUN)', value: 'CUN｜坎昆' },
+        ],
+    },
+    {
+        group: '🇧🇷 巴西',
+        airports: [
+            { label: '聖保羅 (GRU)', value: 'GRU｜聖保羅' },
+            { label: '里約熱內盧 (GIG)', value: 'GIG｜里約熱內盧' },
         ],
     },
 ];
