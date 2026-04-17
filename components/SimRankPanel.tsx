@@ -37,6 +37,7 @@ interface SimPlan {
     days: number | '?';
     daily_gb: string;
     min_price_usd: number;
+    price_per_day?: number;
     formula: string;
     cp_score: string;
     real_name_req: 'Yes' | 'No';
@@ -236,7 +237,10 @@ export const SimRankPanel: React.FC = () => {
                         <div className="text-sm font-bold text-gray-700">
                             {result.country} — 找到 {result.total} 個方案，依 CP 值排序
                         </div>
-                        <div className="text-[10px] text-gray-400">CP = GB/天 ÷ USD/天</div>
+                        <div className="text-[10px] text-gray-400 text-right">
+                            <div>CP = GB/天 ÷ USD/天</div>
+                            <div>無 CP 者依每日費用低→高</div>
+                        </div>
                     </div>
 
                     {result.plans.length === 0 ? (
@@ -283,11 +287,15 @@ export const SimRankPanel: React.FC = () => {
                                                 ${plan.min_price_usd.toFixed(2)}
                                             </div>
                                             <div className="text-[10px] text-gray-500">USD</div>
-                                            {plan.cp_score !== 'N/A' && (
+                                            {plan.cp_score !== 'N/A' ? (
                                                 <div className={`text-xs font-bold mt-0.5 ${idx === 0 ? 'text-yellow-600' : 'text-blue-600'}`}>
                                                     CP {plan.cp_score}
                                                 </div>
-                                            )}
+                                            ) : plan.price_per_day !== undefined ? (
+                                                <div className="text-xs font-bold mt-0.5 text-gray-500">
+                                                    ~${plan.price_per_day.toFixed(2)}/天
+                                                </div>
+                                            ) : null}
                                         </div>
                                     </div>
 
