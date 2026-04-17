@@ -564,18 +564,21 @@ export const DestinationInfoPanel: React.FC = () => {
                     try {
                         const pollRes = await fetch(`${FH_API}/jobs/${data.job_id}`);
                         const pollData = await pollRes.json();
-                        if (pollData.status === 'done') {
-                            clearInterval(pollRef.current!);
-                            pollCountRef.current = 0;
-                            setFlexLoading(false);
-                            setFlexJobId('');
-                            setFlexResult(pollData.result);
+                        if (pollData.status === 'pending') {
+                            // 還在跑，繼續等
                         } else if (pollData.status === 'error') {
                             clearInterval(pollRef.current!);
                             pollCountRef.current = 0;
                             setFlexLoading(false);
                             setFlexJobId('');
-                            setFlexError(pollData.error ?? '查詢失敗');
+                            setFlexError(pollData.detail ?? pollData.error ?? '查詢失敗');
+                        } else {
+                            // 沒有 status 欄位 = server 直接回傳結果物件（{ results: [...] }）
+                            clearInterval(pollRef.current!);
+                            pollCountRef.current = 0;
+                            setFlexLoading(false);
+                            setFlexJobId('');
+                            setFlexResult(Array.isArray(pollData) ? pollData : (pollData.results ?? []));
                         }
                     } catch {
                         // 繼續等
