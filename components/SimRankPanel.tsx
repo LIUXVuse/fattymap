@@ -88,6 +88,7 @@ export const SimRankPanel: React.FC = () => {
                 days: String(days),
                 sim_type: simType,
                 no_real_name: String(noRealName),
+                min_daily_gb: '3',
                 limit: '8',
             });
             const res = await fetch(
