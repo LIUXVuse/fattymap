@@ -3,6 +3,7 @@ import { X, Heart, ShoppingBag, Users, Headphones, Instagram, Globe, ExternalLin
 import { CurrencyExchangeCalculator } from './CurrencyExchangeCalculator';
 import { SimRankPanel } from './SimRankPanel';
 import { DestinationInfoPanel } from './DestinationInfoPanel';
+import { HotelComparePanel } from './HotelComparePanel';
 
 // Spotify 圖示 SVG
 const SpotifyIcon = () => (
@@ -425,7 +426,7 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
     const [activeTab, setActiveTab] = useState<TabType>(initialTab);
     const [copiedField, setCopiedField] = useState<string | null>(null);
     // 搜尋類型切換 state (酒店/機票/當地體驗/機場接送/外站比價)
-    const [searchType, setSearchType] = useState<'hotel' | 'flight' | 'experience' | 'transfer' | 'flight-hack'>('hotel');
+    const [searchType, setSearchType] = useState<'hotel' | 'flight' | 'experience' | 'transfer' | 'flight-hack' | 'hotel-compare'>('hotel');
     // 展開的國家
     const [expandedCountry, setExpandedCountry] = useState<string | null>(null);
 
@@ -1090,6 +1091,16 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
                                         <span>💰</span>
                                         外站比價
                                     </button>
+                                    <button
+                                        onClick={() => setSearchType('hotel-compare')}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${searchType === 'hotel-compare'
+                                            ? 'bg-gradient-to-r from-orange-500 to-yellow-500 text-white shadow-lg'
+                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                            }`}
+                                    >
+                                        <span>🏨</span>
+                                        飯店比價
+                                    </button>
                                 </div>
                             </div>
 
@@ -1138,7 +1149,7 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
                             )}
 
                             {/* 地區推薦列表 - 機場接送與外站比價不顯示 */}
-                            {searchType !== 'transfer' && searchType !== 'flight-hack' && (
+                            {searchType !== 'transfer' && searchType !== 'flight-hack' && searchType !== 'hotel-compare' && (
                                 <div className="bg-white/60 rounded-2xl p-4 shadow-sm">
                                     <h3 className="font-bold text-lg mb-3 flex items-center gap-2 text-gray-800">
                                         <MapPin className="text-red-500" size={20} />
@@ -1559,10 +1570,16 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
                                 </div>
                             )}
 
+                            {searchType === 'hotel-compare' && (
+                                <HotelComparePanel />
+                            )}
+
                             {/* 聯盟說明 */}
-                            <div className="text-center text-xs text-gray-400 mt-2">
-                                透過以上連結預訂，我們可獲得小額佣金以支持網站營運，感謝您的支持！💖
-                            </div>
+                            {searchType !== 'hotel-compare' && (
+                                <div className="text-center text-xs text-gray-400 mt-2">
+                                    透過以上連結預訂，我們可獲得小額佣金以支持網站營運，感謝您的支持！💖
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
