@@ -1,22 +1,31 @@
 # HANDOVER — 肥宅老司機前進世界地圖
 
 > 上次更新：2026-05-12  
-> 當前狀態：v1.8.x 穩定版，外站機票 API 永久修復完成，Podcast 自動同步已修復
+> 當前狀態：v1.8.x 穩定版，Podcast 自動同步已修復（SSH）
 
 ---
 
-## ✅ 2026-05-12 Podcast 自動同步修復
+## ✅ 本次完成（2026-05-12）
 
-**問題**：5/4 和 5/11 連兩週 git push 失敗（403），S3EP261、S3EP262 摘要積壓在本地沒上網站
+- **診斷 Podcast 摘要兩週沒更新的原因**：launchd 執行環境沒有 `GH_TOKEN`，`gh auth git-credential` 無法認證 GitHub HTTPS，連兩週（5/4、5/11）push 403 失敗
+- **修復**：把 Mac SSH key 加到 GitHub 帳號，git remote 從 HTTPS 改為 SSH（`git@github.com:LIUXVuse/fattymap.git`）
+- **補推**：把積壓的 4 個 commit 全推上去（含 S3EP261、S3EP262 摘要）
+- **效果**：Cloudflare Pages 自動觸發部署，網站摘要已更新至最新集
 
-**根本原因**：launchd 執行環境沒有 `GH_TOKEN`，`gh auth git-credential` 無法認證 GitHub HTTPS
+## 🔴 下一個對話要先做
 
-**修法**：
-1. 把 Mac 的 SSH key (`~/.ssh/id_ed25519`) 加到 GitHub 帳號
-2. `git remote set-url origin git@github.com:LIUXVuse/fattymap.git`（HTTPS → SSH）
-3. 手動 push 了 4 個積壓 commit（含 S3EP261、S3EP262 摘要）
+- Step 1：**SIM 卡資料品質修正** — `daily_gb` 全是估算，先查 Cloudflare Worker 原始碼，看 Trip.com 回來的 HTML 有無實際 GB 數字可解析（路徑：`https://opencli-api.liupony2000.workers.dev/api/sim-rank`）
+- Step 2：前端 SIM 卡結果區加免責聲明小字「⚠️ GB 數為估算，實際以購買頁面為準」
 
-SSH 不需要 env 變數，launchd 以後執行腳本都能正常 push
+## ⚠️ 已知問題 / 注意事項
+
+1. **Podcast 自動化已改為 SSH**：launchd 腳本 push 不再需要 `GH_TOKEN`，SSH key 在 `~/.ssh/id_ed25519`
+2. flight-hack API 架在 Mac（開機自啟）。Mac 關機，外站比價與彈性日期功能失效
+3. API Log：`tail -f ~/.pw-pkg/flighthack-api.log`
+4. Trip.com 聯盟 ID 在 `AboutOverlay.tsx` 的 `TRIP_AFFILIATE` 常數
+5. Cloudflare Pages 環境變數在 CF Pages 後台設定（不是 .env 檔）
+6. `/jobs/{id}` done 時直接回傳結果物件（無 status 包裝），前端要用 `else` 判斷，不能用 `status === 'done'`
+7. SIM 卡 CP 值目前是**假排名**（daily_gb 全寫死 ~0.5GB），待修
 
 ---
 

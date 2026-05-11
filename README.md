@@ -1,6 +1,6 @@
 # 肥宅老司機前進世界地圖 (Otaku Old Driver's World Map)
 
-![Version](https://img.shields.io/badge/version-1.7.1-green) ![Status](https://img.shields.io/badge/status-穩定版-brightgreen)
+![Version](https://img.shields.io/badge/version-1.8.x-green) ![Status](https://img.shields.io/badge/status-穩定版-brightgreen)
 
 這是一個基於地圖的互動式足跡紀錄應用程式。專為熱愛探索的使用者設計，結合了 Google Maps 的街景資訊，讓您輕鬆標記美食、景點與住宿，並規劃專屬的「老司機」路線。
 
@@ -158,6 +158,12 @@ VITE_GOOGLE_PLACES_API_KEY=您的_Google_API_Key
 * ✅ 隨機探索自動展開圖釘
 * ✅ 多點 Google Maps 導航
 * ✅ 留言板功能
+
+### v1.8.x - 2026-04-18 ~ 2026-05-12
+
+* ✅ **旅遊情報分頁**（`components/DestinationInfoPanel.tsx`）：天氣 + 簽證 + 彈性日期查票
+* ✅ **彈性日期 bug 修正**：nonstop 傳遞、輪詢格式、取消按鈕、40次逾時保護
+* ✅ **Podcast 自動同步修復**：git remote 改 SSH，解決 launchd 環境 403 問題
 
 ### v1.7.1 - 2026-04-16
 

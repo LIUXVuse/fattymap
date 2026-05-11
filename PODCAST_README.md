@@ -227,6 +227,8 @@ A: 目前檔名格式固定為 `S3EP01.mp3`（方便跑 whisper），如果需�
 
 系統已設定 **每週一下午 4 點** 自動更新 Podcast 資料。
 
+> **注意（2026-05-12 更新）**：git push 已改用 SSH 認證（`git@github.com:LIUXVuse/fattymap.git`），不再依賴 `GH_TOKEN` 環境變數。launchd 環境下也能正常 push。
+
 ### 查看定時任務狀態
 
 ```bash
