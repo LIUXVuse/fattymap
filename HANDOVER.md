@@ -1,31 +1,37 @@
 # HANDOVER — 肥宅老司機前進世界地圖
 
-> 上次更新：2026-05-12  
-> 當前狀態：v1.8.x 穩定版，Podcast 自動同步已修復（SSH）
+> 上次更新：2026-05-13
+> 當前狀態：v1.9，出發攻略分頁升級 — 直飛快查 + 換錢策略 + SIM推薦 + 機場接送
 
 ---
 
-## ✅ 本次完成（2026-05-12）
+## ✅ 本次完成（2026-05-13）
 
-- **診斷 Podcast 摘要兩週沒更新的原因**：launchd 執行環境沒有 `GH_TOKEN`，`gh auth git-credential` 無法認證 GitHub HTTPS，連兩週（5/4、5/11）push 403 失敗
-- **修復**：把 Mac SSH key 加到 GitHub 帳號，git remote 從 HTTPS 改為 SSH（`git@github.com:LIUXVuse/fattymap.git`）
-- **補推**：把積壓的 4 個 commit 全推上去（含 S3EP261、S3EP262 摘要）
-- **效果**：Cloudflare Pages 自動觸發部署，網站摘要已更新至最新集
+- **分頁重命名**：`旅遊情報` → `出發攻略`（tab label + icon 更新）
+- **直飛快查**：取代原本 4-11 分鐘的彈性日期掃描，改為單日 `mode=direct`，約 15 秒出 Top 3 直飛班次
+- **換錢策略卡**：自動從 `opencli /api/forex` 抓匯率，搭配 20+ 國靜態換錢建議 + 醒目 DCC 警告
+- **SIM卡推薦卡**：依旅遊天數自動查 `/api/sim-rank`，顯示 CP 最高方案
+- **機場接送卡**：呼叫新上線的 `/api/airport-transfer`，列出 Trip.com 接送選項 + USD 付款提醒
+- **修 bug**：直飛查詢 422 錯誤 — 移除 `mode` 參數（FastAPI enum 值不是純 `"direct"`）
+- **輸入整合**：旅遊天數 + 出發日共用於 SIM 推薦、天氣預報、機票查詢
+
+---
 
 ## 🔴 下一個對話要先做
 
-- Step 1：**SIM 卡資料品質修正** — `daily_gb` 全是估算，先查 Cloudflare Worker 原始碼，看 Trip.com 回來的 HTML 有無實際 GB 數字可解析（路徑：`https://opencli-api.liupony2000.workers.dev/api/sim-rank`）
-- Step 2：前端 SIM 卡結果區加免責聲明小字「⚠️ GB 數為估算，實際以購買頁面為準」
+- **Step 1：實測出發攻略各功能**（deploy 後在手機上驗證換錢/SIM/接送三張卡都正常載入）
+- **Step 2：SIM 卡資料品質**（`daily_gb` 部分仍為估算，需驗證越南/泰國真實資料是否正確）
+- **Step 3：考慮加「彈性日期掃描」入口**（目前直飛快查取代了彈性掃描，但彈性掃描仍有價值，可考慮放在旅遊預訂分頁）
+
+---
 
 ## ⚠️ 已知問題 / 注意事項
 
-1. **Podcast 自動化已改為 SSH**：launchd 腳本 push 不再需要 `GH_TOKEN`，SSH key 在 `~/.ssh/id_ed25519`
-2. flight-hack API 架在 Mac（開機自啟）。Mac 關機，外站比價與彈性日期功能失效
-3. API Log：`tail -f ~/.pw-pkg/flighthack-api.log`
-4. Trip.com 聯盟 ID 在 `AboutOverlay.tsx` 的 `TRIP_AFFILIATE` 常數
-5. Cloudflare Pages 環境變數在 CF Pages 後台設定（不是 .env 檔）
-6. `/jobs/{id}` done 時直接回傳結果物件（無 status 包裝），前端要用 `else` 判斷，不能用 `status === 'done'`
-7. SIM 卡 CP 值目前是**假排名**（daily_gb 全寫死 ~0.5GB），待修
+1. **flight-hack 需 Mac 開著**：直飛查詢依賴 `https://flight.twgolddigger.com`，Mac 關機即失效
+2. **機場接送資料稀少**：Trip.com CityPass 並非所有城市都有接送產品（雅加達測試為空）
+3. **換錢策略依賴 COUNTRY_CONFIG**：目前覆蓋 20+ 國，未涵蓋的目的地不顯示換錢卡
+4. **SIM 卡 CP 值部分估算**：`daily_gb` 顯示 `~` 開頭表示估算，實際以購買頁面為準
+5. **Podcast 自動化**：launchd 每週日更新，SSH key 已設定 (`~/.ssh/id_ed25519`)
 
 ---
 
@@ -39,74 +45,22 @@
 | v1.6 | 換匯計算器接 opencli API 真實匯率 |
 | v1.7 | 外站比價整合（`components/AboutOverlay.tsx`）|
 | v1.7.1 | 外站比價 UI 升級（出發地、回程、Top5、起降時間）|
-| v1.8.0 | 旅遊情報分頁（`components/DestinationInfoPanel.tsx`）天氣 + 簽證 + 彈性日期查票 |
-| v1.8.x | 彈性日期一連串 bug 修正（nonstop 傳遞錯誤、輪詢格式不符、取消按鈕、逾時保護）|
+| v1.8.0 | 旅遊情報分頁（天氣 + 簽證 + 彈性日期查票）|
+| v1.8.x | 彈性日期一連串 bug 修正 |
+| v1.9 | 出發攻略升級：直飛快查 + 換錢策略 + SIM推薦 + 機場接送 |
 
 ---
 
-## ✅ v1.8.x 修正的 bug（本次）
-
-| Bug | 原因 | 修法 |
-|-----|------|------|
-| 彈性日期勾選「避開聯航」查不到結果 | main.py p_flex parser 無 `--nonstop`；scan_date_range 無 nonstop 參數 | 補齊整條呼叫鏈 |
-| 彈性日期結果永遠不顯示 | server `/jobs/{id}` done 時直接回傳結果物件（無 status 欄位），前端等 `status==='done'` 永遠配不到 | 改為 `else` 邏輯（不是 pending = 完成），同時修正取 `pollData.results` |
-| 無法中斷查詢 | 無取消按鈕 | 新增「✕ 取消」按鈕 + 40次輪詢上限（10分鐘自動逾時）|
-| 「避開聯航」標籤誤導 | 後端 `nonstop=true` 實為「只顯示直飛」，不是「避開聯航」| 改標籤為「僅限直飛（不中轉）」+ 小字說明 |
-
----
-
-## 🔴 開發路線圖（2026-04-18 確認）
+## 🔴 開發路線圖
 
 **大方向**：出國工具箱 + 購物工具箱，蒐集數據、找 CP 值、找標錯價
 
 | 優先度 | 任務 | 說明 |
 |--------|------|------|
-| **1（現在）** | SIM 卡資料品質修正 | daily_gb 全是估算，先修好 |
-| **2（下一個）** | 住宿跨平台比價 | Agoda vs Booking.com，有聯盟金 |
+| **1（現在）** | 出發攻略各卡片驗證 | 實測換錢/SIM/接送在不同目的地的資料品質 |
+| **2** | 住宿跨平台比價 | Agoda vs Booking.com，Trip.com 飯店 API 探索 |
 | **3** | 代購 CP 值計算器 | 日圓/韓圜 → 含代購費總成本 vs 台灣 |
-| **4（長期）** | 降價追蹤 + 標錯價偵測 | 需後端排程，技術難度高 |
-
----
-
-## 🔴 當前任務：SIM 卡資料品質調查
-
-### 問題描述
-
-目前 SIM 卡 CP 值是**虛假排名**，原因：
-
-1. **`daily_gb` 全是「彈性」** — API 從 Trip.com 抓不到實際 GB 數字
-2. **CP 分子寫死 `~0.5GB`** — 不管哪個方案都用同一個估算值，CP = 0.5 ÷ 日價格，排名等於純看最便宜
-3. **資料來源是 Trip.com `/things-to-do/` 體驗頁** — 不是 SIM 卡專區，方案數量少（泰國只有 8 筆）
-
-### 核實的 API 原始資料（Thailand 7天）
-
-```json
-{
-  "daily_gb": "彈性",
-  "formula": "~0.5GB ÷ $0.11/天 ≈ 4.545（估算）",
-  "cp_score": "~4.545"
-}
-```
-
-全部 5 筆的 `daily_gb` 都是「彈性」，~0.5GB 是寫死的估算。
-
-### 調查方向
-
-1. **opencli-api 能改嗎？**
-   - 路徑：`https://opencli-api.liupony2000.workers.dev/api/sim-rank`
-   - 這是自己架的 Cloudflare Worker，可以修改邏輯
-   - 需要確認 Trip.com 回來的原始 HTML 裡有沒有 GB 資訊可以解析
-
-2. **前端應加免責聲明**
-   - 在結果區加上小字：「⚠️ GB 數為估算，實際以購買頁面為準」
-
-3. **考慮換資料來源**（低優先）
-   - Klook、kkday 也賣 SIM 卡，資料可能更完整
-   - 不過會需要重寫 API，工程較大
-
-### 建議的第一步
-
-打開 opencli-api 的 Cloudflare Worker 原始碼，看它抓 Trip.com 資料時，實際拿到的 HTML/JSON 裡有沒有 GB 資訊，如果有就修解析邏輯。
+| **4（長期）** | 降價追蹤 + 標錯價偵測 | 需後端排程 |
 
 ---
 
@@ -114,11 +68,12 @@
 
 | 服務 | URL | 說明 |
 |------|-----|------|
-| 機票比價 | `https://flight.twgolddigger.com/search` | 外站票 |
-| 機票輪詢 | `https://flight.twgolddigger.com/jobs/{id}` | outer/mix/flex 非同步結果 |
+| 機票比價 | `https://flight.twgolddigger.com/search` | 直飛（mode=direct，預設） |
+| 機票輪詢 | `https://flight.twgolddigger.com/jobs/{id}` | outer/mix 非同步結果 |
 | 彈性日期 | `https://flight.twgolddigger.com/flex` | 掃描區間最便宜日期 |
 | 匯率 | `https://opencli-api.liupony2000.workers.dev/api/forex` | 台銀真實牌告匯率 |
-| SIM卡 | `https://opencli-api.liupony2000.workers.dev/api/sim-rank` | CP 值排名（資料品質待改善）|
+| SIM卡 | `https://opencli-api.liupony2000.workers.dev/api/sim-rank` | CP 值排名 |
+| 機場接送 | `https://opencli-api.liupony2000.workers.dev/api/airport-transfer` | Trip.com CityPass |
 | 天氣 Geocoding | `https://geocoding-api.open-meteo.com/v1/search` | 免金鑰 |
 | 天氣預報 | `https://api.open-meteo.com/v1/forecast` | 即時 / 未來 16 天 |
 | 天氣歷史 | `https://archive-api.open-meteo.com/v1/archive` | 去年同期參考 |
@@ -132,36 +87,5 @@ cd "/Users/liu/Documents/porject/肥宅老司機前進世界地圖"
 npm run dev
 ```
 
-部署：push 到 git → Cloudflare Pages 自動 CI/CD  
+部署：push 到 git → Cloudflare Pages 自動 CI/CD
 線上網址：`https://fattymap.pages.dev/`
-
----
-
-## 🟡 下下個任務：住宿跨平台比價
-
-### 目標
-同一間飯店，Agoda vs Booking.com 自動比價，顯示哪邊便宜。
-
-### 為什麼值得做
-- 兩個平台都有聯盟計畫，導流有聯盟金收入
-- 用戶出發前一定需要，流量場景明確
-
-### 技術方向
-- Agoda 有公開 Affiliate API（需申請）
-- Booking.com 有 Demand API（需申請）
-- 備案：直接串 RapidAPI 上的 Agoda/Booking 非官方 API（有免費額度）
-
-### 建議 UI 位置
-放在旅遊情報分頁（`DestinationInfoPanel.tsx`），輸入目的地 + 日期 → 列出 Top 5 飯店各平台比價
-
----
-
-## ⚠️ 注意事項
-
-1. flight-hack API 架在自己的 Mac（開機自啟）。Mac 關機，外站比價與彈性日期功能失效
-2. API Log：`tail -f ~/.pw-pkg/flighthack-api.log`（舊路徑 /tmp/flighthack-api.log 已廢棄）
-3. **2026-05-06 修復**：`/tmp/pw-pkg` 改為 `~/.pw-pkg`，不再怕 macOS 清 /tmp。`_run_cli` 有自動修復機制
-3. Trip.com 聯盟 ID 在 `AboutOverlay.tsx` 的 `TRIP_AFFILIATE` 常數
-4. Cloudflare Pages 環境變數在 CF Pages 後台設定（不是 .env 檔）
-5. `/jobs/{id}` done 時直接回傳結果物件（無 status 包裝），前端要用 `else` 判斷，不能用 `status === 'done'`
-6. 彈性日期查歐美需 4-11 分鐘，建議縮短區間至 2-3 週
