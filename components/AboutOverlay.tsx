@@ -718,7 +718,7 @@ export const AboutOverlay: React.FC<AboutOverlayProps> = ({ isOpen, onClose, ini
         { id: 'podcast', label: 'Podcast', icon: <Headphones size={16} /> },
         { id: 'more', label: '智能換匯', icon: <ShoppingBag size={16} /> },
         { id: 'sim', label: 'SIM卡', icon: <span className="text-sm">📶</span> },
-        { id: 'info', label: '旅遊情報', icon: <span className="text-sm">🌏</span> },
+        { id: 'info', label: '出發攻略', icon: <span className="text-sm">🗺️</span> },
         { id: 'travel', label: '旅遊預訂', icon: <Plane size={16} /> },
     ];
 

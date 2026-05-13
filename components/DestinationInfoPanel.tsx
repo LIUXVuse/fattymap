@@ -332,8 +332,7 @@ function getWeatherDesc(code: number): { desc: string; emoji: string } {
     return { desc: '未知', emoji: '🌡️' };
 }
 
-// 台灣出發地（僅台灣機場）
-const FLEX_ORIGINS = [
+const ORIGINS = [
     { label: '台北桃園 (TPE)', value: 'TPE｜台北桃園' },
     { label: '台北松山 (TSA)', value: 'TSA｜台北松山' },
     { label: '高雄 (KHH)', value: 'KHH｜高雄' },
@@ -341,12 +340,34 @@ const FLEX_ORIGINS = [
 ];
 
 const FH_API = 'https://flight.twgolddigger.com';
+const OPENCLI_API = 'https://opencli-api.liupony2000.workers.dev';
+
+// 國家代碼 → 幣別、sim-rank 搜尋名、換錢建議、結帳建議
+const COUNTRY_CONFIG: Record<string, { currency: string; simCountry: string; exchangeTip: string; payTip: string }> = {
+    VN: { currency: 'VND', simCountry: 'Vietnam',      exchangeTip: '建議帶 USD 去越南換，可多換約 10-12%',   payTip: '現場消費請用越盾 VND 結帳，避免 DCC' },
+    TH: { currency: 'THB', simCountry: 'Thailand',     exchangeTip: '帶 USD 去泰國換較划算（約多 4-5%）',     payTip: '現場消費請用泰銖 THB 結帳，避免 DCC' },
+    JP: { currency: 'JPY', simCountry: 'Japan',        exchangeTip: '在台灣直換 JPY 即可（帶美金差距甚小）',  payTip: '刷卡請選 JPY 結算，避免 DCC' },
+    KR: { currency: 'KRW', simCountry: 'Korea',        exchangeTip: '在首爾明洞換匯所換較划算（約多 8%）',    payTip: '刷卡請選 KRW 結算，避免 DCC' },
+    SG: { currency: 'SGD', simCountry: 'Singapore',    exchangeTip: '在台灣直換 SGD 較划算',                  payTip: '刷卡請選 SGD 結算，避免 DCC' },
+    MY: { currency: 'MYR', simCountry: 'Malaysia',     exchangeTip: '帶 USD 換馬幣略划算',                    payTip: '刷卡請選 MYR 結算，避免 DCC' },
+    ID: { currency: 'IDR', simCountry: 'Indonesia',    exchangeTip: '帶 USD 去峇里換，可多換約 13%',          payTip: '現場消費請用印尼盾 IDR 結帳' },
+    HK: { currency: 'HKD', simCountry: 'Hong Kong',    exchangeTip: '在台灣直換 HKD 即可',                   payTip: '刷卡請選 HKD 結算，避免 DCC' },
+    MO: { currency: 'MOP', simCountry: 'Macao',        exchangeTip: '持 HKD 在澳門通用',                     payTip: '可直接使用 HKD' },
+    PH: { currency: 'PHP', simCountry: 'Philippines',  exchangeTip: '當地機場換匯所匯率尚可',                 payTip: '刷卡請選 PHP 結算，避免 DCC' },
+    MM: { currency: 'MMK', simCountry: 'Myanmar',      exchangeTip: '帶 USD 現金入境',                       payTip: '建議使用現金 USD' },
+    KH: { currency: 'KHR', simCountry: 'Cambodia',     exchangeTip: '柬埔寨廣泛使用 USD',                    payTip: '可直接使用 USD 消費' },
+    IN: { currency: 'INR', simCountry: 'India',        exchangeTip: '帶 USD 去印度換盧比',                   payTip: '刷卡請選 INR 結算，避免 DCC' },
+    AE: { currency: 'AED', simCountry: 'UAE',          exchangeTip: '杜拜換匯所匯率優，可帶 USD',            payTip: '刷卡請選 AED 結算，避免 DCC' },
+    TR: { currency: 'TRY', simCountry: 'Turkey',       exchangeTip: '帶 USD/EUR 去土耳其換里拉最划算',       payTip: '現場用里拉結帳，避免 DCC' },
+    GB: { currency: 'GBP', simCountry: 'UK',           exchangeTip: '在台灣直換 GBP 即可',                   payTip: '刷卡請選 GBP 結算，避免 DCC' },
+    FR: { currency: 'EUR', simCountry: 'France',       exchangeTip: '在台灣直換 EUR 即可（申根區共用）',      payTip: '刷卡請選 EUR 結算，避免 DCC' },
+    AU: { currency: 'AUD', simCountry: 'Australia',    exchangeTip: '在台灣直換 AUD 即可',                   payTip: '刷卡請選 AUD 結算，避免 DCC' },
+    US: { currency: 'USD', simCountry: 'USA',          exchangeTip: '在台灣換 USD 現鈔',                     payTip: '直接刷美金卡，無需換匯' },
+};
 
 export const DestinationInfoPanel: React.FC = () => {
-    // 目的地選擇
-    const [selectedKey, setSelectedKey] = useState('');  // "group|label" key
+    const [selectedKey, setSelectedKey] = useState('');
 
-    // 查找當前選擇的目的地物件
     const selectedDest = (() => {
         if (!selectedKey) return null;
         for (const g of DEST_GROUPS) {
@@ -370,46 +391,54 @@ export const DestinationInfoPanel: React.FC = () => {
     const [weatherLoading, setWeatherLoading] = useState(false);
     const [weatherError, setWeatherError] = useState('');
     const [weatherLabel, setWeatherLabel] = useState('即時天氣');
-    // 快取 geocoding 結果，避免換日期時重複查
     const geoCacheRef = useRef<{ cityEn: string; lat: number; lon: number } | null>(null);
 
-    // 彈性日期查詢狀態
-    const [flexOrigin, setFlexOrigin] = useState('TPE｜台北桃園');
-    const [flexStart, setFlexStart] = useState('');
-    const [flexEnd, setFlexEnd] = useState('');
-    const [flexBaggage, setFlexBaggage] = useState(0);
-    const [flexNonstop, setFlexNonstop] = useState(false);
-    const [flexLoading, setFlexLoading] = useState(false);
-    const [flexResult, setFlexResult] = useState<any>(null);
-    const [flexError, setFlexError] = useState('');
-    const [flexJobId, setFlexJobId] = useState('');
-    const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-    const pollCountRef = useRef(0);
+    // 出發規劃輸入
+    const [days, setDays] = useState(7);
+    const [departDate, setDepartDate] = useState('');
+    const [origin, setOrigin] = useState('TPE｜台北桃園');
 
-    // 切換目的地時自動查即時天氣
+    // 直飛快查
+    const [flightLoading, setFlightLoading] = useState(false);
+    const [flightResults, setFlightResults] = useState<any[]>([]);
+    const [flightError, setFlightError] = useState('');
+
+    // 換錢策略
+    const [forexRate, setForexRate] = useState<{ rate: number; currency: string } | null>(null);
+
+    // SIM 推薦
+    const [simTop, setSimTop] = useState<any>(null);
+    const [simLoading, setSimLoading] = useState(false);
+
+    // 機場接送
+    const [transfers, setTransfers] = useState<any[]>([]);
+    const [transferLoading, setTransferLoading] = useState(false);
+
+    // 切換目的地：天氣 + 匯率 + 接送
     useEffect(() => {
         if (!selectedDest) {
-            setWeather(null);
-            setWeatherError('');
-            setWeatherLabel('即時天氣');
+            setWeather(null); setWeatherError(''); setWeatherLabel('即時天氣');
             geoCacheRef.current = null;
+            setForexRate(null); setTransfers([]); setSimTop(null);
             return;
         }
         fetchWeather(selectedDest.cityEn, null);
+        fetchForexAndTransfers(selectedDest);
     }, [selectedKey]);
 
-    // 填寫出發日時，自動切換天氣到「出發日」
+    // 出發日變動：切換天氣預報
     useEffect(() => {
-        if (!selectedDest || !flexStart) return;
-        fetchWeather(selectedDest.cityEn, flexStart);
-    }, [flexStart]);
+        if (!selectedDest || !departDate) return;
+        fetchWeather(selectedDest.cityEn, departDate);
+    }, [departDate]);
 
-    // 清理 polling
+    // 天數或目的地變動：重查 SIM
     useEffect(() => {
-        return () => {
-            if (pollRef.current) clearInterval(pollRef.current);
-        };
-    }, []);
+        if (!selectedDest) return;
+        const cfg = COUNTRY_CONFIG[selectedDest.country];
+        if (!cfg) return;
+        fetchSimTop(cfg.simCountry, days);
+    }, [selectedKey, days]);
 
     // targetDate = null → 查即時天氣；填日期 → 看天數決定用預報或歷史
     async function fetchWeather(cityEn: string, targetDate: string | null) {
@@ -502,235 +531,159 @@ export const DestinationInfoPanel: React.FC = () => {
         }
     }
 
-    function cancelFlex() {
-        if (pollRef.current) clearInterval(pollRef.current);
-        pollCountRef.current = 0;
-        setFlexLoading(false);
-        setFlexJobId('');
-        setFlexError('已取消查詢');
+    async function fetchForexAndTransfers(dest: NonNullable<typeof selectedDest>) {
+        const cfg = COUNTRY_CONFIG[dest.country];
+        if (cfg) {
+            try {
+                const res = await fetch(`${OPENCLI_API}/api/forex`);
+                const data = await res.json();
+                const entry = (data.bot ?? []).find((r: any) => r.iso === cfg.currency);
+                if (entry) setForexRate({ rate: entry.cashSell, currency: cfg.currency });
+            } catch {}
+        }
+        setTransferLoading(true);
+        try {
+            const res = await fetch(`${OPENCLI_API}/api/airport-transfer?city=${encodeURIComponent(dest.cityEn)}`);
+            const data = await res.json();
+            setTransfers(data.transfers ?? []);
+        } catch { setTransfers([]); }
+        finally { setTransferLoading(false); }
     }
 
-    async function searchFlex() {
-        if (!selectedDest) return;
-        if (!flexStart || !flexEnd) {
-            setFlexError('請填寫查詢區間起迄日期');
-            return;
-        }
-        if (pollRef.current) clearInterval(pollRef.current);
-        pollCountRef.current = 0;
-        setFlexLoading(true);
-        setFlexResult(null);
-        setFlexError('');
-        setFlexJobId('');
-
+    async function fetchSimTop(country: string, daysCount: number) {
+        setSimLoading(true);
+        setSimTop(null);
         try {
-            const originCode = flexOrigin.split('｜')[0];
-            const destCode = selectedDest.airport.split('｜')[0];
-            const params = new URLSearchParams({
-                origin: flexOrigin,
-                destination: selectedDest.airport,
-                start_date: flexStart,
-                end_date: flexEnd,
-                adults: '1',
-                baggage: String(flexBaggage),
-                nonstop: String(flexNonstop),
-                top_n: '3',
-            });
-            const res = await fetch(`${FH_API}/flex?${params}`);
+            const res = await fetch(`${OPENCLI_API}/api/sim-rank?country=${encodeURIComponent(country)}&days=${daysCount}&limit=1`);
             const data = await res.json();
+            setSimTop(data.plans?.[0] ?? null);
+        } catch { setSimTop(null); }
+        finally { setSimLoading(false); }
+    }
 
-            if (!res.ok) {
-                const msg = Array.isArray(data.detail)
-                    ? data.detail.map((e: any) => e.msg ?? JSON.stringify(e)).join('; ')
-                    : String(data.detail ?? data.message ?? '查詢失敗');
-                setFlexError(msg);
-                setFlexLoading(false);
-                return;
-            }
-
-            if (data.status === 'pending' && data.job_id) {
-                setFlexJobId(data.job_id);
-                // 開始輪詢，最多 40 次（40×15s = 10分鐘）
-                const MAX_POLLS = 40;
-                pollRef.current = setInterval(async () => {
-                    pollCountRef.current += 1;
-                    if (pollCountRef.current > MAX_POLLS) {
-                        clearInterval(pollRef.current!);
-                        setFlexLoading(false);
-                        setFlexJobId('');
-                        setFlexError('查詢逾時（超過10分鐘）。建議縮短日期區間，例如2-3週內。');
-                        return;
-                    }
-                    try {
-                        const pollRes = await fetch(`${FH_API}/jobs/${data.job_id}`);
-                        const pollData = await pollRes.json();
-                        if (pollData.status === 'pending') {
-                            // 還在跑，繼續等
-                        } else if (pollData.status === 'error') {
-                            clearInterval(pollRef.current!);
-                            pollCountRef.current = 0;
-                            setFlexLoading(false);
-                            setFlexJobId('');
-                            setFlexError(pollData.detail ?? pollData.error ?? '查詢失敗');
-                        } else {
-                            // 沒有 status 欄位 = server 直接回傳結果物件（{ results: [...] }）
-                            clearInterval(pollRef.current!);
-                            pollCountRef.current = 0;
-                            setFlexLoading(false);
-                            setFlexJobId('');
-                            setFlexResult(Array.isArray(pollData) ? pollData : (pollData.results ?? []));
-                        }
-                    } catch {
-                        // 繼續等
-                    }
-                }, 15000);
-            } else {
-                // 同步回傳（不應發生，保留備用）
-                setFlexResult(data);
-                setFlexLoading(false);
-            }
+    async function searchDirectFlights() {
+        if (!selectedDest || !departDate) return;
+        setFlightLoading(true);
+        setFlightResults([]);
+        setFlightError('');
+        try {
+            const params = new URLSearchParams({
+                origin, destination: selectedDest.airport,
+                date: departDate, adults: '1', baggage: '0', nonstop: 'true', mode: 'direct',
+            });
+            const res = await fetch(`${FH_API}/search?${params}`);
+            if (!res.ok) throw new Error('查詢失敗，請確認服務是否啟動');
+            const data = await res.json();
+            const list = Array.isArray(data) ? data : (data.results ?? []);
+            setFlightResults(list.slice(0, 3));
+            if (list.length === 0) setFlightError('查無直飛班次，請換日期試試');
         } catch (e: any) {
-            setFlexError('無法連線到比價 API，請確認服務是否啟動');
-            setFlexLoading(false);
-        }
+            setFlightError(e.message ?? '無法連線');
+        } finally { setFlightLoading(false); }
     }
 
     const visa = selectedDest ? VISA_DATA[selectedDest.country] : null;
-    const visaColor = visa
-        ? visa.type === '免簽' ? 'bg-green-50 border-green-200 text-green-800'
-            : visa.type === '落地簽' ? 'bg-yellow-50 border-yellow-200 text-yellow-800'
-            : visa.type === '電子簽' ? 'bg-blue-50 border-blue-200 text-blue-800'
-            : 'bg-red-50 border-red-200 text-red-800'
-        : '';
-    const visaBadgeColor = visa
-        ? visa.type === '免簽' ? 'bg-green-500'
-            : visa.type === '落地簽' ? 'bg-yellow-500'
-            : visa.type === '電子簽' ? 'bg-blue-500'
-            : 'bg-red-500'
-        : '';
+    const cfg = selectedDest ? COUNTRY_CONFIG[selectedDest.country] : null;
+    const visaColor = visa ? (visa.type === '免簽' ? 'bg-green-50 border-green-200 text-green-800' : visa.type === '落地簽' ? 'bg-yellow-50 border-yellow-200 text-yellow-800' : visa.type === '電子簽' ? 'bg-blue-50 border-blue-200 text-blue-800' : 'bg-red-50 border-red-200 text-red-800') : '';
+    const visaBadgeColor = visa ? (visa.type === '免簽' ? 'bg-green-500' : visa.type === '落地簽' ? 'bg-yellow-500' : visa.type === '電子簽' ? 'bg-blue-500' : 'bg-red-500') : '';
+    const today = new Date().toISOString().split('T')[0];
 
     return (
-        <div className="space-y-5">
+        <div className="space-y-4">
             {/* 目的地選擇 */}
             <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    選擇目的地
-                </label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">選擇目的地</label>
                 <select
                     value={selectedKey}
-                    onChange={(e) => {
-                        setSelectedKey(e.target.value);
-                        setFlexResult(null);
-                        setFlexError('');
-                        if (pollRef.current) clearInterval(pollRef.current);
-                        setFlexLoading(false);
-                    }}
+                    onChange={(e) => setSelectedKey(e.target.value)}
                     className="w-full px-3 py-2.5 rounded-xl border border-gray-300 bg-white focus:ring-2 focus:ring-indigo-400 focus:outline-none text-sm"
                 >
                     <option value="">— 請選擇目的地 —</option>
                     {DEST_GROUPS.map((g) => (
                         <optgroup key={g.group} label={g.group}>
                             {g.dests.map((d) => (
-                                <option key={d.label} value={`${g.group}|${d.label}`}>
-                                    {d.label}
-                                </option>
+                                <option key={d.label} value={`${g.group}|${d.label}`}>{d.label}</option>
                             ))}
                         </optgroup>
                     ))}
                 </select>
             </div>
 
-            {/* 天氣 + 簽證 卡片 */}
-            {selectedDest && (
-                <div className="grid grid-cols-2 gap-3">
-                    {/* 天氣卡 */}
-                    <div className="rounded-2xl bg-gradient-to-br from-sky-50 to-blue-100 border border-blue-200 p-4">
-                        <div className="text-xs font-semibold text-blue-600 mb-2">
-                            🌤️ {weatherLabel}
-                        </div>
-                        {weatherLoading && (
-                            <div className="flex items-center gap-2 text-blue-500 text-sm">
-                                <Loader2 size={14} className="animate-spin" />
-                                <span>查詢中...</span>
-                            </div>
-                        )}
-                        {weatherError && !weatherLoading && (
-                            <div className="text-xs text-red-500">{weatherError}</div>
-                        )}
-                        {weather && !weatherLoading && (
-                            <>
-                                <div className="flex items-end gap-2">
-                                    <span className="text-3xl">{getWeatherDesc(weather.weathercode).emoji}</span>
-                                    <span className="text-2xl font-bold text-blue-800">{weather.temp}°C</span>
-                                </div>
-                                <div className="text-sm text-blue-700 mt-1">
-                                    {getWeatherDesc(weather.weathercode).desc}
-                                </div>
-                                <div className="text-xs text-blue-500 mt-1.5 space-y-0.5">
-                                    {weather.tempMax !== undefined && weather.tempMin !== undefined ? (
-                                        <>
-                                            <div>🌡️ 最高 {weather.tempMax}° / 最低 {weather.tempMin}°</div>
-                                            {weather.precipitation !== undefined && (
-                                                <div>🌧️ 降雨 {weather.precipitation.toFixed(1)} mm</div>
-                                            )}
-                                        </>
-                                    ) : (
-                                        <>
-                                            {weather.humidity !== undefined && <div>💧 濕度 {weather.humidity}%</div>}
-                                            {weather.windspeed !== undefined && <div>💨 風速 {weather.windspeed} km/h</div>}
-                                        </>
-                                    )}
-                                </div>
-                            </>
-                        )}
-                    </div>
-
-                    {/* 簽證卡 */}
-                    <div className={`rounded-2xl border p-4 ${visa ? visaColor : 'bg-gray-50 border-gray-200 text-gray-500'}`}>
-                        <div className="text-xs font-semibold mb-2" style={{ opacity: 0.7 }}>
-                            🛂 台灣護照簽證
-                        </div>
-                        {visa ? (
-                            <>
-                                <div className="flex items-center gap-2 mb-1.5">
-                                    <span className={`text-xs font-bold text-white px-2 py-0.5 rounded-full ${visaBadgeColor}`}>
-                                        {visa.type}
-                                    </span>
-                                    {visa.days && (
-                                        <span className="text-sm font-semibold">{visa.days} 天</span>
-                                    )}
-                                </div>
-                                {visa.fee && (
-                                    <div className="text-xs mb-1">費用：{visa.fee}</div>
-                                )}
-                                <div className="text-xs leading-relaxed opacity-80">{visa.note}</div>
-                            </>
-                        ) : (
-                            <div className="text-xs">無簽證資料</div>
-                        )}
-                    </div>
+            {!selectedDest && (
+                <div className="text-center py-10 text-gray-400">
+                    <div className="text-4xl mb-3">🌏</div>
+                    <div className="text-sm">選擇目的地，一鍵取得出發前所需情報</div>
                 </div>
             )}
 
-            {/* 彈性日期最便宜機票 */}
-            {selectedDest && (
+            {selectedDest && (<>
+                {/* 旅遊天數 + 出發日（影響 SIM 推薦 + 天氣） */}
+                <div className="grid grid-cols-2 gap-2">
+                    <div>
+                        <label className="block text-xs text-gray-500 mb-1">旅遊天數（影響SIM推薦）</label>
+                        <div className="flex items-center gap-2">
+                            <button onClick={() => setDays(d => Math.max(1, d - 1))} className="w-7 h-7 rounded-full border border-gray-300 bg-white text-gray-600 font-bold text-sm hover:bg-gray-100 flex items-center justify-center">−</button>
+                            <span className="text-sm font-bold w-6 text-center">{days}</span>
+                            <button onClick={() => setDays(d => Math.min(60, d + 1))} className="w-7 h-7 rounded-full border border-gray-300 bg-white text-gray-600 font-bold text-sm hover:bg-gray-100 flex items-center justify-center">+</button>
+                            <span className="text-xs text-gray-400">天</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-xs text-gray-500 mb-1">出發日（影響天氣預報）</label>
+                        <input type="date" value={departDate} min={today}
+                            onChange={(e) => setDepartDate(e.target.value)}
+                            className="w-full px-2 py-1.5 rounded-lg border border-gray-300 bg-white text-xs focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
+                    </div>
+                </div>
+
+                {/* 天氣 + 簽證 */}
+                <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-2xl bg-gradient-to-br from-sky-50 to-blue-100 border border-blue-200 p-4">
+                        <div className="text-xs font-semibold text-blue-600 mb-2">🌤️ {weatherLabel}</div>
+                        {weatherLoading && <div className="flex items-center gap-2 text-blue-500 text-sm"><Loader2 size={14} className="animate-spin" /><span>查詢中...</span></div>}
+                        {weatherError && !weatherLoading && <div className="text-xs text-red-500">{weatherError}</div>}
+                        {weather && !weatherLoading && (<>
+                            <div className="flex items-end gap-2">
+                                <span className="text-3xl">{getWeatherDesc(weather.weathercode).emoji}</span>
+                                <span className="text-2xl font-bold text-blue-800">{weather.temp}°C</span>
+                            </div>
+                            <div className="text-sm text-blue-700 mt-1">{getWeatherDesc(weather.weathercode).desc}</div>
+                            <div className="text-xs text-blue-500 mt-1.5 space-y-0.5">
+                                {weather.tempMax !== undefined && weather.tempMin !== undefined ? (<>
+                                    <div>🌡️ 最高 {weather.tempMax}° / 最低 {weather.tempMin}°</div>
+                                    {weather.precipitation !== undefined && <div>🌧️ 降雨 {weather.precipitation.toFixed(1)} mm</div>}
+                                </>) : (<>
+                                    {weather.humidity !== undefined && <div>💧 濕度 {weather.humidity}%</div>}
+                                    {weather.windspeed !== undefined && <div>💨 風速 {weather.windspeed} km/h</div>}
+                                </>)}
+                            </div>
+                        </>)}
+                    </div>
+                    <div className={`rounded-2xl border p-4 ${visa ? visaColor : 'bg-gray-50 border-gray-200 text-gray-500'}`}>
+                        <div className="text-xs font-semibold mb-2" style={{ opacity: 0.7 }}>🛂 台灣護照簽證</div>
+                        {visa ? (<>
+                            <div className="flex items-center gap-2 mb-1.5">
+                                <span className={`text-xs font-bold text-white px-2 py-0.5 rounded-full ${visaBadgeColor}`}>{visa.type}</span>
+                                {visa.days && <span className="text-sm font-semibold">{visa.days} 天</span>}
+                            </div>
+                            {visa.fee && <div className="text-xs mb-1">費用：{visa.fee}</div>}
+                            <div className="text-xs leading-relaxed opacity-80">{visa.note}</div>
+                        </>) : <div className="text-xs">無簽證資料</div>}
+                    </div>
+                </div>
+
+                {/* 直飛快查 */}
                 <div className="rounded-2xl border border-orange-200 bg-orange-50/60 p-4">
                     <div className="text-sm font-bold text-orange-700 mb-3">
-                        📅 彈性日期查最便宜
-                        <span className="text-xs font-normal text-orange-500 ml-2">（掃描區間內 Top 3）</span>
+                        ✈️ 直飛機票快查
+                        <span className="text-xs font-normal text-orange-500 ml-2">約 15 秒出結果</span>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 mb-2">
+                    <div className="grid grid-cols-2 gap-2 mb-3">
                         <div>
                             <label className="block text-xs text-gray-600 mb-1">出發地</label>
-                            <select
-                                value={flexOrigin}
-                                onChange={(e) => setFlexOrigin(e.target.value)}
-                                disabled={flexLoading}
-                                className="w-full px-2 py-1.5 rounded-lg border border-gray-300 bg-white text-xs focus:ring-2 focus:ring-orange-400 focus:outline-none disabled:opacity-50"
-                            >
-                                {FLEX_ORIGINS.map((o) => (
-                                    <option key={o.value} value={o.value}>{o.label}</option>
-                                ))}
+                            <select value={origin} onChange={(e) => setOrigin(e.target.value)} disabled={flightLoading}
+                                className="w-full px-2 py-1.5 rounded-lg border border-gray-300 bg-white text-xs focus:ring-2 focus:ring-orange-400 focus:outline-none disabled:opacity-50">
+                                {ORIGINS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                             </select>
                         </div>
                         <div>
@@ -740,122 +693,29 @@ export const DestinationInfoPanel: React.FC = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 mb-2">
-                        <div>
-                            <label className="block text-xs text-gray-600 mb-1">查詢起始日</label>
-                            <input
-                                type="date"
-                                value={flexStart}
-                                onChange={(e) => setFlexStart(e.target.value)}
-                                disabled={flexLoading}
-                                className="w-full px-2 py-1.5 rounded-lg border border-gray-300 bg-white text-xs focus:ring-2 focus:ring-orange-400 focus:outline-none disabled:opacity-50"
-                            />
+                    <div className="flex items-center gap-2 mb-3">
+                        <div className="flex-1">
+                            <label className="block text-xs text-gray-600 mb-1">出發日期</label>
+                            <input type="date" value={departDate} min={today}
+                                onChange={(e) => setDepartDate(e.target.value)}
+                                disabled={flightLoading}
+                                className="w-full px-2 py-1.5 rounded-lg border border-gray-300 bg-white text-xs focus:ring-2 focus:ring-orange-400 focus:outline-none disabled:opacity-50" />
                         </div>
-                        <div>
-                            <label className="block text-xs text-gray-600 mb-1">查詢截止日</label>
-                            <input
-                                type="date"
-                                value={flexEnd}
-                                onChange={(e) => setFlexEnd(e.target.value)}
-                                disabled={flexLoading}
-                                className="w-full px-2 py-1.5 rounded-lg border border-gray-300 bg-white text-xs focus:ring-2 focus:ring-orange-400 focus:outline-none disabled:opacity-50"
-                            />
-                        </div>
+                        <button onClick={searchDirectFlights} disabled={flightLoading || !departDate}
+                            className="mt-4 flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            {flightLoading ? <><Loader2 size={12} className="animate-spin" />查詢中</> : <><Search size={12} />查直飛</>}
+                        </button>
                     </div>
-                    <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                            <label className="text-xs text-gray-600">
-                                行李：
-                                <select
-                                    value={flexBaggage}
-                                    onChange={(e) => setFlexBaggage(Number(e.target.value))}
-                                    disabled={flexLoading}
-                                    className="ml-1 px-1 py-0.5 rounded border border-gray-300 bg-white text-xs disabled:opacity-50"
-                                >
-                                    <option value={0}>手提</option>
-                                    <option value={1}>托運 1件</option>
-                                    <option value={2}>托運 2件</option>
-                                </select>
-                            </label>
-                            <div className="flex flex-col gap-0.5">
-                                <label className="flex items-center gap-1 text-xs text-gray-600 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={flexNonstop}
-                                        onChange={(e) => setFlexNonstop(e.target.checked)}
-                                        disabled={flexLoading}
-                                        className="rounded disabled:opacity-50"
-                                    />
-                                    僅限直飛（不中轉）
-                                </label>
-                                <span className="text-[10px] text-gray-400 pl-4">適合日韓東南亞短程</span>
-                            </div>
-                        </div>
-                        <div className="flex gap-2">
-                            <button
-                                onClick={searchFlex}
-                                disabled={flexLoading || !flexStart || !flexEnd}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {flexLoading ? (
-                                    <><Loader2 size={12} className="animate-spin" />掃描中</>
-                                ) : (
-                                    <><Search size={12} />查最便宜</>
-                                )}
-                            </button>
-                            {flexLoading && (
-                                <button
-                                    onClick={cancelFlex}
-                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-600 text-xs font-bold transition-colors"
-                                >
-                                    ✕ 取消
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                    {flexLoading && flexJobId && (() => {
-                        const days = flexStart && flexEnd
-                            ? Math.round((new Date(flexEnd).getTime() - new Date(flexStart).getTime()) / 86400000) + 1
-                            : 0;
-                        const minMin = Math.ceil(days * 5 / 60);
-                        const maxMin = Math.ceil(days * 15 / 60);
-                        return (
-                            <div className="text-xs text-orange-600 bg-orange-100 rounded-lg px-3 py-2 space-y-1">
-                                <div>⏳ 掃描中，每 15 秒自動更新…</div>
-                                <div className="text-orange-500">
-                                    共 {days} 天 · 預估 {minMin}-{maxMin} 分鐘
-                                    {days > 20 && <span className="ml-1 text-red-500">（範圍較大，建議縮短至 2-3 週）</span>}
-                                </div>
-                            </div>
-                        );
-                    })()}
-                    {flexError && (
-                        <div className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">{flexError}</div>
-                    )}
-                    {flexResult && (
-                        <div className="mt-3 space-y-2">
-                            {Array.isArray(flexResult) && flexResult.length === 0 && (
-                                <div className="text-xs text-gray-500 text-center py-3">
-                                    查詢區間內找不到符合條件的航班
-                                </div>
-                            )}
-                            {Array.isArray(flexResult) && flexResult.map((item: any, i: number) => (
-                                <div
-                                    key={i}
-                                    className={`rounded-xl border px-3 py-2.5 ${i === 0
-                                        ? 'bg-green-50 border-green-300'
-                                        : 'bg-white border-gray-200'
-                                    }`}
-                                >
+                    {flightError && <div className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">{flightError}</div>}
+                    {flightResults.length > 0 && (
+                        <div className="space-y-2">
+                            <div className="text-[10px] text-orange-500 bg-orange-100 rounded px-2 py-1">💡 刷卡請選目的地幣別結算，避免 DCC 多收 1-3%</div>
+                            {flightResults.map((item: any, i: number) => (
+                                <div key={i} className={`rounded-xl border px-3 py-2.5 ${i === 0 ? 'bg-green-50 border-green-300' : 'bg-white border-gray-200'}`}>
                                     <div className="flex items-center justify-between mb-1">
                                         <div className="flex items-center gap-1.5">
                                             {i === 0 && <span className="text-sm">🏆</span>}
-                                            <span className="text-xs font-semibold text-gray-700">
-                                                {item.date ?? item.departure_date ?? '—'}
-                                            </span>
-                                            <span className="text-xs text-gray-400">
-                                                {item.airline ?? ''}
-                                            </span>
+                                            <span className="text-xs font-semibold text-gray-700">{item.airline ?? ''}</span>
                                         </div>
                                         <span className={`text-sm font-bold ${i === 0 ? 'text-green-700' : 'text-gray-700'}`}>
                                             NT$ {item.price_twd?.toLocaleString() ?? '—'}
@@ -864,26 +724,100 @@ export const DestinationInfoPanel: React.FC = () => {
                                     <div className="flex items-center gap-2 text-xs text-gray-500">
                                         {item.departure && <span>起飛 {item.departure}</span>}
                                         {item.arrival && <span>降落 {item.arrival}</span>}
-                                        {item.stops !== undefined && (
-                                            <span className={item.stops === 0 ? 'text-green-600 font-medium' : ''}>
-                                                {item.stops === 0 ? '直飛' : `${item.stops} 轉`}
-                                            </span>
-                                        )}
+                                        <span className="text-green-600 font-medium">直飛</span>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     )}
                 </div>
-            )}
 
-            {/* 尚未選擇時的提示 */}
-            {!selectedDest && (
-                <div className="text-center py-10 text-gray-400">
-                    <div className="text-4xl mb-3">🌏</div>
-                    <div className="text-sm">選擇目的地，即可查看天氣、簽證與最便宜出發日</div>
+                {/* 換錢策略 */}
+                {cfg && (
+                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4">
+                        <div className="text-sm font-bold text-emerald-700 mb-2">💱 換錢策略</div>
+                        {forexRate ? (
+                            <div className="space-y-2">
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-2xl font-bold text-emerald-700">
+                                        {forexRate.rate >= 1 ? forexRate.rate.toLocaleString() : forexRate.rate.toFixed(4)}
+                                    </span>
+                                    <span className="text-sm text-emerald-600">{forexRate.currency} / 1 TWD</span>
+                                    <span className="text-xs text-gray-400">（台銀現鈔賣出）</span>
+                                </div>
+                                <div className="text-xs text-emerald-800 bg-emerald-100 rounded-lg px-3 py-2">
+                                    💡 {cfg.exchangeTip}
+                                </div>
+                                <div className="text-xs text-orange-700 bg-orange-50 rounded-lg px-3 py-2">
+                                    🔴 {cfg.payTip}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2 text-sm text-gray-400"><Loader2 size={14} className="animate-spin" />載入匯率中...</div>
+                        )}
+                    </div>
+                )}
+
+                {/* SIM 卡推薦 */}
+                {cfg && (
+                    <div className="rounded-2xl border border-violet-200 bg-violet-50/50 p-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="text-sm font-bold text-violet-700">📱 最佳 SIM 卡（{days} 天）</div>
+                            {simLoading && <Loader2 size={14} className="animate-spin text-violet-400" />}
+                        </div>
+                        {!simLoading && simTop && (
+                            <div className="space-y-1.5">
+                                <div className="font-semibold text-sm text-gray-800 leading-snug">{simTop.name}</div>
+                                <div className="flex flex-wrap gap-2 text-xs">
+                                    <span className="bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">{simTop.type}</span>
+                                    <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{simTop.daily_gb !== '彈性' ? `${simTop.daily_gb} GB/天` : '彈性流量'}</span>
+                                    <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">${simTop.min_price_usd} USD</span>
+                                    {simTop.cp_score !== 'N/A' && <span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">CP {simTop.cp_score}</span>}
+                                </div>
+                                <div className="text-[10px] text-gray-400">CP值 = 每日GB ÷ 每日費用，越高越划算</div>
+                                {simTop.url && (
+                                    <a href={simTop.url} target="_blank" rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-1 text-xs text-violet-600 hover:underline mt-1">
+                                        查看詳情 →
+                                    </a>
+                                )}
+                                <div className="text-[10px] text-orange-600 bg-orange-50 rounded px-2 py-1">💡 用 USD 在 Trip.com 付款最划算</div>
+                            </div>
+                        )}
+                        {!simLoading && !simTop && (
+                            <div className="text-xs text-gray-400">此目的地暫無 SIM 卡資料</div>
+                        )}
+                    </div>
+                )}
+
+                {/* 機場接送 */}
+                <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-4">
+                    <div className="flex items-center justify-between mb-2">
+                        <div className="text-sm font-bold text-amber-700">🚗 機場接送選項</div>
+                        {transferLoading && <Loader2 size={14} className="animate-spin text-amber-400" />}
+                    </div>
+                    {!transferLoading && transfers.length > 0 && (
+                        <div className="space-y-2">
+                            {transfers.map((t: any, i: number) => (
+                                <div key={i} className="flex items-center justify-between bg-white rounded-xl border border-amber-100 px-3 py-2">
+                                    <div className="text-xs text-gray-700 flex-1 mr-2 leading-snug">{t.name}</div>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                        <span className="text-sm font-bold text-amber-700">${t.price_usd}</span>
+                                        {t.url && (
+                                            <a href={t.url} target="_blank" rel="noopener noreferrer"
+                                                className="text-[10px] text-blue-500 hover:underline">訂→</a>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                            <div className="text-[10px] text-orange-600 bg-orange-50 rounded px-2 py-1">💡 以 USD 在 Trip.com 付款，比當地貨幣省 3-5%</div>
+                        </div>
+                    )}
+                    {!transferLoading && transfers.length === 0 && (
+                        <div className="text-xs text-gray-400">此城市暫無接送資料</div>
+                    )}
                 </div>
-            )}
+            </>)}
         </div>
     );
 };
