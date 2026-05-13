@@ -569,7 +569,7 @@ export const DestinationInfoPanel: React.FC = () => {
         try {
             const params = new URLSearchParams({
                 origin, destination: selectedDest.airport,
-                date: departDate, adults: '1', baggage: '0', nonstop: 'true', mode: 'direct',
+                date: departDate, adults: '1', nonstop: 'true',
             });
             const res = await fetch(`${FH_API}/search?${params}`);
             if (!res.ok) throw new Error('查詢失敗，請確認服務是否啟動');
