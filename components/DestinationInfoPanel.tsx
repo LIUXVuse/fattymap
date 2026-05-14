@@ -397,6 +397,7 @@ export const DestinationInfoPanel: React.FC = () => {
     const [days, setDays] = useState(7);
     const [departDate, setDepartDate] = useState('');
     const [origin, setOrigin] = useState('TPE｜台北桃園');
+    const [twdAmount, setTwdAmount] = useState<10000 | 50000>(10000);
 
     // 直飛快查
     const [flightLoading, setFlightLoading] = useState(false);
@@ -765,13 +766,27 @@ export const DestinationInfoPanel: React.FC = () => {
                     <div className="text-xs text-gray-400">此目的地暫無換錢資料</div>
                 ) : forexRate ? (
                     <div className="space-y-2">
-                        <div className="flex items-baseline gap-2">
-                            <span className="text-2xl font-bold text-emerald-700">
-                                {forexRate.rate >= 1 ? forexRate.rate.toLocaleString() : forexRate.rate.toFixed(4)}
-                            </span>
-                            <span className="text-sm text-emerald-600">{forexRate.currency} / 1 TWD</span>
-                            <span className="text-xs text-gray-400">（台銀現鈔賣出）</span>
+                        {/* 切換基準金額 */}
+                        <div className="flex items-center gap-2">
+                            {([10000, 50000] as const).map((amt) => (
+                                <button key={amt} onClick={() => setTwdAmount(amt)}
+                                    className={`px-3 py-1 rounded-full text-xs font-bold border transition-colors ${twdAmount === amt ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-emerald-600 border-emerald-300 hover:bg-emerald-50'}`}>
+                                    {amt === 10000 ? '1 萬' : '5 萬'}
+                                </button>
+                            ))}
+                            <span className="text-xs text-gray-400">台幣可換</span>
                         </div>
+                        {/* 換算結果 */}
+                        <div className="flex items-baseline gap-2">
+                            <span className="text-xs text-gray-500">NT$</span>
+                            <span className="text-lg font-bold text-gray-700">{twdAmount.toLocaleString()}</span>
+                            <span className="text-gray-400 text-sm">→</span>
+                            <span className="text-2xl font-bold text-emerald-700">
+                                {Math.round(twdAmount / forexRate.rate).toLocaleString()}
+                            </span>
+                            <span className="text-sm text-emerald-600">{forexRate.currency}</span>
+                        </div>
+                        <div className="text-[10px] text-gray-400">台銀現鈔賣出匯率：1 {forexRate.currency} = {forexRate.rate.toFixed(4)} TWD</div>
                         <div className="text-xs text-emerald-800 bg-emerald-100 rounded-lg px-3 py-2">
                             💡 {cfg.exchangeTip}
                         </div>
