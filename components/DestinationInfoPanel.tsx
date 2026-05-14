@@ -786,7 +786,7 @@ export const DestinationInfoPanel: React.FC = () => {
                             </span>
                             <span className="text-sm text-emerald-600">{forexRate.currency}</span>
                         </div>
-                        <div className="text-[10px] text-gray-400">台銀現鈔賣出匯率：1 {forexRate.currency} = {forexRate.rate.toFixed(4)} TWD</div>
+                        <div className="text-[10px] text-gray-400">匯率參考：1 TWD ≈ {(1 / forexRate.rate) >= 1 ? Math.round(1 / forexRate.rate).toLocaleString() : (1 / forexRate.rate).toFixed(2)} {forexRate.currency}（台銀現鈔賣出）</div>
                         <div className="text-xs text-emerald-800 bg-emerald-100 rounded-lg px-3 py-2">
                             💡 {cfg.exchangeTip}
                         </div>
