@@ -257,66 +257,66 @@ const DEST_GROUPS: {
 
 // 台灣護照（中華民國）簽證資訊
 // type: 免簽 | 落地簽 | 電子簽 | 需申請
+// mofaUrl: 外交部說明頁 | applyUrl: 官方申請連結
 interface VisaInfo {
     type: '免簽' | '落地簽' | '電子簽' | '需申請';
     days?: number;
     fee?: string;
     note?: string;
+    mofaUrl?: string;
+    applyUrl?: string;
 }
 
+// 外交部領事事務局「出國旅遊資訊」入口（各國簽證查詢）
+const MOFA_BASE = 'https://www.boca.gov.tw/sp-foof-visitnoticelist-1.html';
+
 const VISA_DATA: Record<string, VisaInfo> = {
-    JP: { type: '免簽', days: 90, note: '每90天免簽，日本旅遊最受歡迎' },
-    KR: { type: '免簽', days: 90, note: '免簽入境，單次停留最多90天' },
-    HK: { type: '免簽', days: 30, note: '免簽，可延簽至最多90天' },
-    MO: { type: '免簽', days: 30, note: '免簽入境，30天內可停留' },
-    TH: { type: '免簽', days: 30, note: '2024年起免簽60天' },
-    SG: { type: '免簽', days: 30, note: '免簽入境' },
-    MY: { type: '免簽', days: 30, note: '免簽入境，一般旅遊30天' },
-    VN: { type: '電子簽', days: 90, fee: '約 USD 25', note: 'E-visa 最多90天，可多次入境' },
-    PH: { type: '免簽', days: 30, note: '可延簽，最長停留36個月' },
-    ID: { type: '免簽', days: 30, note: 'Bali & 部分入境口免簽30天' },
-    AE: { type: '落地簽', days: 30, fee: '約 USD 35', note: '抵達後辦落地簽，或可網路申請' },
-    QA: { type: '免簽', days: 30, note: '2023年起台灣護照免簽' },
-    TR: { type: '電子簽', days: 30, fee: '約 USD 60', note: 'e-Visa 需提前申請，多次入境' },
-    GB: { type: '電子簽', days: 180, fee: '約 GBP 10', note: 'ETA (Electronic Travel Authorisation)，2024年起實施' },
-    FR: { type: '免簽', days: 90, note: '申根免簽，180天內最多90天' },
-    DE: { type: '免簽', days: 90, note: '申根免簽，同法國規則' },
-    CH: { type: '免簽', days: 90, note: '申根免簽（瑞士為申根成員）' },
-    AT: { type: '免簽', days: 90, note: '申根免簽' },
-    ES: { type: '免簽', days: 90, note: '申根免簽' },
-    NL: { type: '免簽', days: 90, note: '申根免簽' },
-    IT: { type: '免簽', days: 90, note: '申根免簽' },
-    US: { type: '需申請', fee: '約 USD 14 (ESTA)', note: 'ESTA 電子旅行授權，最多90天，需提前上網申請' },
-    AU: { type: '需申請', fee: '約 AUD 20 (ETA)', note: 'ETA 電子旅行授權，可線上申請，12個月多次入境' },
-    NZ: { type: '需申請', fee: '約 NZD 23 (NZeTA)', note: 'NZeTA 電子旅行授權，需提前申請' },
-    // 東南亞補充
-    MM: { type: '電子簽', days: 28, fee: '約 USD 50', note: 'e-Visa 需提前申請，單次入境' },
-    KH: { type: '電子簽', days: 30, fee: '約 USD 36', note: 'e-Visa 線上申請，落地簽也可辦' },
-    LA: { type: '落地簽', days: 30, fee: '約 USD 35', note: '可辦落地簽，或事先申請 e-Visa' },
-    LK: { type: '電子簽', days: 30, fee: '約 USD 20 (ETA)', note: '需提前申請電子旅行授權' },
-    NP: { type: '落地簽', days: 15, fee: '約 USD 30', note: '抵達後辦落地簽，15/30/90天不同費用' },
-    // 印度
-    IN: { type: '電子簽', days: 60, fee: '約 USD 25 (e-Visa)', note: '需提前申請 e-Visa，可多次入境' },
-    // 中國大陸
-    CN: { type: '需申請', note: '一般需辦理中國簽證，部分城市過境可享免簽政策（如上海、廣州144小時過境免簽）' },
-    // 中東/非洲
-    IL: { type: '免簽', days: 90, note: '台灣護照免簽入境以色列，停留最多90天' },
-    EG: { type: '落地簽', days: 30, fee: '約 USD 25', note: '抵達後可辦落地簽，或事先辦理' },
-    ZA: { type: '免簽', days: 30, note: '台灣護照免簽入境南非' },
-    KE: { type: '電子簽', days: 90, fee: '約 USD 50 (eTA)', note: '需事先申請 e-Travel Authorization' },
-    // 歐洲
-    PT: { type: '免簽', days: 90, note: '申根免簽，同法國規則' },
-    GR: { type: '免簽', days: 90, note: '申根免簽' },
-    SE: { type: '免簽', days: 90, note: '申根免簽' },
-    DK: { type: '免簽', days: 90, note: '申根免簽' },
-    NO: { type: '免簽', days: 90, note: '申根免簽（挪威為申根成員）' },
-    FI: { type: '免簽', days: 90, note: '申根免簽' },
-    PL: { type: '免簽', days: 90, note: '申根免簽' },
-    CZ: { type: '免簽', days: 90, note: '申根免簽' },
-    HU: { type: '免簽', days: 90, note: '申根免簽' },
-    // 美洲
-    MX: { type: '免簽', days: 180, note: '台灣護照可免簽入境墨西哥，最多180天' },
-    BR: { type: '免簽', days: 90, note: '2023年起台灣護照可免簽入境巴西' },
+    JP: { type: '免簽', days: 90, note: '每次最多90天，無需簽證直接入境', mofaUrl: MOFA_BASE },
+    KR: { type: '免簽', days: 90, note: '免簽入境，單次停留最多90天', mofaUrl: MOFA_BASE },
+    HK: { type: '免簽', days: 30, note: '免簽，可延簽至最多90天', mofaUrl: MOFA_BASE },
+    MO: { type: '免簽', days: 30, note: '免簽入境，30天內可停留', mofaUrl: MOFA_BASE },
+    TH: { type: '免簽', days: 60, note: '2024年起台灣護照免簽60天。長期停留（最多180天/次）可另申請 DTV（Destination Thailand Visa，費用約 THB 10,000）', mofaUrl: MOFA_BASE, applyUrl: 'https://dtv.immigration.go.th/' },
+    SG: { type: '免簽', days: 30, note: '免簽入境，一般旅遊30天', mofaUrl: MOFA_BASE },
+    MY: { type: '免簽', days: 30, note: '免簽入境，一般旅遊30天', mofaUrl: MOFA_BASE },
+    VN: { type: '電子簽', days: 90, fee: '約 USD 25', note: 'E-visa 最多90天，可多次入境，需提前線上申請', mofaUrl: MOFA_BASE, applyUrl: 'https://evisa.xuatnhapcanh.gov.vn/' },
+    PH: { type: '免簽', days: 30, note: '免簽入境，可延簽，最長停留36個月', mofaUrl: MOFA_BASE },
+    ID: { type: '落地簽', days: 30, fee: 'IDR 500,000（約 USD 35）', note: '台灣護照需辦理落地簽（Visa on Arrival），可在峇里島、雅加達等主要機場辦理，或事先申請 e-VOA', mofaUrl: MOFA_BASE, applyUrl: 'https://molina.imigrasi.go.id/' },
+    AE: { type: '落地簽', days: 30, fee: '約 USD 35', note: '抵達後辦落地簽，或可網路申請電子簽', mofaUrl: MOFA_BASE },
+    QA: { type: '免簽', days: 30, note: '2023年起台灣護照免簽', mofaUrl: MOFA_BASE },
+    TR: { type: '電子簽', days: 30, fee: '約 USD 60', note: 'e-Visa 需提前申請，多次入境', mofaUrl: MOFA_BASE, applyUrl: 'https://www.evisa.gov.tr/' },
+    GB: { type: '電子簽', days: 180, fee: '約 GBP 10', note: 'ETA（Electronic Travel Authorisation），2024年起實施，需提前申請', mofaUrl: MOFA_BASE, applyUrl: 'https://www.gov.uk/guidance/apply-for-an-electronic-travel-authorisation-eta' },
+    FR: { type: '免簽', days: 90, note: '申根免簽，180天內最多90天', mofaUrl: MOFA_BASE },
+    DE: { type: '免簽', days: 90, note: '申根免簽，同法國規則', mofaUrl: MOFA_BASE },
+    CH: { type: '免簽', days: 90, note: '申根免簽（瑞士為申根成員）', mofaUrl: MOFA_BASE },
+    AT: { type: '免簽', days: 90, note: '申根免簽', mofaUrl: MOFA_BASE },
+    ES: { type: '免簽', days: 90, note: '申根免簽', mofaUrl: MOFA_BASE },
+    NL: { type: '免簽', days: 90, note: '申根免簽', mofaUrl: MOFA_BASE },
+    IT: { type: '免簽', days: 90, note: '申根免簽', mofaUrl: MOFA_BASE },
+    US: { type: '需申請', fee: '約 USD 21 (ESTA)', note: 'ESTA 電子旅行授權，最多90天，需提前上網申請', mofaUrl: MOFA_BASE, applyUrl: 'https://esta.cbp.dhs.gov/' },
+    AU: { type: '需申請', fee: '約 AUD 20 (ETA)', note: 'ETA 電子旅行授權，可線上申請，12個月多次入境', mofaUrl: MOFA_BASE, applyUrl: 'https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/electronic-travel-authority-601' },
+    NZ: { type: '需申請', fee: '約 NZD 23 (NZeTA)', note: 'NZeTA 電子旅行授權，需提前申請', mofaUrl: MOFA_BASE, applyUrl: 'https://www.immigration.govt.nz/new-zealand-visas/apply-for-a-visa/about-visa/nzeta' },
+    MM: { type: '電子簽', days: 28, fee: '約 USD 50', note: 'e-Visa 需提前申請，單次入境', mofaUrl: MOFA_BASE, applyUrl: 'https://evisa.moip.gov.mm/' },
+    KH: { type: '電子簽', days: 30, fee: '約 USD 36', note: 'e-Visa 線上申請，落地簽也可辦', mofaUrl: MOFA_BASE, applyUrl: 'https://www.evisa.gov.kh/' },
+    LA: { type: '落地簽', days: 30, fee: '約 USD 35', note: '可辦落地簽，或事先申請 e-Visa', mofaUrl: MOFA_BASE },
+    LK: { type: '電子簽', days: 30, fee: '約 USD 20 (ETA)', note: '需提前申請電子旅行授權', mofaUrl: MOFA_BASE, applyUrl: 'https://eta.gov.lk/' },
+    NP: { type: '落地簽', days: 15, fee: '約 USD 30', note: '抵達後辦落地簽，15/30/90天不同費用', mofaUrl: MOFA_BASE },
+    IN: { type: '電子簽', days: 60, fee: '約 USD 25 (e-Visa)', note: '需提前申請 e-Visa，可多次入境', mofaUrl: MOFA_BASE, applyUrl: 'https://indianvisaonline.gov.in/' },
+    CN: { type: '需申請', note: '一般需辦理中國簽證，部分城市過境可享免簽政策（如上海、廣州144小時過境免簽）', mofaUrl: MOFA_BASE },
+    IL: { type: '免簽', days: 90, note: '台灣護照免簽入境以色列，停留最多90天', mofaUrl: MOFA_BASE },
+    EG: { type: '落地簽', days: 30, fee: '約 USD 25', note: '抵達後可辦落地簽，或事先辦理', mofaUrl: MOFA_BASE },
+    ZA: { type: '免簽', days: 30, note: '台灣護照免簽入境南非', mofaUrl: MOFA_BASE },
+    KE: { type: '電子簽', days: 90, fee: '約 USD 50 (eTA)', note: '需事先申請 e-Travel Authorization', mofaUrl: MOFA_BASE, applyUrl: 'https://etakenya.go.ke/' },
+    PT: { type: '免簽', days: 90, note: '申根免簽，同法國規則', mofaUrl: MOFA_BASE },
+    GR: { type: '免簽', days: 90, note: '申根免簽', mofaUrl: MOFA_BASE },
+    SE: { type: '免簽', days: 90, note: '申根免簽', mofaUrl: MOFA_BASE },
+    DK: { type: '免簽', days: 90, note: '申根免簽', mofaUrl: MOFA_BASE },
+    NO: { type: '免簽', days: 90, note: '申根免簽（挪威為申根成員）', mofaUrl: MOFA_BASE },
+    FI: { type: '免簽', days: 90, note: '申根免簽', mofaUrl: MOFA_BASE },
+    PL: { type: '免簽', days: 90, note: '申根免簽', mofaUrl: MOFA_BASE },
+    CZ: { type: '免簽', days: 90, note: '申根免簽', mofaUrl: MOFA_BASE },
+    HU: { type: '免簽', days: 90, note: '申根免簽', mofaUrl: MOFA_BASE },
+    MX: { type: '免簽', days: 180, note: '台灣護照可免簽入境墨西哥，最多180天', mofaUrl: MOFA_BASE },
+    BR: { type: '免簽', days: 90, note: '2023年起台灣護照可免簽入境巴西', mofaUrl: MOFA_BASE },
 };
 
 // WMO 天氣碼轉文字
@@ -609,37 +609,35 @@ export const DestinationInfoPanel: React.FC = () => {
                 </select>
             </div>
 
-            {!selectedDest && (
-                <div className="text-center py-10 text-gray-400">
-                    <div className="text-4xl mb-3">🌏</div>
-                    <div className="text-sm">選擇目的地，一鍵取得出發前所需情報</div>
+            {/* 旅遊天數 + 出發日 */}
+            <div className="grid grid-cols-2 gap-2">
+                <div>
+                    <label className="block text-xs text-gray-500 mb-1">旅遊天數（影響SIM推薦）</label>
+                    <div className="flex items-center gap-2">
+                        <button onClick={() => setDays(d => Math.max(1, d - 1))} disabled={!selectedDest} className="w-7 h-7 rounded-full border border-gray-300 bg-white text-gray-600 font-bold text-sm hover:bg-gray-100 flex items-center justify-center disabled:opacity-40">−</button>
+                        <span className="text-sm font-bold w-6 text-center">{days}</span>
+                        <button onClick={() => setDays(d => Math.min(60, d + 1))} disabled={!selectedDest} className="w-7 h-7 rounded-full border border-gray-300 bg-white text-gray-600 font-bold text-sm hover:bg-gray-100 flex items-center justify-center disabled:opacity-40">+</button>
+                        <span className="text-xs text-gray-400">天</span>
+                    </div>
                 </div>
-            )}
+                <div>
+                    <label className="block text-xs text-gray-500 mb-1">出發日（影響天氣預報）</label>
+                    <input type="date" value={departDate} min={today} disabled={!selectedDest}
+                        onChange={(e) => setDepartDate(e.target.value)}
+                        className="w-full px-2 py-1.5 rounded-lg border border-gray-300 bg-white text-xs focus:ring-2 focus:ring-indigo-400 focus:outline-none disabled:opacity-40" />
+                </div>
+            </div>
 
-            {selectedDest && (<>
-                {/* 旅遊天數 + 出發日（影響 SIM 推薦 + 天氣） */}
-                <div className="grid grid-cols-2 gap-2">
-                    <div>
-                        <label className="block text-xs text-gray-500 mb-1">旅遊天數（影響SIM推薦）</label>
-                        <div className="flex items-center gap-2">
-                            <button onClick={() => setDays(d => Math.max(1, d - 1))} className="w-7 h-7 rounded-full border border-gray-300 bg-white text-gray-600 font-bold text-sm hover:bg-gray-100 flex items-center justify-center">−</button>
-                            <span className="text-sm font-bold w-6 text-center">{days}</span>
-                            <button onClick={() => setDays(d => Math.min(60, d + 1))} className="w-7 h-7 rounded-full border border-gray-300 bg-white text-gray-600 font-bold text-sm hover:bg-gray-100 flex items-center justify-center">+</button>
-                            <span className="text-xs text-gray-400">天</span>
+            {/* 天氣 + 簽證 */}
+            <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-2xl bg-gradient-to-br from-sky-50 to-blue-100 border border-blue-200 p-4">
+                    <div className="text-xs font-semibold text-blue-600 mb-2">🌤️ {selectedDest ? weatherLabel : '即時天氣'}</div>
+                    {!selectedDest ? (
+                        <div>
+                            <div className="text-2xl font-bold text-blue-200">—°C</div>
+                            <div className="text-xs text-blue-300 mt-1">選目的地後顯示</div>
                         </div>
-                    </div>
-                    <div>
-                        <label className="block text-xs text-gray-500 mb-1">出發日（影響天氣預報）</label>
-                        <input type="date" value={departDate} min={today}
-                            onChange={(e) => setDepartDate(e.target.value)}
-                            className="w-full px-2 py-1.5 rounded-lg border border-gray-300 bg-white text-xs focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
-                    </div>
-                </div>
-
-                {/* 天氣 + 簽證 */}
-                <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-2xl bg-gradient-to-br from-sky-50 to-blue-100 border border-blue-200 p-4">
-                        <div className="text-xs font-semibold text-blue-600 mb-2">🌤️ {weatherLabel}</div>
+                    ) : (<>
                         {weatherLoading && <div className="flex items-center gap-2 text-blue-500 text-sm"><Loader2 size={14} className="animate-spin" /><span>查詢中...</span></div>}
                         {weatherError && !weatherLoading && <div className="text-xs text-red-500">{weatherError}</div>}
                         {weather && !weatherLoading && (<>
@@ -658,166 +656,195 @@ export const DestinationInfoPanel: React.FC = () => {
                                 </>)}
                             </div>
                         </>)}
-                    </div>
-                    <div className={`rounded-2xl border p-4 ${visa ? visaColor : 'bg-gray-50 border-gray-200 text-gray-500'}`}>
-                        <div className="text-xs font-semibold mb-2" style={{ opacity: 0.7 }}>🛂 台灣護照簽證</div>
-                        {visa ? (<>
-                            <div className="flex items-center gap-2 mb-1.5">
-                                <span className={`text-xs font-bold text-white px-2 py-0.5 rounded-full ${visaBadgeColor}`}>{visa.type}</span>
-                                {visa.days && <span className="text-sm font-semibold">{visa.days} 天</span>}
-                            </div>
-                            {visa.fee && <div className="text-xs mb-1">費用：{visa.fee}</div>}
-                            <div className="text-xs leading-relaxed opacity-80">{visa.note}</div>
-                        </>) : <div className="text-xs">無簽證資料</div>}
-                    </div>
+                    </>)}
                 </div>
-
-                {/* 直飛快查 */}
-                <div className="rounded-2xl border border-orange-200 bg-orange-50/60 p-4">
-                    <div className="text-sm font-bold text-orange-700 mb-3">
-                        ✈️ 直飛機票快查
-                        <span className="text-xs font-normal text-orange-500 ml-2">約 15 秒出結果</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 mb-3">
+                <div className={`rounded-2xl border p-4 ${selectedDest && visa ? visaColor : 'bg-gray-50 border-gray-200 text-gray-400'}`}>
+                    <div className="text-xs font-semibold mb-2" style={{ opacity: 0.7 }}>🛂 台灣護照簽證</div>
+                    {!selectedDest ? (
                         <div>
-                            <label className="block text-xs text-gray-600 mb-1">出發地</label>
-                            <select value={origin} onChange={(e) => setOrigin(e.target.value)} disabled={flightLoading}
-                                className="w-full px-2 py-1.5 rounded-lg border border-gray-300 bg-white text-xs focus:ring-2 focus:ring-orange-400 focus:outline-none disabled:opacity-50">
-                                {ORIGINS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-                            </select>
+                            <div className="text-sm font-bold text-gray-300">— 選目的地 —</div>
+                            <div className="text-xs text-gray-300 mt-1">選目的地後顯示</div>
                         </div>
-                        <div>
-                            <label className="block text-xs text-gray-600 mb-1">目的地</label>
+                    ) : visa ? (<>
+                        <div className="flex items-center gap-2 mb-1.5">
+                            <span className={`text-xs font-bold text-white px-2 py-0.5 rounded-full ${visaBadgeColor}`}>{visa.type}</span>
+                            {visa.days && <span className="text-sm font-semibold">{visa.days} 天</span>}
+                        </div>
+                        {visa.fee && <div className="text-xs mb-1">費用：{visa.fee}</div>}
+                        <div className="text-xs leading-relaxed opacity-80">{visa.note}</div>
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                            {visa.mofaUrl && (
+                                <a href={visa.mofaUrl} target="_blank" rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full hover:bg-blue-100 border border-blue-200 transition-colors">
+                                    🏛️ 外交部
+                                </a>
+                            )}
+                            {visa.applyUrl && (
+                                <a href={visa.applyUrl} target="_blank" rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 text-[10px] text-green-600 bg-green-50 px-2 py-0.5 rounded-full hover:bg-green-100 border border-green-200 transition-colors">
+                                    📝 申請
+                                </a>
+                            )}
+                        </div>
+                    </>) : <div className="text-xs">無簽證資料，建議查詢外交部網站</div>}
+                </div>
+            </div>
+
+            {/* 直飛快查 */}
+            <div className="rounded-2xl border border-orange-200 bg-orange-50/60 p-4">
+                <div className="text-sm font-bold text-orange-700 mb-3">
+                    ✈️ 直飛機票快查
+                    <span className="text-xs font-normal text-orange-500 ml-2">約 15 秒出結果</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 mb-3">
+                    <div>
+                        <label className="block text-xs text-gray-600 mb-1">出發地</label>
+                        <select value={origin} onChange={(e) => setOrigin(e.target.value)} disabled={flightLoading}
+                            className="w-full px-2 py-1.5 rounded-lg border border-gray-300 bg-white text-xs focus:ring-2 focus:ring-orange-400 focus:outline-none disabled:opacity-50">
+                            {ORIGINS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-xs text-gray-600 mb-1">目的地</label>
+                        {selectedDest ? (
                             <div className="px-2 py-1.5 rounded-lg border border-orange-200 bg-orange-100 text-xs text-orange-700 font-medium">
                                 {selectedDest.label} ({selectedDest.airport.split('｜')[0]})
                             </div>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2 mb-3">
-                        <div className="flex-1">
-                            <label className="block text-xs text-gray-600 mb-1">出發日期</label>
-                            <input type="date" value={departDate} min={today}
-                                onChange={(e) => setDepartDate(e.target.value)}
-                                disabled={flightLoading}
-                                className="w-full px-2 py-1.5 rounded-lg border border-gray-300 bg-white text-xs focus:ring-2 focus:ring-orange-400 focus:outline-none disabled:opacity-50" />
-                        </div>
-                        <button onClick={searchDirectFlights} disabled={flightLoading || !departDate}
-                            className="mt-4 flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                            {flightLoading ? <><Loader2 size={12} className="animate-spin" />查詢中</> : <><Search size={12} />查直飛</>}
-                        </button>
-                    </div>
-                    {flightError && <div className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">{flightError}</div>}
-                    {flightResults.length > 0 && (
-                        <div className="space-y-2">
-                            <div className="text-[10px] text-orange-500 bg-orange-100 rounded px-2 py-1">💡 刷卡請選目的地幣別結算，避免 DCC 多收 1-3%</div>
-                            {flightResults.map((item: any, i: number) => (
-                                <div key={i} className={`rounded-xl border px-3 py-2.5 ${i === 0 ? 'bg-green-50 border-green-300' : 'bg-white border-gray-200'}`}>
-                                    <div className="flex items-center justify-between mb-1">
-                                        <div className="flex items-center gap-1.5">
-                                            {i === 0 && <span className="text-sm">🏆</span>}
-                                            <span className="text-xs font-semibold text-gray-700">{item.airline ?? ''}</span>
-                                        </div>
-                                        <span className={`text-sm font-bold ${i === 0 ? 'text-green-700' : 'text-gray-700'}`}>
-                                            NT$ {item.price_twd?.toLocaleString() ?? '—'}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                                        {item.departure && <span>起飛 {item.departure}</span>}
-                                        {item.arrival && <span>降落 {item.arrival}</span>}
-                                        <span className="text-green-600 font-medium">直飛</span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                {/* 換錢策略 */}
-                {cfg && (
-                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4">
-                        <div className="text-sm font-bold text-emerald-700 mb-2">💱 換錢策略</div>
-                        {forexRate ? (
-                            <div className="space-y-2">
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-2xl font-bold text-emerald-700">
-                                        {forexRate.rate >= 1 ? forexRate.rate.toLocaleString() : forexRate.rate.toFixed(4)}
-                                    </span>
-                                    <span className="text-sm text-emerald-600">{forexRate.currency} / 1 TWD</span>
-                                    <span className="text-xs text-gray-400">（台銀現鈔賣出）</span>
-                                </div>
-                                <div className="text-xs text-emerald-800 bg-emerald-100 rounded-lg px-3 py-2">
-                                    💡 {cfg.exchangeTip}
-                                </div>
-                                <div className="text-xs text-orange-700 bg-orange-50 rounded-lg px-3 py-2">
-                                    🔴 {cfg.payTip}
-                                </div>
-                            </div>
                         ) : (
-                            <div className="flex items-center gap-2 text-sm text-gray-400"><Loader2 size={14} className="animate-spin" />載入匯率中...</div>
-                        )}
-                    </div>
-                )}
-
-                {/* SIM 卡推薦 */}
-                {cfg && (
-                    <div className="rounded-2xl border border-violet-200 bg-violet-50/50 p-4">
-                        <div className="flex items-center justify-between mb-2">
-                            <div className="text-sm font-bold text-violet-700">📱 最佳 SIM 卡（{days} 天）</div>
-                            {simLoading && <Loader2 size={14} className="animate-spin text-violet-400" />}
-                        </div>
-                        {!simLoading && simTop && (
-                            <div className="space-y-1.5">
-                                <div className="font-semibold text-sm text-gray-800 leading-snug">{simTop.name}</div>
-                                <div className="flex flex-wrap gap-2 text-xs">
-                                    <span className="bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">{simTop.type}</span>
-                                    <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{simTop.daily_gb !== '彈性' ? `${simTop.daily_gb} GB/天` : '彈性流量'}</span>
-                                    <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">${simTop.min_price_usd} USD</span>
-                                    {simTop.cp_score !== 'N/A' && <span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">CP {simTop.cp_score}</span>}
-                                </div>
-                                <div className="text-[10px] text-gray-400">CP值 = 每日GB ÷ 每日費用，越高越划算</div>
-                                {simTop.url && (
-                                    <a href={simTop.url} target="_blank" rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-1 text-xs text-violet-600 hover:underline mt-1">
-                                        查看詳情 →
-                                    </a>
-                                )}
-                                <div className="text-[10px] text-orange-600 bg-orange-50 rounded px-2 py-1">💡 用 USD 在 Trip.com 付款最划算</div>
+                            <div className="px-2 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-xs text-gray-400 italic">
+                                請先選擇目的地
                             </div>
                         )}
-                        {!simLoading && !simTop && (
-                            <div className="text-xs text-gray-400">此目的地暫無 SIM 卡資料</div>
-                        )}
+                    </div>
+                </div>
+                <div className="flex items-center gap-2 mb-3">
+                    <div className="flex-1">
+                        <label className="block text-xs text-gray-600 mb-1">出發日期</label>
+                        <input type="date" value={departDate} min={today}
+                            onChange={(e) => setDepartDate(e.target.value)}
+                            disabled={flightLoading}
+                            className="w-full px-2 py-1.5 rounded-lg border border-gray-300 bg-white text-xs focus:ring-2 focus:ring-orange-400 focus:outline-none disabled:opacity-50" />
+                    </div>
+                    <button onClick={searchDirectFlights} disabled={!selectedDest || flightLoading || !departDate}
+                        className="mt-4 flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        {flightLoading ? <><Loader2 size={12} className="animate-spin" />查詢中</> : <><Search size={12} />查直飛</>}
+                    </button>
+                </div>
+                {flightError && <div className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">{flightError}</div>}
+                {flightResults.length > 0 && (
+                    <div className="space-y-2">
+                        <div className="text-[10px] text-orange-500 bg-orange-100 rounded px-2 py-1">💡 刷卡請選目的地幣別結算，避免 DCC 多收 1-3%</div>
+                        {flightResults.map((item: any, i: number) => (
+                            <div key={i} className={`rounded-xl border px-3 py-2.5 ${i === 0 ? 'bg-green-50 border-green-300' : 'bg-white border-gray-200'}`}>
+                                <div className="flex items-center justify-between mb-1">
+                                    <div className="flex items-center gap-1.5">
+                                        {i === 0 && <span className="text-sm">🏆</span>}
+                                        <span className="text-xs font-semibold text-gray-700">{item.airline ?? ''}</span>
+                                    </div>
+                                    <span className={`text-sm font-bold ${i === 0 ? 'text-green-700' : 'text-gray-700'}`}>
+                                        NT$ {item.price_twd?.toLocaleString() ?? '—'}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2 text-xs text-gray-500">
+                                    {item.departure && <span>起飛 {item.departure}</span>}
+                                    {item.arrival && <span>降落 {item.arrival}</span>}
+                                    <span className="text-green-600 font-medium">直飛</span>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 )}
+            </div>
 
-                {/* 機場接送 */}
-                <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-4">
-                    <div className="flex items-center justify-between mb-2">
-                        <div className="text-sm font-bold text-amber-700">🚗 機場接送選項</div>
-                        {transferLoading && <Loader2 size={14} className="animate-spin text-amber-400" />}
-                    </div>
-                    {!transferLoading && transfers.length > 0 && (
-                        <div className="space-y-2">
-                            {transfers.map((t: any, i: number) => (
-                                <div key={i} className="flex items-center justify-between bg-white rounded-xl border border-amber-100 px-3 py-2">
-                                    <div className="text-xs text-gray-700 flex-1 mr-2 leading-snug">{t.name}</div>
-                                    <div className="flex items-center gap-2 shrink-0">
-                                        <span className="text-sm font-bold text-amber-700">${t.price_usd}</span>
-                                        {t.url && (
-                                            <a href={t.url} target="_blank" rel="noopener noreferrer"
-                                                className="text-[10px] text-blue-500 hover:underline">訂→</a>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-                            <div className="text-[10px] text-orange-600 bg-orange-50 rounded px-2 py-1">💡 以 USD 在 Trip.com 付款，比當地貨幣省 3-5%</div>
+            {/* 換錢策略 */}
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4">
+                <div className="text-sm font-bold text-emerald-700 mb-2">💱 換錢策略</div>
+                {!selectedDest ? (
+                    <div className="text-sm text-gray-400 italic">選擇目的地後顯示換錢建議</div>
+                ) : !cfg ? (
+                    <div className="text-xs text-gray-400">此目的地暫無換錢資料</div>
+                ) : forexRate ? (
+                    <div className="space-y-2">
+                        <div className="flex items-baseline gap-2">
+                            <span className="text-2xl font-bold text-emerald-700">
+                                {forexRate.rate >= 1 ? forexRate.rate.toLocaleString() : forexRate.rate.toFixed(4)}
+                            </span>
+                            <span className="text-sm text-emerald-600">{forexRate.currency} / 1 TWD</span>
+                            <span className="text-xs text-gray-400">（台銀現鈔賣出）</span>
                         </div>
-                    )}
-                    {!transferLoading && transfers.length === 0 && (
-                        <div className="text-xs text-gray-400">此城市暫無接送資料</div>
-                    )}
+                        <div className="text-xs text-emerald-800 bg-emerald-100 rounded-lg px-3 py-2">
+                            💡 {cfg.exchangeTip}
+                        </div>
+                        <div className="text-xs text-orange-700 bg-orange-50 rounded-lg px-3 py-2">
+                            🔴 {cfg.payTip}
+                        </div>
+                    </div>
+                ) : (
+                    <div className="flex items-center gap-2 text-sm text-gray-400"><Loader2 size={14} className="animate-spin" />載入匯率中...</div>
+                )}
+            </div>
+
+            {/* SIM 卡推薦 */}
+            <div className="rounded-2xl border border-violet-200 bg-violet-50/50 p-4">
+                <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm font-bold text-violet-700">📱 最佳 SIM 卡（{days} 天）</div>
+                    {selectedDest && simLoading && <Loader2 size={14} className="animate-spin text-violet-400" />}
                 </div>
-            </>)}
+                {!selectedDest ? (
+                    <div className="text-sm text-gray-400 italic">選擇目的地後顯示 SIM 卡推薦</div>
+                ) : !cfg ? (
+                    <div className="text-xs text-gray-400">此目的地暫無 SIM 卡資料</div>
+                ) : !simLoading && simTop ? (
+                    <div className="space-y-1.5">
+                        <div className="font-semibold text-sm text-gray-800 leading-snug">{simTop.name}</div>
+                        <div className="flex flex-wrap gap-2 text-xs">
+                            <span className="bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">{simTop.type}</span>
+                            <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{simTop.daily_gb !== '彈性' ? `${simTop.daily_gb} GB/天` : '彈性流量'}</span>
+                            <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">${simTop.min_price_usd} USD</span>
+                            {simTop.cp_score !== 'N/A' && <span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">CP {simTop.cp_score}</span>}
+                        </div>
+                        <div className="text-[10px] text-gray-400">CP值 = 每日GB ÷ 每日費用，越高越划算</div>
+                        {simTop.url && (
+                            <a href={simTop.url} target="_blank" rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-xs text-violet-600 hover:underline mt-1">
+                                查看詳情 →
+                            </a>
+                        )}
+                        <div className="text-[10px] text-orange-600 bg-orange-50 rounded px-2 py-1">💡 用 USD 在 Trip.com 付款最划算</div>
+                    </div>
+                ) : !simLoading ? (
+                    <div className="text-xs text-gray-400">此目的地暫無 SIM 卡資料</div>
+                ) : null}
+            </div>
+
+            {/* 機場接送 */}
+            <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-4">
+                <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm font-bold text-amber-700">🚗 機場接送選項</div>
+                    {selectedDest && transferLoading && <Loader2 size={14} className="animate-spin text-amber-400" />}
+                </div>
+                {!selectedDest ? (
+                    <div className="text-sm text-gray-400 italic">選擇目的地後顯示接送選項</div>
+                ) : !transferLoading && transfers.length > 0 ? (
+                    <div className="space-y-2">
+                        {transfers.map((t: any, i: number) => (
+                            <div key={i} className="flex items-center justify-between bg-white rounded-xl border border-amber-100 px-3 py-2">
+                                <div className="text-xs text-gray-700 flex-1 mr-2 leading-snug">{t.name}</div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                    <span className="text-sm font-bold text-amber-700">${t.price_usd}</span>
+                                    {t.url && (
+                                        <a href={t.url} target="_blank" rel="noopener noreferrer"
+                                            className="text-[10px] text-blue-500 hover:underline">訂→</a>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                        <div className="text-[10px] text-orange-600 bg-orange-50 rounded px-2 py-1">💡 以 USD 在 Trip.com 付款，比當地貨幣省 3-5%</div>
+                    </div>
+                ) : !transferLoading ? (
+                    <div className="text-xs text-gray-400">此城市暫無接送資料</div>
+                ) : null}
+            </div>
         </div>
     );
 };
