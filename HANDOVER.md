@@ -1,11 +1,21 @@
 # HANDOVER — 肥宅老司機前進世界地圖
 
 > 上次更新：2026-05-16
-> 當前狀態：v1.11，程式碼品質全面健檢完成，TypeScript 零錯誤
+> 當前狀態：v1.12，效能優化（圖片載入 + 地圖 tile 預載）
 
 ---
 
-## ✅ 本次完成（2026-05-16）
+## ✅ 本次完成（2026-05-16，第二次）
+
+- **圖片載入優化**：
+  - Banner 圖片（登入畫面 + 側邊欄）加 `fetchPriority="high"` + `decoding="async"`，第一眼畫面更快顯示
+  - 所有 memory 照片加 `decoding="async"`，圖片解碼移到背景執行緒，捲動不卡頓
+  - Avatar 小圖加 `loading="lazy"`，減少初始並行請求數
+- **地圖 tile 預載優化**：TileLayer `keepBuffer` 從 1 升到 3，地圖拖動時空白格子減少
+
+---
+
+## ✅ 本次完成（2026-05-16，第一次）
 
 - **全專案 Code Audit**：跑 `tsc --noEmit` + `npm run build` + 靜態掃描
 - **修 TypeScript 21 個錯誤**（全清零）：
@@ -83,6 +93,8 @@
 | v1.8.x | 彈性日期一連串 bug 修正 |
 | v1.9 | 出發攻略升級：直飛快查 + 換錢策略 + SIM推薦 + 機場接送 |
 | v1.10 | 出發攻略 UX：先顯示框架 + 簽證資料修正（印尼落地簽/泰國60天+DTV）+ 外交部連結 |
+| v1.11 | Code Audit：TS 21錯→0、清 console.log、刪死碼 |
+| v1.12 | 效能優化：圖片 fetchPriority/decoding/lazy + TileLayer keepBuffer 1→3 |
 
 ---
 
