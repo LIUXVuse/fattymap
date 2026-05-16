@@ -1,0 +1,5 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e7]:
+    - banner [ref=e9]
+    - generic [ref=e50]
+  - alert [ref=e151]

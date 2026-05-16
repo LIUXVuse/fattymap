@@ -52,10 +52,6 @@ export const CurrencyExchangeCalculator: React.FC = () => {
         setError(null);
         try {
             const rates = await getAllRates();
-            console.log('台灣銀行匯率數量:', Object.keys(rates.taiwanRates).length);
-            console.log('台灣銀行匯率清單:', Object.keys(rates.taiwanRates));
-            console.log('台灣各銀行 USD:', rates.twBanksUSD);
-
             setMultiRates({
                 ...rates,
                 twBanksUSD: rates.twBanksUSD ?? [],

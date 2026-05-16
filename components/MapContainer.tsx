@@ -297,36 +297,6 @@ const UserLocationMarker: React.FC = () => {
     );
 };
 
-// Draggable Pin Component
-const DraggablePin: React.FC<{ position: [number, number], onDragEnd: (lat: number, lng: number) => void }> = ({ position, onDragEnd }) => {
-    const markerRef = useRef<L.Marker>(null);
-    const icon = useMemo(() => createCustomMarker('#ef4444', 'default', true), []);
-
-    const eventHandlers = useMemo(
-        () => ({
-            dragend() {
-                const marker = markerRef.current;
-                if (marker != null) {
-                    const { lat, lng } = marker.getLatLng();
-                    onDragEnd(lat, lng);
-                }
-            },
-        }),
-        [onDragEnd],
-    );
-
-    return (
-        <Marker
-            draggable={true}
-            eventHandlers={eventHandlers}
-            position={position}
-            ref={markerRef}
-            icon={icon}
-            zIndexOffset={1000}
-        />
-    )
-}
-
 // Memory Marker Component (Memoized)
 interface MemoryMarkerProps {
     memory: Memory;

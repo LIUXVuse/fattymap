@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Memory } from '../types';
-import { MapPin, Image as ImageIcon, ChevronRight, ArrowLeft, Globe, List, Building2, Edit2, Trash2, MessageCircle, Map as MapIcon, Dices, Video } from 'lucide-react';
+import { MapPin, ChevronRight, ArrowLeft, Globe, List, Building2, Edit2, Trash2, MessageCircle, Dices, Video } from 'lucide-react';
 
 interface MemoryFeedProps {
     memories: Memory[];
@@ -457,7 +457,7 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
                                                                 preload="none"
                                                             />
                                                             <div className="absolute top-1 left-1 bg-purple-600/80 text-white text-[9px] px-1.5 py-0.5 rounded flex items-center gap-0.5">
-                                                                <Video size={10} /> {idx + 1}/{memory.videos.length}
+                                                                <Video size={10} /> {idx + 1}/{memory.videos!.length}
                                                             </div>
                                                         </div>
                                                     ))}

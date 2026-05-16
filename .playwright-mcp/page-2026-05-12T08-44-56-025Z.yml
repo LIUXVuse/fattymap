@@ -1,0 +1,83 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e6]:
+    - banner [ref=e8]:
+      - generic [ref=e10]:
+        - link "Trip.com" [ref=e12] [cursor=pointer]:
+          - /url: /?locale=en-XX&curr=USD
+        - list [ref=e14]:
+          - listitem [ref=e15]:
+            - link "Hotels & Homes" [ref=e16] [cursor=pointer]:
+              - /url: /hotels/?locale=en-XX&curr=USD
+          - listitem [ref=e17]:
+            - link "Flights" [ref=e18] [cursor=pointer]:
+              - /url: /flights/?locale=en-XX&curr=USD
+          - listitem [ref=e19]:
+            - link "Trains" [ref=e20] [cursor=pointer]:
+              - /url: /trains/?locale=en-XX&curr=USD
+          - listitem [ref=e21]:
+            - link "Cars" [ref=e22]
+          - listitem [ref=e23]:
+            - button "More" [ref=e24] [cursor=pointer]
+        - generic [ref=e29]:
+          - link "App" [ref=e32] [cursor=pointer]:
+            - generic [ref=e33]: 
+            - generic [ref=e34]: App
+          - button "Language/Currency" [ref=e36] [cursor=pointer]:
+            - generic [ref=e41]: USD
+          - link "Customer support" [ref=e43] [cursor=pointer]:
+            - generic [ref=e44]: Customer support
+            - text: 
+          - generic [ref=e45] [cursor=pointer]:
+            - link "Find bookings" [ref=e46]:
+              - /url: /order/all?locale=en-XX&curr=USD
+            - text: 
+          - button "Sign in/register" [ref=e48] [cursor=pointer]
+    - generic [ref=e49]:
+      - generic [ref=e50]:
+        - generic [ref=e51]:
+          - link "Home" [ref=e52] [cursor=pointer]:
+            - /url: /
+          - generic [ref=e54]: 󱌽
+          - link "Vietnam local experience" [ref=e55] [cursor=pointer]:
+            - /url: /things-to-do/vietnam-0/
+          - generic [ref=e57]: 󱌽
+          - text: Vietnam 5G eSIM | TikTok & ChatGPT Available | Day Pass/Total Data Package | 24-Hour Billing | 1-30 Days | QR Code
+        - generic [ref=e59]: "Product ID: 56527508"
+      - generic [ref=e66] [cursor=pointer]: 
+      - generic [ref=e78]:
+        - generic [ref=e79]:
+          - heading "Vietnam 5G eSIM | TikTok & ChatGPT Available | Day Pass/Total Data Package | 24-Hour Billing | 1-30 Days | QR Code" [ref=e80]:
+            - generic [ref=e81]: Vietnam 5G eSIM | TikTok & ChatGPT Available | Day Pass/Total Data Package | 24-Hour Billing | 1-30 Days | QR Code
+          - generic [ref=e82]:
+            - generic [ref=e84] [cursor=pointer]:
+              - generic [ref=e86]: 󱓕
+              - generic [ref=e87]:
+                - generic [ref=e90]: Book now for today
+                - generic [ref=e94]: Booking Confirmation
+                - generic [ref=e98]: Renewable
+              - generic [ref=e99]: 󱌽
+            - generic [ref=e101] [cursor=pointer]:
+              - generic [ref=e102]: 󱲊
+              - generic [ref=e103]: Free cancellation by 00:00, 1 day before the expiration date
+              - generic [ref=e104]: 󱌽
+          - generic [ref=e106] [cursor=pointer]:
+            - generic [ref=e107]:
+              - generic [ref=e108]: "4.5"
+              - generic [ref=e109]: /5
+            - generic [ref=e110]: Good
+            - generic [ref=e112]: (5,823 reviews)
+            - generic [ref=e114]: 139K+ booked
+        - generic [ref=e117]:
+          - generic [ref=e118]:
+            - generic [ref=e119]:
+              - generic [ref=e123] [cursor=pointer]: 
+              - generic [ref=e126]:
+                - generic [ref=e127]: From
+                - generic [ref=e129]: US$0.18
+            - generic [ref=e130]:
+              - generic [ref=e132] [cursor=pointer]:
+                - generic [ref=e133]: 
+                - generic [ref=e134]: Limited-time sale
+              - generic [ref=e136] [cursor=pointer]: 51% off
+          - generic [ref=e142] [cursor=pointer]: Select package
+  - alert [ref=e150]

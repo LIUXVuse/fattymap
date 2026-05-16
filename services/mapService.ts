@@ -321,7 +321,6 @@ export const searchLocation = async (query: string): Promise<PlaceSearchResult[]
 
     // 3. 備援：Mapbox Geocoding API
     if (MAPBOX_TOKEN) {
-        console.log("降級使用 Mapbox...");
         try {
             const response = await fetch(
                 `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` +
@@ -365,7 +364,6 @@ export const searchLocation = async (query: string): Promise<PlaceSearchResult[]
     }
 
     // 4. 最終備援：Nominatim
-    console.log("降級使用 Nominatim...");
     try {
         const response = await fetch(
             `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=10&addressdetails=1&accept-language=zh-TW`

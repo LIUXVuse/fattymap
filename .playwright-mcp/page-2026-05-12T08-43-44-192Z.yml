@@ -1,0 +1,1182 @@
+- generic [ref=e1]:
+  - generic [ref=e6]:
+    - banner [ref=e8]:
+      - generic [ref=e10]:
+        - link "Trip.com" [ref=e12] [cursor=pointer]:
+          - /url: /?locale=en-XX&curr=USD
+        - list [ref=e431]:
+          - listitem [ref=e432]:
+            - link "Hotels & Homes" [ref=e433] [cursor=pointer]:
+              - /url: /hotels/?locale=en-XX&curr=USD
+          - listitem [ref=e434]:
+            - link "Flights" [ref=e435] [cursor=pointer]:
+              - /url: /flights/?locale=en-XX&curr=USD
+          - listitem [ref=e436]:
+            - link "Trains" [ref=e437] [cursor=pointer]:
+              - /url: /trains/?locale=en-XX&curr=USD
+          - listitem [ref=e438]:
+            - link "Cars" [ref=e439]
+          - listitem [ref=e440]:
+            - button "More" [ref=e441] [cursor=pointer]
+        - generic [ref=e29]:
+          - link "App" [ref=e32] [cursor=pointer]:
+            - generic [ref=e33]: 
+            - generic [ref=e34]: App
+          - button "Language/Currency" [ref=e36] [cursor=pointer]:
+            - generic [ref=e41]: USD
+          - link "Customer support" [ref=e445] [cursor=pointer]:
+            - generic [ref=e446]: Customer support
+            - text: 
+          - generic [ref=e45] [cursor=pointer]:
+            - link "Find bookings" [ref=e46]:
+              - /url: /order/all?locale=en-XX&curr=USD
+            - text: 
+          - button "Sign in/register" [ref=e48] [cursor=pointer]
+    - generic [ref=e49]:
+      - generic [ref=e50]:
+        - generic [ref=e51]:
+          - link "Home" [ref=e52] [cursor=pointer]:
+            - /url: /
+          - generic [ref=e54]: 󱌽
+          - link "Vietnam local experience" [ref=e55] [cursor=pointer]:
+            - /url: /things-to-do/vietnam-0/
+          - generic [ref=e57]: 󱌽
+          - text: Vietnam 5G eSIM | TikTok & ChatGPT Available | Day Pass/Total Data Package | 24-Hour Billing | 1-30 Days | QR Code
+        - generic [ref=e59]: "Product ID: 56527508"
+      - generic [ref=e66] [cursor=pointer]: 
+      - generic [ref=e78]:
+        - generic [ref=e79]:
+          - heading "Vietnam 5G eSIM | TikTok & ChatGPT Available | Day Pass/Total Data Package | 24-Hour Billing | 1-30 Days | QR Code" [ref=e80]:
+            - generic [ref=e81]: Vietnam 5G eSIM | TikTok & ChatGPT Available | Day Pass/Total Data Package | 24-Hour Billing | 1-30 Days | QR Code
+          - generic [ref=e171] [cursor=pointer]:
+            - generic [ref=e172]:
+              - generic [ref=e173]: Promotion
+              - button "Book a designated package and save 50%" [ref=e174]:
+                - generic [ref=e175]: Book a designated package and save 50%
+              - button "Up to US$4 off" [ref=e176]:
+                - generic [ref=e177]: Up to US$4 off
+            - generic [ref=e179]: Claim
+          - generic [ref=e447]:
+            - generic [ref=e449] [cursor=pointer]:
+              - generic [ref=e451]: 󱓕
+              - generic [ref=e452]:
+                - generic [ref=e455]: Book now for today
+                - generic [ref=e459]: Booking Confirmation
+                - generic [ref=e463]: Renewable
+              - generic [ref=e464]: 󱌽
+            - generic [ref=e466] [cursor=pointer]:
+              - generic [ref=e467]: 󱲊
+              - generic [ref=e468]: Free cancellation by 00:00, 1 day before the expiration date
+              - generic [ref=e469]: 󱌽
+          - generic [ref=e106] [cursor=pointer]:
+            - generic [ref=e107]:
+              - generic [ref=e108]: "4.5"
+              - generic [ref=e109]: /5
+            - generic [ref=e110]: Good
+            - generic [ref=e112]: (5,823 reviews)
+            - generic [ref=e114]: 139K+ booked
+        - generic [ref=e471]:
+          - generic [ref=e472]:
+            - generic [ref=e473]:
+              - generic [ref=e477] [cursor=pointer]: 
+              - generic [ref=e480]:
+                - generic [ref=e481]: From
+                - generic [ref=e483]: US$0.18
+            - generic [ref=e484]:
+              - generic [ref=e486] [cursor=pointer]:
+                - generic [ref=e487]: 
+                - generic [ref=e488]: Limited-time sale
+              - generic [ref=e490] [cursor=pointer]: 51% off
+          - generic [ref=e496] [cursor=pointer]: Select package
+      - generic [ref=e236]:
+        - generic [ref=e238]: Package and price
+        - generic [active] [ref=e244]:
+          - generic [ref=e246]:
+            - generic [ref=e247]: Date of use
+            - article [ref=e253]: Valid for 60 days from the booking date. This product is available for immediate use after booking
+          - generic [ref=e254]:
+            - generic [ref=e255]:
+              - generic [ref=e257]:
+                - generic [ref=e259]: Select Days
+                - generic [ref=e260]:
+                  - generic [ref=e264] [cursor=pointer]: 1 day
+                  - generic [ref=e268] [cursor=pointer]: 2 days
+                  - generic [ref=e272] [cursor=pointer]: 3 days
+                  - generic [ref=e276] [cursor=pointer]: 4 days
+                  - generic [ref=e280] [cursor=pointer]: 5 days
+                  - generic [ref=e284] [cursor=pointer]: 6 days
+                  - generic [ref=e288] [cursor=pointer]: 7 days
+                  - generic [ref=e292] [cursor=pointer]: 8 days
+                  - generic [ref=e296] [cursor=pointer]: 9 days
+                  - generic [ref=e300] [cursor=pointer]: 10 days
+                  - generic [ref=e304] [cursor=pointer]: 11 days
+                  - generic [ref=e308] [cursor=pointer]: 12 days
+                  - generic [ref=e312] [cursor=pointer]: 13 days
+                  - generic [ref=e316] [cursor=pointer]: 14 days
+                  - generic [ref=e320] [cursor=pointer]: 15 days
+                  - generic [ref=e324] [cursor=pointer]: 20 days
+                  - generic [ref=e328] [cursor=pointer]: 25 days
+                  - generic [ref=e332] [cursor=pointer]: 30 days
+              - generic [ref=e334]:
+                - generic [ref=e336]: Select Package Contents
+                - generic [ref=e337]:
+                  - generic [ref=e341] [cursor=pointer]: Daily 0.5GB
+                  - generic [ref=e345] [cursor=pointer]: Daily 1GB
+                  - generic [ref=e349] [cursor=pointer]: Daily 2GB
+                  - generic [ref=e353] [cursor=pointer]: Daily 3GB
+                  - generic [ref=e357] [cursor=pointer]: Daily 100GB
+                  - generic [ref=e361] [cursor=pointer]: Total 1GB
+                  - generic [ref=e365] [cursor=pointer]: Total 3GB
+                  - generic [ref=e369] [cursor=pointer]: Total 5GB
+                  - generic [ref=e373] [cursor=pointer]: Total 10 GB
+                  - generic [ref=e377] [cursor=pointer]: Total 20GB
+                  - generic [ref=e381] [cursor=pointer]: Total 30GB
+                  - generic [ref=e385] [cursor=pointer]: Total 50 GB
+            - generic [ref=e1888]:
+              - generic [ref=e1890]: "Package Details:"
+              - generic [ref=e1892] [cursor=pointer]:
+                - article [ref=e1895]:
+                  - paragraph [ref=e1896]: "• Package traffic details: High-speed data allowance of 0.5GB per day, speed reduced to 384kbps after exceeding the limit."
+                  - paragraph [ref=e1897]: "· Duration calculation: Every 24 hours counts as one day. (Example: For a 3-day package installed and activated at 10:00 on October 1, the package will end at 09:59 on October 4.)"
+                  - paragraph [ref=e1898]: "· Traffic refresh time: Updates every 24 hours starting from activation time."
+                  - paragraph [ref=e1899]: "· Package activation instructions: You can install in advance, and billing begins upon activating the eSIM after arriving at your destination."
+                - button "Show More":
+                  - button "View more " [ref=e1904]:
+                    - generic [ref=e1905]: View more
+                    - generic [ref=e1906]: 
+          - generic [ref=e386]:
+            - generic [ref=e388]:
+              - generic [ref=e391]: Quantity
+              - generic [ref=e393]:
+                - generic [ref=e395]: Quantity
+                - generic [ref=e396]:
+                  - generic [ref=e1911]: US$0.37
+                  - generic [ref=e398]:
+                    - generic [ref=e400]: 
+                    - spinbutton [ref=e404]: "1"
+                    - generic [ref=e406] [cursor=pointer]: 
+            - generic [ref=e408]:
+              - generic [ref=e413]:
+                - generic [ref=e414]: Booking information
+                - generic [ref=e415]: 
+              - generic [ref=e419]:
+                - generic [ref=e420]:
+                  - generic [ref=e422]:
+                    - generic [ref=e1914] [cursor=pointer]: 
+                    - generic [ref=e1917]: US$0.37
+                    - generic [ref=e1922]: US$0.18
+                  - generic [ref=e1925]: 51% off
+                - generic [ref=e429] [cursor=pointer]: Book now
+      - generic [ref=e500]:
+        - generic [ref=e501]:
+          - generic [ref=e502]: Reviews
+          - generic [ref=e503] [cursor=pointer]:
+            - generic [ref=e504]: View more
+            - generic [ref=e505]: 󱌽
+        - generic [ref=e507]:
+          - generic [ref=e509]:
+            - generic [ref=e510]:
+              - generic [ref=e511]: "4.5"
+              - generic [ref=e512]: /5
+            - generic [ref=e514]: Good
+            - generic [ref=e515]: (5824 reviews)
+          - generic [ref=e517]:
+            - text: 󱌽
+            - generic [ref=e519]:
+              - generic [ref=e521] [cursor=pointer]:
+                - generic [ref=e522]:
+                  - generic [ref=e526]:
+                    - generic [ref=e527]: _TIXX******7iweo5
+                    - generic [ref=e528]: May 12, 2026
+                  - generic [ref=e529]:
+                    - generic [ref=e530]: "5.0"
+                    - generic [ref=e531]: Excellent
+                - generic [ref=e532]: The moment I landed and connected to the network with no problems. Cheapest eSIM rates in the market too.
+              - generic [ref=e534] [cursor=pointer]:
+                - generic [ref=e535]:
+                  - generic [ref=e539]:
+                    - generic [ref=e540]: Anonymous user
+                    - generic [ref=e541]: May 11, 2026
+                  - generic [ref=e542]:
+                    - generic [ref=e543]: "5.0"
+                    - generic [ref=e544]: Excellent
+                - generic [ref=e545]: Trip’s esim is my go to whenever i travel as their network is always stable and this is efficient for travelling
+              - generic [ref=e547] [cursor=pointer]:
+                - generic [ref=e548]:
+                  - generic [ref=e552]:
+                    - generic [ref=e553]: VitaliiLut
+                    - generic [ref=e554]: May 11, 2026
+                  - generic [ref=e555]:
+                    - generic [ref=e556]: "5.0"
+                    - generic [ref=e557]: Excellent
+                - generic [ref=e558]: The connection is great; I always use 5G everywhere. You can choose the number of days and the required GB limit. I usually get 1GB per day—it's enough to stay connected.
+              - generic [ref=e560] [cursor=pointer]:
+                - generic [ref=e561]:
+                  - generic [ref=e565]:
+                    - generic [ref=e566]: Vathanak KHMER
+                    - generic [ref=e567]: May 11, 2026
+                  - generic [ref=e568]:
+                    - generic [ref=e569]: "5.0"
+                    - generic [ref=e570]: Excellent
+                - generic [ref=e571]: eSIM is convenient and easy to use. Setup is quick with a QR code, the internet is fast and stable, and it’s great for traveling. It also allows you to keep your main number while using mobile data. Overall, eSIM is a modern and flexible solution for daily use and travel.
+              - generic [ref=e573] [cursor=pointer]:
+                - generic [ref=e574]:
+                  - generic [ref=e578]:
+                    - generic [ref=e579]: Vathanak KHMER
+                    - generic [ref=e580]: May 11, 2026
+                  - generic [ref=e581]:
+                    - generic [ref=e582]: "5.0"
+                    - generic [ref=e583]: Excellent
+                - generic [ref=e584]: eSIM is convenient and easy to use. Setup is quick with a QR code, the internet is fast and stable, and it’s great for traveling. It also allows you to keep your main number while using mobile data. Overall, eSIM is a modern and flexible solution for daily use and travel.
+            - button "Next":
+              - generic [ref=e586] [cursor=pointer]: 󱌽
+      - generic [ref=e590]:
+        - generic [ref=e592]: Device info
+        - article [ref=e596]:
+          - paragraph [ref=e597]: Product description
+          - paragraph [ref=e598]: Traffic
+          - paragraph [ref=e599]: "• Signal coverage: Vietnam"
+          - paragraph [ref=e600]: "• Internet: Viettel, Vinaphone, MobiFone"
+          - paragraph [ref=e601]: • Supports multiple installations
+          - paragraph [ref=e602]: On the same device, the eSIM can be deleted and reinstalled after installation, with a maximum of 10 times supported.
+          - paragraph [ref=e603]: The eSIM can be reinstalled within the QR code validity period (for unactivated eSIMs) or the package expiration date (for activated eSIMs). It cannot be installed after the expiration date.
+      - generic [ref=e607]:
+        - generic [ref=e609]: Product details
+        - generic [ref=e612]:
+          - article [ref=e613]:
+            - paragraph [ref=e614]:
+              - strong [ref=e615]: "[eSIM IP address]"
+            - paragraph [ref=e616]: The eSIM will automatically adjust its IP address based on the application you are using.
+            - paragraph [ref=e617]: • When opening an app from the Chinese mainland, it will use a Hong Kong IP address.
+            - paragraph [ref=e618]: • When opening an app from outside the Chinese mainland, it will use a Singapore IP address.
+            - paragraph [ref=e619]
+            - paragraph [ref=e620]:
+              - strong [ref=e621]: TikTok compatibility notice
+            - paragraph [ref=e622]: "- iOS: Supports TikTok app and web version"
+            - paragraph [ref=e623]: "- Android: TikTok app is not supported yet, only the web version is available"
+            - paragraph [ref=e624]:
+              - strong [ref=e625]: "Notes:"
+            - paragraph [ref=e626]:
+              - strong [ref=e627]: •
+              - text: The service provider has improved compatibility with TikTok, but cannot guarantee that TikTok will work properly on all mobile devices. Refund requests due to TikTok incompatibility with your phone will not be accepted.
+            - paragraph [ref=e628]:
+              - strong [ref=e629]: •
+              - text: "For iOS users experiencing TikTok app sign-in issues: Please first update your iOS system to the latest version, then uninstall and reinstall the TikTok app. If the issue persists, you can access the TikTok web version via your mobile browser and sign in to your account. After successful sign-in, you can switch back to the app."
+            - paragraph [ref=e630]:
+              - strong [ref=e631]: •
+              - text: The service provider may discontinue TikTok support at any time without prior notice
+            - paragraph [ref=e632]
+            - paragraph [ref=e633]:
+              - img [ref=e634]
+              - img [ref=e635]
+              - img [ref=e636]
+          - button "View more" [ref=e641] [cursor=pointer]:
+            - generic [ref=e642]: View more
+            - generic [ref=e644]: 
+      - generic [ref=e648]:
+        - generic [ref=e650]:
+          - generic [ref=e652]: Validity period
+          - article [ref=e662] [cursor=pointer]: Valid for 60 days from the booking date, Valid for 1 use(s) only
+        - generic [ref=e664]:
+          - generic [ref=e666]: What's included
+          - generic [ref=e672] [cursor=pointer]:
+            - generic [ref=e674]:
+              - generic [ref=e675]: 
+              - article [ref=e677]: eSIM + Data Plan
+            - generic [ref=e679]:
+              - generic [ref=e680]: 
+              - article [ref=e682]: Hotspot / Tethering Supported
+            - generic [ref=e684]:
+              - generic [ref=e685]: 
+              - article [ref=e687]: Renewable / Top-Up / Recharge
+            - generic [ref=e689]:
+              - generic [ref=e690]: 
+              - article [ref=e692]: Voice call
+            - generic [ref=e694]:
+              - generic [ref=e695]: 
+              - article [ref=e697]: SMS
+        - generic [ref=e699]:
+          - generic [ref=e701]: How to use
+          - generic [ref=e705] [cursor=pointer]:
+            - generic [ref=e707]:
+              - article [ref=e711]: Instructions
+              - generic [ref=e712]:
+                - generic:
+                  - generic:
+                    - article
+              - article [ref=e716]: How to activate
+              - generic [ref=e717]:
+                - generic:
+                  - generic:
+                    - article
+              - article [ref=e721]: Actual steps may vary depending on your OS version and device model.
+              - generic [ref=e722]:
+                - generic:
+                  - generic:
+                    - article
+              - article [ref=e726]: "[Installing eSIM]"
+              - article [ref=e730]: "*One QR code can only be used on one mobile device. Once installed, it will be linked to that device and cannot be transferred to another."
+              - generic [ref=e731]:
+                - generic:
+                  - generic:
+                    - article
+              - article [ref=e735]: "Install directly via the Trip.com app (Android not currently supported):"
+              - article [ref=e739]: "• iOS users: Ensure your Trip.com app is updated to the latest version and your iPhone is running iOS 17.4 or later to install eSIM directly in the app."
+              - article [ref=e743]: • Open the Trip.com app - Go to "Account" - All bookings - Tap the "Install" button.
+              - generic [ref=e744]:
+                - generic:
+                  - generic:
+                    - article
+              - article [ref=e748]: "Scan QR code/Manually enter eSIM info to install:"
+              - article [ref=e752]: 1. Open the QR code attachment in your Trip.com app booking and print it in advance or save it to another electronic device.
+              - article [ref=e756]: 2. Open "Cellular (iOS)" or "SIM Card Manager (Android)" in your settings.
+              - article [ref=e760]: 3. With your phone connected to the internet, tap "Add Cellular Plan (iOS)" or "Add SIM Card (Android)" and scan the QR code to install.
+              - article [ref=e764]: 4. If scanning fails, manually enter the "SM-DP+ Address and Activation Code" from your booking voucher to install.
+              - article [ref=e768]: 5. If steps 3 or 4 fail, your phone may be locked by your country/region of residence carrier (unable to use other carrier network bands). Contact your carrier to unlock before using eSIM.
+              - generic [ref=e769]:
+                - generic:
+                  - generic:
+                    - article
+              - article [ref=e773]: "[Using eSIM]"
+              - article [ref=e777]: 1. Turn off your primary SIM and enable the eSIM network switch.
+              - article [ref=e781]: 2. Enable "Cellular (iOS)" or "SIM Card (Android)".
+              - article [ref=e785]: 3. Turn on "Data roaming".
+              - article [ref=e789]: 4. If you still cannot connect after these settings, configure APN and restart (see details below).
+              - generic [ref=e790]:
+                - generic:
+                  - generic:
+                    - article
+              - article [ref=e794]: "[About access point name (APN)]"
+              - article [ref=e798]: "*For eSIMs covering multiple countries/regions: If you can't connect when arriving in a new region, manually switch APN (normally switches automatically)"
+              - article [ref=e802]: "1. Setup steps:"
+              - article [ref=e806]: "iOS: Settings - Cellular - Cellular Plan (select eSIM) - Cellular Data Network - Enter APN"
+              - article [ref=e810]: "Android: Settings - Connections - Mobile Networks - Select eSIM - Access Point Names (APN) - Create new APN or Edit APN"
+              - article [ref=e814]: 2. Enter APN
+              - article [ref=e818]: "APN: cmhk"
+              - article [ref=e822]: 3. Restart your phone.
+              - generic [ref=e823]:
+                - generic:
+                  - generic:
+                    - article
+              - article [ref=e827]: "[Checking eSIM usage]"
+              - article [ref=e831]: "Enter your booking number to check (or one-click access via Trip.com PDF voucher): https://flow-consumer-center.billionconnect.com/usageq/trip/en"
+              - generic [ref=e832]:
+                - generic:
+                  - generic:
+                    - article
+              - article [ref=e836]: "[Customer support]"
+              - article [ref=e840]: If you encounter issues during use, please do not delete the installed eSIM. Send screenshots of your phone settings to customer support for quick assistance.
+            - button "Show More":
+              - generic [ref=e845]:
+                - generic [ref=e846]: View more
+                - generic [ref=e848]: 
+        - generic [ref=e849]:
+          - generic [ref=e851]: Cancellation policy
+          - generic [ref=e854]:
+            - generic [ref=e859]:
+              - generic [ref=e860]: Free cancellation
+              - generic [ref=e861]: 00:00, 1 day before the expiration date
+            - generic [ref=e865]:
+              - generic [ref=e866]: "Cancellation fee: 100%"
+              - generic [ref=e867]: From 00:00, 1 day before the expiration date
+            - generic [ref=e868]: This product cannot be canceled after activation. If a discount is applied, the cancellation fee will be calculated based on the original price before the discount and will not exceed the amount paid. Partial refund is not available.
+        - generic [ref=e871]:
+          - generic [ref=e873]: Important note
+          - article [ref=e883] [cursor=pointer]:
+            - paragraph [ref=e884]:
+              - strong [ref=e885]: Renewal instructions
+            - paragraph [ref=e886]:
+              - strong [ref=e887]: •
+              - text: Renewal bookings are only applicable to the device linked to the original booking and do not support device changes. If you need to change the device, please do not purchase a renewal booking.
+            - paragraph [ref=e888]:
+              - strong [ref=e889]: •
+              - text: When the data traffic from the original booking's eSIM is exhausted, you can tap the "Renewal" button on the original booking page to purchase a renewal booking. The renewed package and expiration date will be automatically added to the original booking.
+            - paragraph [ref=e890]:
+              - strong [ref=e891]: •
+              - text: If the eSIM from the original booking has not been deleted from the device, there is no need to reinstall the eSIM, and you can directly use the renewed data traffic.
+            - paragraph [ref=e892]:
+              - strong [ref=e893]: Activation rules for booking renewal
+            - paragraph [ref=e894]: After the original package's data is used up, the speed will be reduced, but the renewed traffic will only be activated after the original package's validity period ends. To terminate the original package early and activate the renewed traffic, please contact customer support.
+            - paragraph [ref=e895]:
+              - strong [ref=e896]: Disable domestic SIM card roaming
+            - paragraph [ref=e897]: Before using eSIM, be sure to disable data roaming on your domestic SIM card to avoid high international roaming charges from using your domestic mobile network. You are responsible for all related costs, including roaming fees, overseas SIM card/eSIM purchase expenses, and transportation fees, with no additional compensation provided.
+            - paragraph [ref=e898]:
+              - strong [ref=e899]: Adhering to fair data usage principles
+            - paragraph [ref=e900]: To ensure internet quality and comply with fair data usage principles (FUP), operators may monitor users who excessively consume data within a short period, which may result in connection interruptions or reduced speeds.
+            - paragraph [ref=e901]: To maintain a stable connection, it is recommended to avoid high-data-consumption activities such as streaming/downloading long videos, software updates, or internet sharing (hotspot).
+      - generic [ref=e909]:
+        - generic [ref=e911]:
+          - generic [ref=e912]:
+            - heading "Reviews" [level=3] [ref=e913]
+            - generic [ref=e914]: (5824 user reviews)
+          - generic [ref=e915]:
+            - generic [ref=e916]:
+              - generic [ref=e917]: Excellent
+              - generic [ref=e918]: 4.5/5
+            - generic [ref=e919]:
+              - generic [ref=e921]:
+                - generic [ref=e922]: Service experience
+                - generic [ref=e923]: "4.5"
+              - generic [ref=e927]:
+                - generic [ref=e928]: Ease to use
+                - generic [ref=e929]: "4.6"
+              - generic [ref=e933]:
+                - generic [ref=e934]: Signal stability
+                - generic [ref=e935]: "4.4"
+          - generic [ref=e938]:
+            - generic [ref=e939]:
+              - generic [ref=e940]: "Sort:"
+              - generic [ref=e942] [cursor=pointer]: Recommended
+            - generic [ref=e944]:
+              - generic [ref=e945] [cursor=pointer]: All (5824)
+              - generic [ref=e946] [cursor=pointer]: Reviews with photos (723)
+              - generic [ref=e947] [cursor=pointer]: Neutral and negative reviews (654)
+              - generic [ref=e948] [cursor=pointer]: Positive reviews (5170)
+        - generic [ref=e949]:
+          - generic [ref=e954]:
+            - generic [ref=e955]:
+              - generic [ref=e956]:
+                - img "userAvatar" [ref=e958]
+                - paragraph [ref=e961]: _TIXX******7iweo5
+              - list [ref=e962]:
+                - listitem [ref=e963]:
+                  - paragraph [ref=e965]: Solo
+                - listitem [ref=e966]:
+                  - paragraph [ref=e968]: Departed on Apr 14, 2026
+            - generic [ref=e969]:
+              - generic [ref=e970]:
+                - generic [ref=e971]: 5/5
+                - text: Good
+              - generic [ref=e972]: May 12, 2026
+            - generic [ref=e974]:
+              - generic [ref=e975]:
+                - generic [ref=e976]:
+                  - paragraph [ref=e977]: Service experience
+                  - generic [ref=e978]: "5.0"
+                - generic [ref=e979]:
+                  - paragraph [ref=e980]: Ease to use
+                  - generic [ref=e981]: "5.0"
+                - generic [ref=e982]:
+                  - paragraph [ref=e983]: Signal stability
+                  - generic [ref=e984]: "5.0"
+              - paragraph [ref=e986]: The moment I landed and connected to the network with no problems. Cheapest eSIM rates in the market too.
+              - generic [ref=e990] [cursor=pointer]: Helpful
+          - generic [ref=e995]:
+            - generic [ref=e996]:
+              - generic [ref=e997]:
+                - img "userAvatar" [ref=e999]
+                - paragraph [ref=e1002]: Anonymous user
+              - list [ref=e1003]:
+                - listitem [ref=e1004]:
+                  - paragraph [ref=e1006]: Couple
+                - listitem [ref=e1007]:
+                  - paragraph [ref=e1009]: Departed on May 10, 2026
+            - generic [ref=e1010]:
+              - generic [ref=e1011]:
+                - generic [ref=e1012]: 5/5
+                - text: Good
+              - generic [ref=e1013]: May 11, 2026
+            - generic [ref=e1015]:
+              - generic [ref=e1016]:
+                - generic [ref=e1017]:
+                  - paragraph [ref=e1018]: Service experience
+                  - generic [ref=e1019]: "5.0"
+                - generic [ref=e1020]:
+                  - paragraph [ref=e1021]: Ease to use
+                  - generic [ref=e1022]: "5.0"
+                - generic [ref=e1023]:
+                  - paragraph [ref=e1024]: Signal stability
+                  - generic [ref=e1025]: "5.0"
+              - paragraph [ref=e1027]: Trip’s esim is my go to whenever i travel as their network is always stable and this is efficient for travelling
+              - list [ref=e1028]:
+                - listitem [ref=e1029] [cursor=pointer]
+              - generic [ref=e1034] [cursor=pointer]: Helpful
+          - generic [ref=e1039]:
+            - generic [ref=e1040]:
+              - generic [ref=e1041]:
+                - img "userAvatar" [ref=e1043]
+                - paragraph [ref=e1046]: VitaliiLut
+              - list [ref=e1047]:
+                - listitem [ref=e1048]:
+                  - paragraph [ref=e1050]: Family
+                - listitem [ref=e1051]:
+                  - paragraph [ref=e1053]: Departed on Apr 27, 2026
+            - generic [ref=e1054]:
+              - generic [ref=e1055]:
+                - generic [ref=e1056]: 5/5
+                - text: Good
+              - generic [ref=e1057]: May 11, 2026
+            - generic [ref=e1059]:
+              - button "Original" [ref=e1061] [cursor=pointer]:
+                - generic [ref=e1062]: Original
+              - generic [ref=e1063]:
+                - generic [ref=e1064]:
+                  - paragraph [ref=e1065]: Service experience
+                  - generic [ref=e1066]: "5.0"
+                - generic [ref=e1067]:
+                  - paragraph [ref=e1068]: Ease to use
+                  - generic [ref=e1069]: "5.0"
+                - generic [ref=e1070]:
+                  - paragraph [ref=e1071]: Signal stability
+                  - generic [ref=e1072]: "5.0"
+              - paragraph [ref=e1074]: The connection is great; I always use 5G everywhere. You can choose the number of days and the required GB limit. I usually get 1GB per day—it's enough to stay connected.
+              - generic [ref=e1078] [cursor=pointer]: Helpful
+          - generic [ref=e1083]:
+            - generic [ref=e1084]:
+              - generic [ref=e1085]:
+                - img "userAvatar" [ref=e1087]
+                - paragraph [ref=e1090]: Vathanak KHMER
+              - list [ref=e1091]:
+                - listitem [ref=e1092]:
+                  - paragraph [ref=e1094]: Family
+                - listitem [ref=e1095]:
+                  - paragraph [ref=e1097]: Departed on May 1, 2026
+            - generic [ref=e1098]:
+              - generic [ref=e1099]:
+                - generic [ref=e1100]: 5/5
+                - text: Good
+              - generic [ref=e1101]: May 11, 2026
+            - generic [ref=e1103]:
+              - generic [ref=e1104]:
+                - generic [ref=e1105]:
+                  - paragraph [ref=e1106]: Service experience
+                  - generic [ref=e1107]: "5.0"
+                - generic [ref=e1108]:
+                  - paragraph [ref=e1109]: Ease to use
+                  - generic [ref=e1110]: "5.0"
+                - generic [ref=e1111]:
+                  - paragraph [ref=e1112]: Signal stability
+                  - generic [ref=e1113]: "5.0"
+              - paragraph [ref=e1115]: eSIM is convenient and easy to use. Setup is quick with a QR code, the internet is fast and stable, and it’s great for traveling. It also allows you to keep your main number while using mobile data. Overall, eSIM is a modern and flexible solution for daily use and travel.
+              - generic [ref=e1119] [cursor=pointer]: Helpful
+          - generic [ref=e1124]:
+            - generic [ref=e1125]:
+              - generic [ref=e1126]:
+                - img "userAvatar" [ref=e1128]
+                - paragraph [ref=e1131]: Vathanak KHMER
+              - list [ref=e1132]:
+                - listitem [ref=e1133]:
+                  - paragraph [ref=e1135]: Friends
+                - listitem [ref=e1136]:
+                  - paragraph [ref=e1138]: Departed on May 1, 2026
+            - generic [ref=e1139]:
+              - generic [ref=e1140]:
+                - generic [ref=e1141]: 5/5
+                - text: Good
+              - generic [ref=e1142]: May 11, 2026
+            - generic [ref=e1144]:
+              - generic [ref=e1145]:
+                - generic [ref=e1146]:
+                  - paragraph [ref=e1147]: Service experience
+                  - generic [ref=e1148]: "5.0"
+                - generic [ref=e1149]:
+                  - paragraph [ref=e1150]: Ease to use
+                  - generic [ref=e1151]: "5.0"
+                - generic [ref=e1152]:
+                  - paragraph [ref=e1153]: Signal stability
+                  - generic [ref=e1154]: "5.0"
+              - paragraph [ref=e1156]: eSIM is convenient and easy to use. Setup is quick with a QR code, the internet is fast and stable, and it’s great for traveling. It also allows you to keep your main number while using mobile data. Overall, eSIM is a modern and flexible solution for daily use and travel.
+              - generic [ref=e1160] [cursor=pointer]: Helpful
+          - generic [ref=e1165]:
+            - generic [ref=e1166]:
+              - generic [ref=e1167]:
+                - img "userAvatar" [ref=e1169]
+                - paragraph [ref=e1172]: Vathanak KHMER
+              - list [ref=e1173]:
+                - listitem [ref=e1174]:
+                  - paragraph [ref=e1176]: Family
+                - listitem [ref=e1177]:
+                  - paragraph [ref=e1179]: Departed on Apr 30, 2026
+            - generic [ref=e1180]:
+              - generic [ref=e1181]:
+                - generic [ref=e1182]: 5/5
+                - text: Good
+              - generic [ref=e1183]: May 11, 2026
+            - generic [ref=e1185]:
+              - generic [ref=e1186]:
+                - generic [ref=e1187]:
+                  - paragraph [ref=e1188]: Service experience
+                  - generic [ref=e1189]: "5.0"
+                - generic [ref=e1190]:
+                  - paragraph [ref=e1191]: Ease to use
+                  - generic [ref=e1192]: "5.0"
+                - generic [ref=e1193]:
+                  - paragraph [ref=e1194]: Signal stability
+                  - generic [ref=e1195]: "5.0"
+              - paragraph [ref=e1197]: eSIM is convenient and easy to use. Setup is quick with a QR code, the internet is fast and stable, and it’s great for traveling. It also allows you to keep your main number while using mobile data. Overall, eSIM is a modern and flexible solution for daily use and travel.
+              - generic [ref=e1201] [cursor=pointer]: Helpful
+          - generic [ref=e1206]:
+            - generic [ref=e1207]:
+              - generic [ref=e1208]:
+                - img "userAvatar" [ref=e1210]
+                - paragraph [ref=e1213]: Vathanak KHMER
+              - list [ref=e1214]:
+                - listitem [ref=e1215]:
+                  - paragraph [ref=e1217]: Friends
+                - listitem [ref=e1218]:
+                  - paragraph [ref=e1220]: Departed on Apr 30, 2026
+            - generic [ref=e1221]:
+              - generic [ref=e1222]:
+                - generic [ref=e1223]: 5/5
+                - text: Good
+              - generic [ref=e1224]: May 11, 2026
+            - generic [ref=e1226]:
+              - generic [ref=e1227]:
+                - generic [ref=e1228]:
+                  - paragraph [ref=e1229]: Service experience
+                  - generic [ref=e1230]: "5.0"
+                - generic [ref=e1231]:
+                  - paragraph [ref=e1232]: Ease to use
+                  - generic [ref=e1233]: "5.0"
+                - generic [ref=e1234]:
+                  - paragraph [ref=e1235]: Signal stability
+                  - generic [ref=e1236]: "5.0"
+              - paragraph [ref=e1238]: eSIM is convenient and easy to use. Setup is quick with a QR code, the internet is fast and stable, and it’s great for traveling. It also allows you to keep your main number while using mobile data. Overall, eSIM is a modern and flexible solution for daily use and travel.
+              - generic [ref=e1242] [cursor=pointer]: Helpful
+          - generic [ref=e1247]:
+            - generic [ref=e1248]:
+              - generic [ref=e1249]:
+                - img "userAvatar" [ref=e1251]
+                - paragraph [ref=e1254]: Shara Maureen Castro
+              - list [ref=e1255]:
+                - listitem [ref=e1256]:
+                  - paragraph [ref=e1258]: Family
+                - listitem [ref=e1259]:
+                  - paragraph [ref=e1261]: Departed on Apr 1, 2026
+            - generic [ref=e1262]:
+              - generic [ref=e1263]:
+                - generic [ref=e1264]: 5/5
+                - text: Good
+              - generic [ref=e1265]: May 10, 2026
+            - generic [ref=e1267]:
+              - generic [ref=e1268]:
+                - generic [ref=e1269]:
+                  - paragraph [ref=e1270]: Service experience
+                  - generic [ref=e1271]: "5.0"
+                - generic [ref=e1272]:
+                  - paragraph [ref=e1273]: Ease to use
+                  - generic [ref=e1274]: "5.0"
+                - generic [ref=e1275]:
+                  - paragraph [ref=e1276]: Signal stability
+                  - generic [ref=e1277]: "5.0"
+              - paragraph [ref=e1279]: Very convenient and easy to use. Activation was smooth and the connection stayed stable throughout my trip. Internet speed was fast enough for maps, social media, and video calls. Much easier than buying a physical SIM at the airport. Great value for the price and I would definitely use this eSIM again when traveling.
+              - generic [ref=e1283] [cursor=pointer]: Helpful
+          - generic [ref=e1288]:
+            - generic [ref=e1289]:
+              - generic [ref=e1290]:
+                - img "userAvatar" [ref=e1292]
+                - paragraph [ref=e1295]: _TIRU******qblekt
+              - list [ref=e1296]:
+                - listitem [ref=e1297]:
+                  - paragraph [ref=e1299]: Couple
+                - listitem [ref=e1300]:
+                  - paragraph [ref=e1302]: Departed on Apr 13, 2026
+            - generic [ref=e1303]:
+              - generic [ref=e1304]:
+                - generic [ref=e1305]: 5/5
+                - text: Good
+              - generic [ref=e1306]: May 10, 2026
+            - generic [ref=e1308]:
+              - button "Original" [ref=e1310] [cursor=pointer]:
+                - generic [ref=e1311]: Original
+              - generic [ref=e1312]:
+                - generic [ref=e1313]:
+                  - paragraph [ref=e1314]: Service experience
+                  - generic [ref=e1315]: "5.0"
+                - generic [ref=e1316]:
+                  - paragraph [ref=e1317]: Ease to use
+                  - generic [ref=e1318]: "5.0"
+                - generic [ref=e1319]:
+                  - paragraph [ref=e1320]: Signal stability
+                  - generic [ref=e1321]: "5.0"
+              - paragraph [ref=e1323]: Excellent. I took the 3GB per day plan. We used the GPS, instant messaging, including video calling, and all sorts of apps constantly, and the internet never let us down. We never connected to Wi-Fi anywhere.
+              - generic [ref=e1327] [cursor=pointer]: Helpful
+          - generic [ref=e1332]:
+            - generic [ref=e1333]:
+              - generic [ref=e1334]:
+                - img "userAvatar" [ref=e1336]
+                - paragraph [ref=e1339]: Anonymous user
+              - list [ref=e1340]:
+                - listitem [ref=e1341]:
+                  - paragraph [ref=e1343]: Accompanying parents
+                - listitem [ref=e1344]:
+                  - paragraph [ref=e1346]: Departed on Mar 29, 2026
+            - generic [ref=e1347]:
+              - generic [ref=e1348]:
+                - generic [ref=e1349]: 5/5
+                - text: Good
+              - generic [ref=e1350]: May 10, 2026
+            - generic [ref=e1352]:
+              - button "Original" [ref=e1354] [cursor=pointer]:
+                - generic [ref=e1355]: Original
+              - generic [ref=e1356]:
+                - generic [ref=e1357]:
+                  - paragraph [ref=e1358]: Service experience
+                  - generic [ref=e1359]: "3.0"
+                - generic [ref=e1360]:
+                  - paragraph [ref=e1361]: Ease to use
+                  - generic [ref=e1362]: "4.0"
+                - generic [ref=e1363]:
+                  - paragraph [ref=e1364]: Signal stability
+                  - generic [ref=e1365]: "5.0"
+              - paragraph [ref=e1367]: Everything's great, we landed and everything started working right away. The only difficulty is checking the balance; it's not immediately clear what's where.
+              - generic [ref=e1371] [cursor=pointer]: Helpful
+        - list [ref=e1374]:
+          - listitem "上一页" [ref=e1375]:
+            - button "prev page" [disabled] [ref=e1376]
+          - listitem "1" [ref=e1377] [cursor=pointer]:
+            - generic [ref=e1378]: "1"
+          - listitem "2" [ref=e1379] [cursor=pointer]:
+            - generic [ref=e1380]: "2"
+          - listitem "3" [ref=e1381] [cursor=pointer]:
+            - generic [ref=e1382]: "3"
+          - listitem "4" [ref=e1383] [cursor=pointer]:
+            - generic [ref=e1384]: "4"
+          - listitem "5" [ref=e1385] [cursor=pointer]:
+            - generic [ref=e1386]: "5"
+          - listitem "向后 5 页" [ref=e1387] [cursor=pointer]:
+            - button "···" [ref=e1388]
+          - listitem "583" [ref=e1389] [cursor=pointer]:
+            - generic [ref=e1390]: "583"
+          - listitem "下一页" [ref=e1391] [cursor=pointer]:
+            - button "next page" [ref=e1392]
+          - listitem
+      - generic [ref=e1395]:
+        - generic [ref=e1397]: You may also like
+        - generic [ref=e1401]:
+          - text: 󱌽
+          - generic [ref=e1403]:
+            - generic [ref=e1405] [cursor=pointer]:
+              - generic [ref=e1406]:
+                - img [ref=e1408]
+                - generic [ref=e1410]: SIM card
+              - generic [ref=e1411]:
+                - generic [ref=e1412]:
+                  - link "Vietnam Vinaphone 5G eSIM | TikTok & ChatGPT Available | In-app Installation | Day Pass/Total Data Package | 24-Hour Billing | QR Code":
+                    - /url: https://www.trip.com/things-to-do/detail/97710202/
+                    - generic: Vietnam Vinaphone 5G eSIM | TikTok & ChatGPT Available | In-app Installation | Day Pass/Total Data Package | 24-Hour Billing | QR Code
+                  - generic [ref=e1413]:
+                    - generic [ref=e1414]:
+                      - generic [ref=e1415]: "4.7"
+                      - generic [ref=e1416]: /5
+                    - generic [ref=e1417]: (1.6k reviews)
+                    - generic [ref=e1418]: "|"
+                    - generic [ref=e1419]: 36.5k booked
+                  - generic [ref=e1421]: 󱖀Renewable | Hotspot-capable
+                - generic [ref=e1422]:
+                  - generic [ref=e1426]: 51% off
+                  - generic [ref=e1427]:
+                    - generic [ref=e1428]: US$0.33
+                    - generic [ref=e1429]:
+                      - generic [ref=e1430]: From
+                      - generic [ref=e1431]: US$0.16
+            - generic [ref=e1433] [cursor=pointer]:
+              - generic [ref=e1434]:
+                - img [ref=e1436]
+                - generic [ref=e1438]: SIM card
+              - generic [ref=e1439]:
+                - generic [ref=e1440]:
+                  - link "Asia 10 Regions 5G eSIM | Multi-Network • ChatGPT | 1–30 Days | QR Code":
+                    - /url: https://www.trip.com/things-to-do/detail/85483615/
+                    - generic: Asia 10 Regions 5G eSIM | Multi-Network • ChatGPT | 1–30 Days | QR Code
+                  - generic [ref=e1441]:
+                    - generic [ref=e1442]:
+                      - generic [ref=e1443]: "4.7"
+                      - generic [ref=e1444]: /5
+                    - generic [ref=e1445]: (3k reviews)
+                    - generic [ref=e1446]: "|"
+                    - generic [ref=e1447]: 61.4k booked
+                  - generic [ref=e1449]: 󱖀Hotspot-capable
+                - generic [ref=e1450]:
+                  - generic [ref=e1454]: 52% off
+                  - generic [ref=e1455]:
+                    - generic [ref=e1456]: US$0.17
+                    - generic [ref=e1457]:
+                      - generic [ref=e1458]: From
+                      - generic [ref=e1459]: US$0.08
+            - generic [ref=e1461] [cursor=pointer]:
+              - generic [ref=e1462]:
+                - img [ref=e1464]
+                - generic [ref=e1466]: SIM card
+              - generic [ref=e1467]:
+                - generic [ref=e1468]:
+                  - link "Southeast Asia (7 countries) | 5G/4G eSIM | Daily plan/Data package | 24-hour billing | 1 - 30 days | QR code":
+                    - /url: https://www.trip.com/things-to-do/detail/46338645/
+                    - generic: Southeast Asia (7 countries) | 5G/4G eSIM | Daily plan/Data package | 24-hour billing | 1 - 30 days | QR code
+                  - generic [ref=e1469]:
+                    - generic [ref=e1470]:
+                      - generic [ref=e1471]: "4.6"
+                      - generic [ref=e1472]: /5
+                    - generic [ref=e1473]: (2.1k reviews)
+                    - generic [ref=e1474]: "|"
+                    - generic [ref=e1475]: 36.2k booked
+                  - generic [ref=e1477]: 󱖀Renewable | Hotspot-capable
+                - generic [ref=e1478]:
+                  - generic [ref=e1482]: 52% off
+                  - generic [ref=e1483]:
+                    - generic [ref=e1484]: US$0.17
+                    - generic [ref=e1485]:
+                      - generic [ref=e1486]: From
+                      - generic [ref=e1487]: US$0.08
+            - generic [ref=e1489] [cursor=pointer]:
+              - generic [ref=e1490]:
+                - img [ref=e1492]
+                - generic [ref=e1494]: SIM card
+              - generic [ref=e1495]:
+                - generic [ref=e1496]:
+                  - link "Asia 8 countries 5G/4G eSIM | DayPass/Total | 500MB/day - 50GB total | 1-30 days | 24-hour format | QR code":
+                    - /url: https://www.trip.com/things-to-do/detail/54036174/
+                    - generic: Asia 8 countries 5G/4G eSIM | DayPass/Total | 500MB/day - 50GB total | 1-30 days | 24-hour format | QR code
+                  - generic [ref=e1497]:
+                    - generic [ref=e1498]:
+                      - generic [ref=e1499]: "4.6"
+                      - generic [ref=e1500]: /5
+                    - generic [ref=e1501]: (3.3k reviews)
+                    - generic [ref=e1502]: "|"
+                    - generic [ref=e1503]: 63.7k booked
+                  - generic [ref=e1505]: 󱖀Renewable | Hotspot-capable
+                - generic [ref=e1506]:
+                  - generic [ref=e1510]: 52% off
+                  - generic [ref=e1511]:
+                    - generic [ref=e1512]: US$0.17
+                    - generic [ref=e1513]:
+                      - generic [ref=e1514]: From
+                      - generic [ref=e1515]: US$0.08
+            - generic [ref=e1517] [cursor=pointer]:
+              - generic [ref=e1518]:
+                - img [ref=e1520]
+                - generic [ref=e1522]: SIM card
+              - generic [ref=e1523]:
+                - generic [ref=e1524]:
+                  - link "Asia & Oceania 4G/5G eSIM | Daily/Total Data Package | 1–30 Days | 24-Hour Billing | QR Code":
+                    - /url: https://www.trip.com/things-to-do/detail/94684008/
+                    - generic: Asia & Oceania 4G/5G eSIM | Daily/Total Data Package | 1–30 Days | 24-Hour Billing | QR Code
+                  - generic [ref=e1525]:
+                    - generic [ref=e1526]:
+                      - generic [ref=e1527]: "4.6"
+                      - generic [ref=e1528]: /5
+                    - generic [ref=e1529]: (1.3k reviews)
+                    - generic [ref=e1530]: "|"
+                    - generic [ref=e1531]: 25k booked
+                  - generic [ref=e1533]: 󱖀Hotspot-capable
+                - generic [ref=e1534]:
+                  - generic [ref=e1538]: 51% off
+                  - generic [ref=e1539]:
+                    - generic [ref=e1540]: US$0.45
+                    - generic [ref=e1541]:
+                      - generic [ref=e1542]: From
+                      - generic [ref=e1543]: US$0.22
+            - generic [ref=e1545] [cursor=pointer]:
+              - generic [ref=e1546]:
+                - img [ref=e1548]
+                - generic [ref=e1550]: SIM card
+              - generic [ref=e1551]:
+                - generic [ref=e1552]:
+                  - link "Vietnam Vinaphone 5G eSIM | Local IP • All AI & TikTok | 1–30 Days | QR Code":
+                    - /url: https://www.trip.com/things-to-do/detail/81471035/
+                    - generic: Vietnam Vinaphone 5G eSIM | Local IP • All AI & TikTok | 1–30 Days | QR Code
+                  - generic [ref=e1553]:
+                    - generic [ref=e1554]:
+                      - generic [ref=e1555]: "4.7"
+                      - generic [ref=e1556]: /5
+                    - generic [ref=e1557]: (1.5k reviews)
+                    - generic [ref=e1558]: "|"
+                    - generic [ref=e1559]: 29k booked
+                  - generic [ref=e1561]: 󱖀Hotspot-capable
+                - generic [ref=e1562]:
+                  - generic [ref=e1566]: 54% off
+                  - generic [ref=e1567]:
+                    - generic [ref=e1568]: US$0.33
+                    - generic [ref=e1569]:
+                      - generic [ref=e1570]: From
+                      - generic [ref=e1571]: US$0.15
+            - generic [ref=e1573] [cursor=pointer]:
+              - generic [ref=e1574]:
+                - img [ref=e1576]
+                - generic [ref=e1578]: SIM card
+              - generic [ref=e1579]:
+                - generic [ref=e1580]:
+                  - link "Vietnam Viettel Local 5G eSIM | TikTok & ChatGPT Available | Daily 5GB | Calendar-Day Billing | QR Code":
+                    - /url: https://www.trip.com/things-to-do/detail/70663932/
+                    - generic: Vietnam Viettel Local 5G eSIM | TikTok & ChatGPT Available | Daily 5GB | Calendar-Day Billing | QR Code
+                  - generic [ref=e1581]:
+                    - generic [ref=e1582]:
+                      - generic [ref=e1583]: "4.7"
+                      - generic [ref=e1584]: /5
+                    - generic [ref=e1585]: (372 reviews)
+                    - generic [ref=e1586]: "|"
+                    - generic [ref=e1587]: 11.9k booked
+                  - generic [ref=e1589]: 󱖀Hotspot-capable
+                - generic [ref=e1590]:
+                  - generic [ref=e1594]: 5% off
+                  - generic [ref=e1595]:
+                    - generic [ref=e1596]: US$3.69
+                    - generic [ref=e1597]:
+                      - generic [ref=e1598]: From
+                      - generic [ref=e1599]: US$3.50
+            - generic [ref=e1601] [cursor=pointer]:
+              - generic [ref=e1602]:
+                - img [ref=e1604]
+                - generic [ref=e1606]: SIM card
+              - generic [ref=e1607]:
+                - generic [ref=e1608]:
+                  - link "Asia 4G/5G eSIM | Daily Plan / Total Data | 1-30 Days | 24-Hour Billing | QR Code":
+                    - /url: https://www.trip.com/things-to-do/detail/51957619/
+                    - generic: Asia 4G/5G eSIM | Daily Plan / Total Data | 1-30 Days | 24-Hour Billing | QR Code
+                  - generic [ref=e1609]:
+                    - generic [ref=e1610]:
+                      - generic [ref=e1611]: "4.5"
+                      - generic [ref=e1612]: /5
+                    - generic [ref=e1613]: (2.6k reviews)
+                    - generic [ref=e1614]: "|"
+                    - generic [ref=e1615]: 49.2k booked
+                  - generic [ref=e1617]: 󱖀Hotspot-capable
+                - generic [ref=e1618]:
+                  - generic [ref=e1622]: 50% off
+                  - generic [ref=e1623]:
+                    - generic [ref=e1624]: US$0.26
+                    - generic [ref=e1625]:
+                      - generic [ref=e1626]: From
+                      - generic [ref=e1627]: US$0.13
+            - generic [ref=e1629] [cursor=pointer]:
+              - generic [ref=e1630]:
+                - img [ref=e1632]
+                - generic [ref=e1634]: SIM card
+              - generic [ref=e1635]:
+                - generic [ref=e1636]:
+                  - link "Orange World 4G/LTE eSIM | 50MB–20GB total for 31 days | Calls + SMS | Calendar-Day Billing | QR code":
+                    - /url: https://www.trip.com/things-to-do/detail/98921075/
+                    - generic: Orange World 4G/LTE eSIM | 50MB–20GB total for 31 days | Calls + SMS | Calendar-Day Billing | QR code
+                  - generic [ref=e1637]:
+                    - generic [ref=e1638]:
+                      - generic [ref=e1639]: "4.4"
+                      - generic [ref=e1640]: /5
+                    - generic [ref=e1641]: (185 reviews)
+                    - generic [ref=e1642]: "|"
+                    - generic [ref=e1643]: 4.4k booked
+                  - generic [ref=e1645]: 󱖀Includes SMS messages | Phone calls supported | Hotspot-capable
+                - generic [ref=e1646]:
+                  - generic [ref=e1650]: 15% off
+                  - generic [ref=e1651]:
+                    - generic [ref=e1652]: US$20.2
+                    - generic [ref=e1653]:
+                      - generic [ref=e1654]: From
+                      - generic [ref=e1655]: US$17.17
+            - generic [ref=e1657] [cursor=pointer]:
+              - generic [ref=e1658]:
+                - img [ref=e1660]
+                - generic [ref=e1662]: SIM card
+              - generic [ref=e1663]:
+                - generic [ref=e1664]:
+                  - link "Southeast Asia 6 Countries 5G eSIM | Multi-Network • ChatGPT | 1–30 Days | QR Code":
+                    - /url: https://www.trip.com/things-to-do/detail/96566107/
+                    - generic: Southeast Asia 6 Countries 5G eSIM | Multi-Network • ChatGPT | 1–30 Days | QR Code
+                  - generic [ref=e1665]:
+                    - generic [ref=e1666]:
+                      - generic [ref=e1667]: "4.7"
+                      - generic [ref=e1668]: /5
+                    - generic [ref=e1669]: (600 reviews)
+                    - generic [ref=e1670]: "|"
+                    - generic [ref=e1671]: 10.9k booked
+                  - generic [ref=e1673]: 󱖀Hotspot-capable
+                - generic [ref=e1674]:
+                  - generic [ref=e1678]: 50% off
+                  - generic [ref=e1679]:
+                    - generic [ref=e1680]: US$0.16
+                    - generic [ref=e1681]:
+                      - generic [ref=e1682]: From
+                      - generic [ref=e1683]: US$0.08
+          - button "Next":
+            - generic [ref=e1685] [cursor=pointer]: 󱌽
+      - generic [ref=e1690]:
+        - heading "FAQ" [level=2] [ref=e1691]:
+          - generic [ref=e1692]: FAQ
+        - generic [ref=e1694] [cursor=pointer]:
+          - heading "How do I find out if my phone supports eSIMs?" [level=3] [ref=e1695]
+          - generic [ref=e1696]: 
+        - generic [ref=e1698] [cursor=pointer]:
+          - heading "How can I fix issues with my eSIM?" [level=3] [ref=e1699]
+          - generic [ref=e1700]: 
+        - generic [ref=e1702] [cursor=pointer]:
+          - heading "Can I use an eSIM and a SIM card at the same time?" [level=3] [ref=e1703]
+          - generic [ref=e1704]: 
+        - generic [ref=e1706] [cursor=pointer]:
+          - heading "How to solve eSIM hotspot issues? What can I do if my eSIM's hotspot is not working?" [level=3] [ref=e1707]
+          - generic [ref=e1708]: 
+        - generic [ref=e1710] [cursor=pointer]:
+          - heading "What can I do if I lost my eSIM installation QR code? I am experiencing a \"This code is no longer valid\" error." [level=3] [ref=e1711]
+          - generic [ref=e1712]: 
+        - generic [ref=e1714] [cursor=pointer]:
+          - heading "Where can I find the EID and IMEI on my phone?" [level=3] [ref=e1715]
+          - generic [ref=e1716]: 
+        - generic [ref=e1718] [cursor=pointer]:
+          - heading "How do I activate a renewal?" [level=3] [ref=e1719]
+          - generic [ref=e1720]: 
+        - generic [ref=e1722] [cursor=pointer]:
+          - heading "Can I still purchase your service if I have already activated an eSIM on my phone?" [level=3] [ref=e1723]
+          - generic [ref=e1724]: 
+      - generic [ref=e1729]:
+        - heading "Local recommendations" [level=2] [ref=e1730]:
+          - generic [ref=e1731]: Local recommendations
+        - generic [ref=e1732]:
+          - generic [ref=e1733] [cursor=pointer]:
+            - heading "Attractions & shows" [level=3] [ref=e1734]
+            - generic [ref=e1735]: 
+          - generic [ref=e1736]:
+            - generic [ref=e1737]: Hanoi Museum|
+            - generic [ref=e1738]: Heritage Sapce|
+            - generic [ref=e1739]: Blue Gallery|
+            - generic [ref=e1740]: Air Force and Air Defense Museum|
+            - generic [ref=e1741]: Hanoi Police Museum|
+            - generic [ref=e1742]: Halong Royal Palace Cruise|
+            - generic [ref=e1743]: Keangnam Hanoi Landmark Tower|
+            - generic [ref=e1744]: Lang Pagoda|
+            - generic [ref=e1745]: Vietnamese National Assembly|
+            - generic [ref=e1746]: Indochina Focus|
+            - generic [ref=e1747]: QIQ Vietnam|
+            - generic [ref=e1748]: Hanoi VietIndochiana Wellness|
+            - generic [ref=e1749]: Bon Bon Motor|
+            - generic [ref=e1750]: Vietnam National Fine Arts Museum|
+            - generic [ref=e1751]: MAM Art Projects|
+            - generic [ref=e1752]: Ceramic mosaic mural road|
+            - generic [ref=e1753]: Hanoi Sky Lotte Observation Deck|
+            - generic [ref=e1754]: Da Quy My Nghe Long Chau Bao Ngoc|
+            - generic [ref=e1755]: Dong Kinh Nghia Thuc Square|
+            - generic [ref=e1756]: Cau The Huc|
+            - generic [ref=e1757]: VinKE & Vinpearl Aquarium Times City Ha Noi|
+            - generic [ref=e1758]: Vicas Art Studio|
+            - generic [ref=e1759]: Huy Hung Gallery|
+            - generic [ref=e1760]: Nung Hill|
+            - generic [ref=e1761]: Bia Ba Temple|
+            - generic [ref=e1762]: Vietnam Puppet Theater|
+            - generic [ref=e1763]: Tran Quoc Pagoda|
+            - generic [ref=e1764]: Anh Phong Gallery|
+            - generic [ref=e1765]: Bach Ma Temple|
+            - generic [ref=e1766]: Museum of People's Public Security
+        - generic [ref=e1768] [cursor=pointer]:
+          - heading "Popular Wi-Fi & SIM cards" [level=3] [ref=e1769]
+          - generic [ref=e1770]: 
+        - generic [ref=e1772] [cursor=pointer]:
+          - heading "Popular Travel services" [level=3] [ref=e1773]
+          - generic [ref=e1774]: 
+        - generic [ref=e1776] [cursor=pointer]:
+          - heading "Popular Transport" [level=3] [ref=e1777]
+          - generic [ref=e1778]: 
+        - generic [ref=e1780] [cursor=pointer]:
+          - heading "Featured travel destinations" [level=3] [ref=e1781]
+          - generic [ref=e1782]: 
+        - generic [ref=e1784] [cursor=pointer]:
+          - heading "Popular destinations" [level=3] [ref=e1785]
+          - generic [ref=e1786]: 
+      - contentinfo [ref=e1788]:
+        - generic [ref=e1789]:
+          - generic [ref=e1790]:
+            - generic [ref=e1791]:
+              - generic [ref=e1792]:
+                - heading "Contact us" [level=3] [ref=e1793]
+                - list [ref=e1794]:
+                  - listitem [ref=e1795]:
+                    - link "Customer support" [ref=e1796] [cursor=pointer]:
+                      - /url: /pages/support/?locale=en-XX&curr=USD
+                  - listitem [ref=e1797]:
+                    - link "Service Guarantee" [ref=e1798] [cursor=pointer]:
+                      - /url: /pages/customer-service/?locale=en-XX&curr=USD
+                  - listitem [ref=e1799]:
+                    - link "More service info" [ref=e1800] [cursor=pointer]:
+                      - /url: /pages/service/?locale=en-XX&curr=USD
+                - list [ref=e1801]:
+                  - listitem [ref=e1802]:
+                    - link "facebook" [ref=e1803] [cursor=pointer]:
+                      - /url: https://www.facebook.com/Trip/?locale=en-XX&curr=USD
+                      - img "facebook" [ref=e1804]
+                  - listitem [ref=e1805]:
+                    - link "x" [ref=e1806] [cursor=pointer]:
+                      - /url: https://twitter.com/Trip/?locale=en-XX&curr=USD
+                      - img "x" [ref=e1807]
+                  - listitem [ref=e1808]:
+                    - link "youtube" [ref=e1809] [cursor=pointer]:
+                      - /url: https://www.youtube.com/c/TripOfficial/?locale=en-XX&curr=USD
+                      - img "youtube" [ref=e1810]
+              - generic [ref=e1811]:
+                - heading "About" [level=3] [ref=e1812]
+                - list [ref=e1813]:
+                  - listitem [ref=e1814]:
+                    - link "About Trip.com" [ref=e1815] [cursor=pointer]:
+                      - /url: /pages/about-us/?locale=en-XX&curr=USD
+                  - listitem [ref=e1816]:
+                    - link "News" [ref=e1817] [cursor=pointer]:
+                      - /url: https://www.trip.com/newsroom/?locale=en-xx&curr=USD
+                  - listitem [ref=e1818]:
+                    - link "Careers" [ref=e1819] [cursor=pointer]:
+                      - /url: https://careers.trip.com/?locale=en-XX&curr=USD
+                  - listitem [ref=e1820]:
+                    - link "Terms & Conditions" [ref=e1821] [cursor=pointer]:
+                      - /url: /contents/service-guideline/terms.html?locale=en-XX&curr=USD
+                  - listitem [ref=e1822]:
+                    - link "Privacy Statement" [ref=e1823] [cursor=pointer]:
+                      - /url: /contents/service-guideline/privacy-policy.html?locale=en-XX&curr=USD
+                  - listitem [ref=e1824]:
+                    - link "Accessibility Statement" [ref=e1825] [cursor=pointer]:
+                      - /url: /contents/eaa-accessibility-statement.html?locale=en-XX&curr=USD
+                  - listitem [ref=e1826]:
+                    - link "About Trip.com Group" [ref=e1827] [cursor=pointer]:
+                      - /url: https://group.trip.com/?locale=en-US&curr=USD
+              - generic [ref=e1828]:
+                - heading "Other services" [level=3] [ref=e1829]
+                - list [ref=e1830]:
+                  - listitem [ref=e1831]:
+                    - link "Investor relations" [ref=e1832] [cursor=pointer]:
+                      - /url: https://investors.trip.com?locale=en-XX&curr=USD
+                  - listitem [ref=e1833]:
+                    - link "Trip.com Rewards" [ref=e1834] [cursor=pointer]:
+                      - /url: /customer/loyalty/?locale=en-xx&curr=USD
+                  - listitem [ref=e1835]:
+                    - link "Affiliate program" [ref=e1836] [cursor=pointer]:
+                      - /url: /partners/index?locale=en-XX&curr=USD
+                  - listitem [ref=e1837]:
+                    - link "List your property" [ref=e1838] [cursor=pointer]:
+                      - /url: /list-your-property?channel=2&locale=en-XX&curr=USD
+                  - listitem [ref=e1839]:
+                    - link "All hotels" [ref=e1840] [cursor=pointer]:
+                      - /url: /hotels/all-cities/?locale=en-xx&curr=USD
+                  - listitem [ref=e1841]:
+                    - link "Become a Supplier" [ref=e1842] [cursor=pointer]:
+                      - /url: /m/vbooking/home?locale=en-XX&curr=USD
+                  - listitem [ref=e1843]:
+                    - link "Security" [ref=e1844] [cursor=pointer]:
+                      - /url: https://src.trip.com/?locale=en-XX&curr=USD#/Home
+            - generic [ref=e1845]:
+              - generic [ref=e1846]:
+                - heading "Payment methods" [level=3] [ref=e1847]
+                - generic [ref=e1848]:
+                  - img "UNIONPAY" [ref=e1849]
+                  - img "MC" [ref=e1850]
+                  - img "VISA" [ref=e1851]
+                  - img "AMEX" [ref=e1852]
+                  - img "JCB" [ref=e1853]
+                  - img "DINERS" [ref=e1854]
+                  - img "DISCOVER" [ref=e1855]
+                  - img "APPLE" [ref=e1856]
+                  - img "PayPal" [ref=e1857]
+                  - img "COINS" [ref=e1858]
+              - generic [ref=e1859]:
+                - heading "Our partners" [level=3] [ref=e1860]
+                - generic [ref=e1861]:
+                  - img "GOOGLE" [ref=e1863]
+                  - img "TRIPADVISOR" [ref=e1865]
+          - list [ref=e1868]:
+            - listitem "iF Design Award 2026" [ref=e1869]:
+              - img [ref=e1870]
+              - generic [ref=e1871]: iF Design Award 2026
+            - listitem "Good Design Award 2024" [ref=e1872]:
+              - img [ref=e1873]
+            - listitem "Contact Center of the year 2025" [ref=e1874]:
+              - img [ref=e1875]
+              - generic [ref=e1876]: Contact Center of the year 2025
+          - 'contentinfo "Copyright © 2026 Trip.com Travel Singapore Pte. Ltd. All rights reserved<br>Site Operator: Trip.com Travel Singapore Pte. Ltd." [ref=e1877]':
+            - generic [ref=e1878]: "Copyright © 2026 Trip.com Travel Singapore Pte. Ltd. All rights reserved Site Operator: Trip.com Travel Singapore Pte. Ltd."
+      - generic [ref=e1879] [cursor=pointer]:
+        - button "" [ref=e1880]:
+          - generic [ref=e1881]: 
+        - img [ref=e1885]
+  - alert [ref=e150]

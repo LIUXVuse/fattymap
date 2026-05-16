@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { X, MapPin, Image as ImageIcon, Check, Palette, Globe, Edit3, Loader2, Plus, Trash2, ChevronRight, Grid, User as UserIcon, Upload, Video } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, MapPin, Image as ImageIcon, Check, Palette, Globe, Edit3, Loader2, Plus, ChevronRight, Grid, User as UserIcon, Upload, Video } from 'lucide-react';
 import { Location, MarkerColor, CategoryNode, RegionInfo, MarkerIconType, Memory } from '../types';
 import { findPlaceDetails } from '../services/mapService';
 import { ICON_MAP } from './MapContainer';
 import { User } from 'firebase/auth';
-import { uploadImage } from '../services/firebase';
 
 interface MemoryModalProps {
     location: Location;
@@ -44,7 +43,6 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
     onClose,
     onSubmit,
     onAddCategory,
-    onDeleteCategory,
     currentUser,
     defaultCustomName,
     defaultCustomAvatar

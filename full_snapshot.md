@@ -1,0 +1,150 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e6]:
+    - banner [ref=e8]:
+      - generic [ref=e10]:
+        - link "Trip.com" [ref=e12] [cursor=pointer]:
+          - /url: /?locale=en-XX&curr=USD
+        - list [ref=e152]:
+          - listitem [ref=e153]:
+            - link "Hotels & Homes" [ref=e154] [cursor=pointer]:
+              - /url: /hotels/?locale=en-XX&curr=USD
+          - listitem [ref=e155]:
+            - link "Flights" [ref=e156] [cursor=pointer]:
+              - /url: /flights/?locale=en-XX&curr=USD
+          - listitem [ref=e157]:
+            - link "Trains" [ref=e158] [cursor=pointer]:
+              - /url: /trains/?locale=en-XX&curr=USD
+          - listitem [ref=e159]:
+            - link "Cars" [ref=e160]
+          - listitem [ref=e161]:
+            - button "More" [ref=e162] [cursor=pointer]
+        - generic [ref=e29]:
+          - link "App" [ref=e32] [cursor=pointer]:
+            - generic [ref=e33]: 
+            - generic [ref=e34]: App
+          - button "Language/Currency" [ref=e36] [cursor=pointer]:
+            - generic [ref=e41]: USD
+          - link "Customer support" [ref=e166] [cursor=pointer]:
+            - generic [ref=e167]: Customer support
+            - text: 
+          - generic [ref=e45] [cursor=pointer]:
+            - link "Find bookings" [ref=e46]:
+              - /url: /order/all?locale=en-XX&curr=USD
+            - text: 
+          - button "Sign in/register" [ref=e48] [cursor=pointer]
+    - generic [ref=e49]:
+      - generic [ref=e50]:
+        - generic [ref=e51]:
+          - link "Home" [ref=e52] [cursor=pointer]:
+            - /url: /
+          - generic [ref=e54]: 󱌽
+          - link "Vietnam local experience" [ref=e55] [cursor=pointer]:
+            - /url: /things-to-do/vietnam-0/
+          - generic [ref=e57]: 󱌽
+          - text: Vietnam 5G eSIM | TikTok & ChatGPT Available | Day Pass/Total Data Package | 24-Hour Billing | 1-30 Days | QR Code
+        - generic [ref=e59]: "Product ID: 56527508"
+      - generic [ref=e66] [cursor=pointer]: 
+      - generic [ref=e78]:
+        - generic [ref=e79]:
+          - heading "Vietnam 5G eSIM | TikTok & ChatGPT Available | Day Pass/Total Data Package | 24-Hour Billing | 1-30 Days | QR Code" [ref=e80]:
+            - generic [ref=e81]: Vietnam 5G eSIM | TikTok & ChatGPT Available | Day Pass/Total Data Package | 24-Hour Billing | 1-30 Days | QR Code
+          - generic [ref=e171] [cursor=pointer]:
+            - generic [ref=e172]:
+              - generic [ref=e173]: Promotion
+              - button "Book a designated package and save 50%" [ref=e174]:
+                - generic [ref=e175]: Book a designated package and save 50%
+              - button "Up to US$4 off" [ref=e176]:
+                - generic [ref=e177]: Up to US$4 off
+            - generic [ref=e179]: Claim
+          - generic [ref=e180]:
+            - generic [ref=e182] [cursor=pointer]:
+              - generic [ref=e184]: 󱓕
+              - generic [ref=e185]:
+                - generic [ref=e188]: Book now for today
+                - generic [ref=e192]: Booking Confirmation
+                - generic [ref=e196]: Renewable
+              - generic [ref=e197]: 󱌽
+            - generic [ref=e199] [cursor=pointer]:
+              - generic [ref=e200]: 󱲊
+              - generic [ref=e201]: Free cancellation by 00:00, 1 day before the expiration date
+              - generic [ref=e202]: 󱌽
+          - generic [ref=e106] [cursor=pointer]:
+            - generic [ref=e107]:
+              - generic [ref=e108]: "4.5"
+              - generic [ref=e109]: /5
+            - generic [ref=e110]: Good
+            - generic [ref=e112]: (5,823 reviews)
+            - generic [ref=e114]: 139K+ booked
+        - generic [ref=e204]:
+          - generic [ref=e205]:
+            - generic [ref=e206]:
+              - generic [ref=e210] [cursor=pointer]: 
+              - generic [ref=e213]:
+                - generic [ref=e214]: From
+                - generic [ref=e216]: US$0.18
+            - generic [ref=e217]:
+              - generic [ref=e219] [cursor=pointer]:
+                - generic [ref=e220]: 
+                - generic [ref=e221]: Limited-time sale
+              - generic [ref=e223] [cursor=pointer]: 51% off
+          - generic [ref=e229] [cursor=pointer]: Select package
+      - generic [ref=e236]:
+        - generic [ref=e238]: Package and price
+        - generic [ref=e244]:
+          - generic [ref=e246]:
+            - generic [ref=e247]: Date of use
+            - article [ref=e253]: Valid for 60 days from the booking date. This product is available for immediate use after booking
+          - generic [ref=e255]:
+            - generic [ref=e257]:
+              - generic [ref=e259]: Select Days
+              - generic [ref=e260]:
+                - generic [ref=e264] [cursor=pointer]: 1 day
+                - generic [ref=e268] [cursor=pointer]: 2 days
+                - generic [ref=e272] [cursor=pointer]: 3 days
+                - generic [ref=e276] [cursor=pointer]: 4 days
+                - generic [ref=e280] [cursor=pointer]: 5 days
+                - generic [ref=e284] [cursor=pointer]: 6 days
+                - generic [ref=e288] [cursor=pointer]: 7 days
+                - generic [ref=e292] [cursor=pointer]: 8 days
+                - generic [ref=e296] [cursor=pointer]: 9 days
+                - generic [ref=e300] [cursor=pointer]: 10 days
+                - generic [ref=e304] [cursor=pointer]: 11 days
+                - generic [ref=e308] [cursor=pointer]: 12 days
+                - generic [ref=e312] [cursor=pointer]: 13 days
+                - generic [ref=e316] [cursor=pointer]: 14 days
+                - generic [ref=e320] [cursor=pointer]: 15 days
+                - generic [ref=e324] [cursor=pointer]: 20 days
+                - generic [ref=e328] [cursor=pointer]: 25 days
+                - generic [ref=e332] [cursor=pointer]: 30 days
+            - generic [ref=e334]:
+              - generic [ref=e336]: Select Package Contents
+              - generic [ref=e337]:
+                - generic [ref=e341] [cursor=pointer]: Daily 0.5GB
+                - generic [ref=e345] [cursor=pointer]: Daily 1GB
+                - generic [ref=e349] [cursor=pointer]: Daily 2GB
+                - generic [ref=e353] [cursor=pointer]: Daily 3GB
+                - generic [ref=e357] [cursor=pointer]: Daily 100GB
+                - generic [ref=e361] [cursor=pointer]: Total 1GB
+                - generic [ref=e365] [cursor=pointer]: Total 3GB
+                - generic [ref=e369] [cursor=pointer]: Total 5GB
+                - generic [ref=e373] [cursor=pointer]: Total 10 GB
+                - generic [ref=e377] [cursor=pointer]: Total 20GB
+                - generic [ref=e381] [cursor=pointer]: Total 30GB
+                - generic [ref=e385] [cursor=pointer]: Total 50 GB
+          - generic [ref=e386]:
+            - generic [ref=e388]:
+              - generic [ref=e391]: Quantity
+              - generic [ref=e393]:
+                - generic [ref=e395]: Quantity
+                - generic [ref=e398]:
+                  - generic [ref=e400] [cursor=pointer]: 
+                  - spinbutton [ref=e404]: "1"
+                  - generic [ref=e406] [cursor=pointer]: 
+            - generic [ref=e408]:
+              - generic [ref=e413]:
+                - generic [ref=e414]: Booking information
+                - generic [ref=e415]: 
+              - generic [ref=e419]:
+                - generic [ref=e423]: US$--
+                - generic [ref=e429] [cursor=pointer]: Book now
+  - alert [ref=e150]

@@ -6,7 +6,7 @@ import { CommentModal } from './components/CommentModal';
 import { ImageLightbox } from './components/ImageLightbox';
 import { AboutOverlay } from './components/AboutOverlay';
 import { SponsorAdminPanel } from './components/SponsorAdminPanel';
-import { Memory, Location, MarkerColor, CategoryNode, RegionInfo, PlaceSearchResult, MarkerIconType, Sponsor } from './types';
+import { Memory, Location, CategoryNode, PlaceSearchResult, Sponsor } from './types';
 import { Menu, X, MapPin, Navigation, Play, RotateCcw, Search, Loader2, LogIn, LogOut, ExternalLink, Info, LocateFixed } from 'lucide-react';
 import { searchLocation, getAutocomplete, getPlaceDetails, openGoogleMapsNavigation } from './services/mapService';
 import { auth, signInWithGoogle, logout, subscribeToMemories, subscribeToCategories, initCategoriesIfEmpty, addMemoryToFireStore, updateMemoryInFirestore, deleteMemoryFromFirestore, saveCategoriesToFirestore, uploadImage, uploadVideo, subscribeToSponsors } from './services/firebase';
@@ -185,7 +185,7 @@ const App: React.FC = () => {
                 (position) => {
                     setMapCenter([position.coords.latitude, position.coords.longitude]);
                 },
-                (err) => console.log("Location access denied or error:", err)
+                (err) => console.error("Location access denied or error:", err)
             );
         }
 

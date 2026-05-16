@@ -1,7 +1,7 @@
 // @ts-ignore
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as firebaseSignOut } from "firebase/auth";
-import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, setDoc, getDocs, where, getDoc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, setDoc, getDoc } from "firebase/firestore";
 // import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage"; // 暫時停用 Firebase Storage
 import { Memory, CategoryNode, Comment, Sponsor } from "../types";
 
@@ -66,8 +66,6 @@ const compressImage = async (file: File): Promise<Blob> => {
     return file;
   }
 
-  console.log(`📸 圖片壓縮中... 原始大小: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
-
   return new Promise((resolve, reject) => {
     const img = new Image();
     const canvas = document.createElement('canvas');
@@ -99,11 +97,8 @@ const compressImage = async (file: File): Promise<Blob> => {
               return;
             }
 
-            console.log(`   品質 ${Math.round(quality * 100)}%: ${(blob.size / 1024 / 1024).toFixed(2)} MB`);
-
             // 如果夠小或品質已經很低，就用這個
             if (blob.size <= MAX_FILE_SIZE || quality <= 0.3) {
-              console.log(`✅ 壓縮完成！最終大小: ${(blob.size / 1024 / 1024).toFixed(2)} MB`);
               resolve(blob);
             } else {
               // 繼續降低品質
