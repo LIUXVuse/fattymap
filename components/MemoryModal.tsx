@@ -168,13 +168,11 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
         const identify = async () => {
             setIsLoadingDetails(true);
             if (initialLocation.address && initialLocation.name && initialLocation.name !== 'Coordinates') {
+                // 從搜尋結果進來：如果已有 region 就直接用，不再查 Nominatim（避免回傳簡體）
+                if (initialLocation.region?.country) {
+                    setRegion(initialLocation.region);
+                }
                 setIsLoadingDetails(false);
-                try {
-                    const details = await findPlaceDetails(initialLocation.lat, initialLocation.lng);
-                    if (details) {
-                        setRegion(details.region);
-                    }
-                } catch (e) { console.error(e) }
                 return;
             }
 

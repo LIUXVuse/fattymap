@@ -4,6 +4,7 @@ export interface Location {
   name?: string;
   address?: string;
   googleMapsUri?: string;
+  region?: RegionInfo; // 從搜尋結果帶入，避免重查 Nominatim 回傳簡體
 }
 
 // 支援任意 HEX 顏色

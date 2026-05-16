@@ -442,7 +442,8 @@ const App: React.FC = () => {
             lat: result.lat,
             lng: result.lng,
             name: result.name,
-            address: result.address
+            address: result.address,
+            region: result.region  // 帶入 Google Places 的 region，避免 MemoryModal 重查 Nominatim
         });
         setEditingMemory(null);
         setIsModalOpen(true);

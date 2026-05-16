@@ -10,15 +10,17 @@ export const findPlaceDetails = async (
 ): Promise<PlaceSearchResult | null> => {
     try {
         const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=zh-TW`
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&namedetails=1&accept-language=zh-TW`
         );
 
         if (!response.ok) throw new Error("Network response was not ok");
 
         const data = await response.json();
         const addr = data.address || {};
+        const namedetails = data.namedetails || {};
 
-        let name = data.name || "";
+        // 優先用繁體標籤，避免 OSM 預設 name 為簡體
+        let name = namedetails['name:zh-TW'] || namedetails['name:zh-Hant'] || data.name || "";
         if (!name) {
             name = addr.amenity || addr.shop || addr.tourism || addr.historic || addr.building || addr.road || "未命名地點";
         }
