@@ -476,11 +476,11 @@ const App: React.FC = () => {
     };
 
     return (
-        <div className="relative w-screen h-screen overflow-hidden flex bg-gray-100 text-gray-800 font-sans">
+        <div className="relative w-full h-[100dvh] overflow-hidden flex bg-gray-100 text-gray-800 font-sans">
 
             {/* Sidebar */}
             <div
-                className={`fixed inset-y-0 left-0 w-80 md:w-96 z-[1100] transform transition-transform duration-300 md:relative md:translate-x-0 shadow-2xl ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+                className={`fixed inset-y-0 left-0 w-full sm:w-80 md:w-96 z-[1100] transform transition-transform duration-300 md:relative md:translate-x-0 shadow-2xl ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
                     }`}
             >
                 {/* User Profile / Login Section */}
@@ -609,10 +609,10 @@ const App: React.FC = () => {
                 </div>
 
                 {/* Right Controls */}
-                <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2 items-end">
+                <div className="absolute top-4 right-2 sm:right-4 z-[1000] flex flex-col gap-1.5 sm:gap-2 items-end">
                     <button
                         onClick={toggleDraggablePinMode}
-                        className={`flex items-center gap-2 px-2.5 py-2.5 md:px-4 md:py-2 rounded-lg shadow-lg font-bold transition-all ${isDraggablePinMode
+                        className={`flex items-center gap-2 px-2.5 py-2 sm:px-4 sm:py-2 rounded-lg shadow-lg font-bold transition-all ${isDraggablePinMode
                             ? 'bg-red-600 text-white ring-4 ring-red-200'
                             : 'bg-white text-gray-700 hover:bg-gray-50'
                             }`}
@@ -623,7 +623,7 @@ const App: React.FC = () => {
 
                     <button
                         onClick={toggleRoutingMode}
-                        className={`flex items-center gap-2 px-2.5 py-2.5 md:px-4 md:py-2 rounded-lg shadow-lg font-bold transition-all ${isRoutingMode
+                        className={`flex items-center gap-2 px-2.5 py-2 sm:px-4 sm:py-2 rounded-lg shadow-lg font-bold transition-all ${isRoutingMode
                             ? 'bg-blue-600 text-white ring-4 ring-blue-200'
                             : 'bg-white text-gray-700 hover:bg-gray-50'
                             }`}
@@ -635,7 +635,7 @@ const App: React.FC = () => {
                     {/* Podcast 摘要按鈕 */}
                     <button
                         onClick={() => { setAboutTab('podcast'); setIsAboutOpen(true); }}
-                        className="flex items-center gap-2 px-2.5 py-2.5 md:px-4 md:py-2 rounded-lg shadow-lg font-bold transition-all bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
+                        className="flex items-center gap-2 px-2.5 py-2 sm:px-4 sm:py-2 rounded-lg shadow-lg font-bold transition-all bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
                     >
                         <span>📻</span>
                         <span className="hidden md:inline">Podcast 摘要</span>
@@ -644,7 +644,7 @@ const App: React.FC = () => {
                     {/* 換匯計算器 */}
                     <button
                         onClick={() => { setAboutTab('more'); setIsAboutOpen(true); }}
-                        className="flex items-center gap-2 px-2.5 py-2.5 md:px-4 md:py-2 rounded-lg shadow-lg font-bold transition-all bg-gradient-to-r from-orange-500 to-pink-500 text-white hover:from-orange-400 hover:to-pink-400"
+                        className="flex items-center gap-2 px-2.5 py-2 sm:px-4 sm:py-2 rounded-lg shadow-lg font-bold transition-all bg-gradient-to-r from-orange-500 to-pink-500 text-white hover:from-orange-400 hover:to-pink-400"
                     >
                         <span>💱</span>
                         <span className="hidden md:inline">智能換匯</span>
@@ -653,14 +653,14 @@ const App: React.FC = () => {
                     {/* 旅遊預訂 */}
                     <button
                         onClick={() => { setAboutTab('travel'); setIsAboutOpen(true); }}
-                        className="flex items-center gap-2 px-2.5 py-2.5 md:px-4 md:py-2 rounded-lg shadow-lg font-bold transition-all bg-gradient-to-r from-sky-500 to-blue-600 text-white hover:from-sky-400 hover:to-blue-500"
+                        className="flex items-center gap-2 px-2.5 py-2 sm:px-4 sm:py-2 rounded-lg shadow-lg font-bold transition-all bg-gradient-to-r from-sky-500 to-blue-600 text-white hover:from-sky-400 hover:to-blue-500"
                     >
                         <span>🌏</span>
                         <span className="hidden md:inline">旅遊預訂</span>
                     </button>
 
                     {isRoutingMode && (
-                        <div className="bg-white p-3 md:p-4 rounded-xl shadow-xl border border-gray-100 w-48 md:w-64 animate-in slide-in-from-top-4">
+                        <div className="bg-white p-3 sm:p-4 rounded-xl shadow-xl border border-gray-100 w-44 sm:w-48 md:w-64 animate-in slide-in-from-top-4">
                             <h3 className="font-bold text-gray-800 mb-1.5 flex items-center gap-2 text-sm">
                                 <Play size={14} className="text-green-500 fill-current" />
                                 規劃旅程
@@ -734,7 +734,7 @@ const App: React.FC = () => {
 
                 {/* Helper Overlay */}
                 {!isModalOpen && !isRoutingMode && !isDraggablePinMode && !activeMemoryIdForComments && (
-                    <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-[400] pointer-events-none">
+                    <div className="absolute bottom-24 sm:bottom-10 left-1/2 transform -translate-x-1/2 z-[400] pointer-events-none">
                         <div className="bg-white/90 backdrop-blur-md text-gray-800 px-6 py-2.5 rounded-full text-sm font-bold border border-white/50 shadow-xl flex items-center gap-2 animate-in fade-in slide-in-from-bottom-4 duration-700">
                             <MapPin size={16} className="text-red-500 fill-current" />
                             點擊地圖任意處，釘選您的回憶
@@ -776,25 +776,25 @@ const App: React.FC = () => {
             {/* Age Verification & Login Modal - 未登入時強制顯示 */}
             {!user && (
                 <div className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
-                    <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl shadow-2xl border border-gray-700 max-w-md w-full p-8 text-center">
+                    <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl shadow-2xl border border-gray-700 max-w-md w-full p-5 sm:p-8 text-center">
                         {/* Header Image */}
                         <div className="mb-6">
                             <img
                                 src="https://i.meee.com.tw/Xo1WINx.jpg"
                                 alt="肥宅老司機"
-                                className="w-32 h-32 mx-auto rounded-full object-cover border-4 border-red-500 shadow-lg shadow-red-500/30"
+                                className="w-24 h-24 sm:w-32 sm:h-32 mx-auto rounded-full object-cover border-4 border-red-500 shadow-lg shadow-red-500/30"
                                 fetchPriority="high"
                                 decoding="async"
                             />
                         </div>
 
                         {/* Title */}
-                        <h1 className="text-3xl font-black text-white mb-4">
+                        <h1 className="text-2xl sm:text-3xl font-black text-white mb-3 sm:mb-4">
                             🔞 駕駛資格確認 🔞
                         </h1>
 
                         {/* Description */}
-                        <p className="text-gray-300 text-lg mb-8 leading-relaxed">
+                        <p className="text-gray-300 text-sm sm:text-lg mb-5 sm:mb-8 leading-relaxed">
                             請問這位老司機，你是否已年滿十八歲，<br />
                             具備合法上路的資格了呢？
                         </p>

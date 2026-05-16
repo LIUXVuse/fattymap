@@ -149,7 +149,7 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
         if (viewMode === 'countries') {
             return (
                 <div
-                    className="relative w-full h-56 shrink-0 group overflow-hidden bg-gray-900 cursor-pointer"
+                    className="relative w-full h-40 sm:h-56 shrink-0 group overflow-hidden bg-gray-900 cursor-pointer"
                     onClick={handleRandomExplore}
                     title="點擊隨機探索一個回憶"
                 >
@@ -175,7 +175,7 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
                                 Interactive Map
                             </div>
                         </div>
-                        <h1 className="text-2xl font-black text-white leading-tight drop-shadow-lg tracking-tight group-hover:scale-[1.02] transition-transform origin-bottom-left">
+                        <h1 className="text-xl sm:text-2xl font-black text-white leading-tight drop-shadow-lg tracking-tight group-hover:scale-[1.02] transition-transform origin-bottom-left">
                             肥宅老司機<br />
                             <span className="text-blue-300">前進世界地圖</span>
                         </h1>
@@ -232,7 +232,7 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
         <div className="h-full flex flex-col bg-white/95 backdrop-blur-xl border-r border-gray-200 shadow-xl font-sans">
             {renderHeader()}
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 scroll-smooth bg-gray-50">
+            <div className="flex-1 overflow-y-auto p-2 sm:p-4 space-y-2 sm:space-y-3 scroll-smooth bg-gray-50">
 
                 {/* VIEW 1: COUNTRIES LIST */}
                 {viewMode === 'countries' && (

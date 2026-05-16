@@ -80,7 +80,7 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
             {images.length > 1 && (
                 <button
                     onClick={(e) => { e.stopPropagation(); goToPrev(); }}
-                    className="text-white/70 hover:text-white p-3 rounded-full hover:bg-white/10 transition-colors"
+                    className="text-white/70 hover:text-white p-2 sm:p-3 rounded-full hover:bg-white/10 transition-colors"
                     style={{ position: 'fixed', left: '16px', top: '50%', transform: 'translateY(-50%)' }}
                 >
                     <ChevronLeft size={36} />
@@ -91,7 +91,7 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
             <img
                 src={images[currentIndex]}
                 alt={`Image ${currentIndex + 1}`}
-                className="max-w-[90vw] max-h-[80vh] object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-200"
+                className="max-w-[92vw] max-h-[75vh] sm:max-w-[90vw] sm:max-h-[80vh] object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-200"
                 style={{
                     position: 'fixed',
                     top: '50%',
@@ -105,7 +105,7 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
             {images.length > 1 && (
                 <button
                     onClick={(e) => { e.stopPropagation(); goToNext(); }}
-                    className="text-white/70 hover:text-white p-3 rounded-full hover:bg-white/10 transition-colors"
+                    className="text-white/70 hover:text-white p-2 sm:p-3 rounded-full hover:bg-white/10 transition-colors"
                     style={{ position: 'fixed', right: '16px', top: '50%', transform: 'translateY(-50%)' }}
                 >
                     <ChevronRight size={36} />
@@ -122,7 +122,7 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
                         <button
                             key={idx}
                             onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx); }}
-                            className={`shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${idx === currentIndex
+                            className={`shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden border-2 transition-all ${idx === currentIndex
                                 ? 'border-white scale-105'
                                 : 'border-transparent opacity-60 hover:opacity-100'
                                 }`}

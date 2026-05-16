@@ -238,12 +238,12 @@ export const CommentModal: React.FC<CommentModalProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 z-[1200] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[1200] flex items-center justify-center p-2 sm:p-4">
             {/* Backdrop */}
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
             {/* Modal Content */}
-            <div className="relative w-full max-w-md bg-white/70 backdrop-blur-xl border border-white/50 shadow-2xl rounded-2xl flex flex-col max-h-[85vh] overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="relative w-full max-w-md bg-white/70 backdrop-blur-xl border border-white/50 shadow-2xl rounded-2xl flex flex-col max-h-[92dvh] overflow-hidden animate-in zoom-in-95 duration-200">
 
                 {/* Header */}
                 <div className="p-4 border-b border-gray-200/50 flex justify-between items-center bg-white/40">

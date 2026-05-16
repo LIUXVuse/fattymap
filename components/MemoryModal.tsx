@@ -348,8 +348,8 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
     const presetColors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#6366f1', '#14b8a6'];
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 animate-in fade-in duration-200">
-            <div className="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-2 sm:p-4 animate-in fade-in duration-200">
+            <div className="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[92dvh]">
                 {/* Header */}
                 <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                     <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
@@ -362,7 +362,7 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
                 </div>
 
                 {/* Content */}
-                <div className="p-6 overflow-y-auto flex-1 space-y-6 relative">
+                <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4 sm:space-y-6 relative">
 
                     {/* 1. Identity Selection */}
                     <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
@@ -443,7 +443,7 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
                                     type="text"
                                     value={region.country}
                                     onChange={(e) => setRegion({ ...region, country: e.target.value })}
-                                    className="bg-gray-50 border border-gray-200 rounded px-2 py-1 text-xs w-20 font-bold text-gray-700"
+                                    className="bg-gray-50 border border-gray-200 rounded px-2 py-1 text-xs flex-1 min-w-0 font-bold text-gray-700"
                                     placeholder="國家"
                                 />
                                 <span className="text-gray-400 self-center">&gt;</span>
@@ -451,7 +451,7 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
                                     type="text"
                                     value={region.area}
                                     onChange={(e) => setRegion({ ...region, area: e.target.value })}
-                                    className="bg-gray-50 border border-gray-200 rounded px-2 py-1 text-xs w-24 font-bold text-gray-700"
+                                    className="bg-gray-50 border border-gray-200 rounded px-2 py-1 text-xs flex-1 min-w-0 font-bold text-gray-700"
                                     placeholder="城市/區域"
                                 />
                             </div>
@@ -664,7 +664,7 @@ export const MemoryModal: React.FC<MemoryModalProps> = ({
                                 required
                                 value={content}
                                 onChange={(e) => setContent(e.target.value)}
-                                className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 h-24 resize-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none"
+                                className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 h-20 sm:h-24 resize-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none"
                                 placeholder="寫下這裡發生的故事..."
                             />
                         </div>
