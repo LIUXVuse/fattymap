@@ -5,6 +5,21 @@
 
 ---
 
+## ✅ 本次完成（2026-05-16，第五次）
+
+- **全站 RWD 手機平板深度適配（v1.14）**：
+  - `App.tsx`：`w-screen` → `w-full`、`h-screen` → `h-[100dvh]`（修 iOS Safari viewport 遮底問題）
+  - Sidebar：手機改為 `w-full sm:w-80`，全寬展開不留縫
+  - 右側按鈕欄：`right-2 sm:right-4`、`gap-1.5 sm:gap-2`、padding `sm:` 斷點化
+  - Helper 提示浮動文字：`bottom-24 sm:bottom-10`（避開手機虛擬鍵盤）
+  - 路線規劃面板：`w-44 sm:w-48 md:w-64`
+  - 登入 Modal：`p-5 sm:p-8`、頭像 `w-24 sm:w-32`、標題 `text-2xl sm:text-3xl`、說明文字縮小
+  - `MemoryFeed.tsx`：Banner `h-40 sm:h-56`、列表 `p-2 sm:p-4`
+  - `MemoryModal.tsx`：外框 `p-2 sm:p-4`、內容 `p-4 sm:p-6`、`max-h-[92dvh]`、region input 改 `flex-1`、textarea `h-20 sm:h-24`
+  - `CommentModal.tsx`：`p-2 sm:p-4`、`max-h-[92dvh]`
+  - `ImageLightbox.tsx`：主圖 `max-h-[75vh] sm:max-h-[80vh]`、縮圖 `w-12 sm:w-14`、箭頭 `p-2 sm:p-3`
+  - Build 零錯誤，已 push → Cloudflare Pages 自動部署
+
 ## ✅ 本次完成（2026-05-16，第四次）
 
 - **補修俄羅斯漏網**：`俄罗斯` → `俄羅斯`（第三次掃描遺漏，本次補上，共 61 筆全數修正）
@@ -87,11 +102,14 @@
 
 ## 🔴 下一個對話要先做
 
-- **Step 1：上網站驗證**：前往 fattymap.pages.dev，確認泰國、菲律賓、俄羅斯等地的側邊欄分類全為繁體
-- **Step 2：新建一個點測試**：在地圖上點地點，確認 region 欄位自動帶入繁體（搜尋選地點 + 直接點地圖兩種路徑都測）
-- **Step 3：驗證外交部連結正確性**（目前所有國家都指向 `boca.gov.tw/sp-foof-visitnoticelist-1.html` 列表頁，可考慮改為各國獨立頁，需先在外交部網站上確認各國 URL 格式）
-- **Step 2：換錢策略驗證**（確認 THB 等 rate >= 1 的貨幣，1萬/5萬切換換算是否正確；小數點邏輯：>= 1 顯示整數，< 1 顯示 2 位小數）
-- **Step 3：SIM 卡資料品質**（`daily_gb` 部分仍為估算，需驗證越南/泰國真實資料是否正確）
+- **Step 1：手機實機驗證 RWD**：用手機開 `fattymap.pages.dev`，確認：
+  - iOS Safari 底部不被工具列遮住（`100dvh` 生效）
+  - Sidebar 手機全寬展開 / 點外部收起
+  - 登入 Modal 在小螢幕上文字不被截斷
+  - MemoryModal / CommentModal 虛擬鍵盤彈出時 Modal 不縮到看不到
+- **Step 2：上網站驗證繁體**：確認泰國、菲律賓、俄羅斯等地側邊欄分類全為繁體
+- **Step 3：換錢策略驗證**（THB 等 rate >= 1 的貨幣，1萬/5萬切換換算是否正確）
+- **Step 4：SIM 卡資料品質**（`daily_gb` 部分仍為估算，需驗證越南/泰國真實資料）
 
 ---
 
@@ -122,6 +140,7 @@
 | v1.11 | Code Audit：TS 21錯→0、清 console.log、刪死碼 |
 | v1.12 | 效能優化：圖片 fetchPriority/decoding/lazy + TileLayer keepBuffer 1→3 |
 | v1.13 | 簡體修正：DB 60筆批次更新 + Nominatim namedetails + region 傳遞邏輯 |
+| v1.14 | 手機平板深度 RWD 適配：100dvh / Sidebar 全寬 / Modal dvh / 所有元件 sm: 斷點 |
 
 ---
 
