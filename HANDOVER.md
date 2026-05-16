@@ -1,7 +1,24 @@
 # HANDOVER — 肥宅老司機前進世界地圖
 
 > 上次更新：2026-05-16
-> 當前狀態：v1.12，效能優化（圖片載入 + 地圖 tile 預載）
+> 當前狀態：v1.13，簡體中文全面修正（資料庫 + 程式碼邏輯）
+
+---
+
+## ✅ 本次完成（2026-05-16，第三次）
+
+- **資料庫簡體修正**：
+  - 透過 Firebase Admin SDK + Service Account 連進 Firestore
+  - 批次修正 60 筆 memories 的 region 欄位（泰国→泰國、菲律宾→菲律賓、德国→德國、印度尼西亚→印度尼西亞、河内市→河內市、富国特区→富國特區、计顺市→計順市、马尼拉→馬尼拉、三宝垄→三寶壟）
+- **程式碼修正（防止再出現簡體）**：
+  - `types.ts`：Location 介面加 `region?` 欄位
+  - `App.tsx`：搜尋選地點時把 Google Places region 帶進 tempLocation
+  - `MemoryModal.tsx`：有 region 就直接用，不再重查 Nominatim
+  - `mapService.ts`：Nominatim 加 `namedetails=1`，優先取 `name:zh-TW` 繁體標籤
+- **Service Account 金鑰管理**：
+  - `serviceAccountKey.json` 存進專案根目錄
+  - `.gitignore` 加入 `serviceAccountKey.json` 防止上傳
+- **firebase-admin** 加入 devDependencies
 
 ---
 
@@ -63,7 +80,8 @@
 
 ## 🔴 下一個對話要先做
 
-- **Step 1：驗證外交部連結正確性**（目前所有國家都指向 `boca.gov.tw/sp-foof-visitnoticelist-1.html` 列表頁，可考慮改為各國獨立頁，需先在外交部網站上確認各國 URL 格式）
+- **Step 1：驗證 region 修正成效**（上網站確認泰國、菲律賓等地的回憶分類顯示是否已為繁體）
+- **Step 2：驗證外交部連結正確性**（目前所有國家都指向 `boca.gov.tw/sp-foof-visitnoticelist-1.html` 列表頁，可考慮改為各國獨立頁，需先在外交部網站上確認各國 URL 格式）
 - **Step 2：換錢策略驗證**（確認 THB 等 rate >= 1 的貨幣，1萬/5萬切換換算是否正確；小數點邏輯：>= 1 顯示整數，< 1 顯示 2 位小數）
 - **Step 3：SIM 卡資料品質**（`daily_gb` 部分仍為估算，需驗證越南/泰國真實資料是否正確）
 
@@ -95,6 +113,7 @@
 | v1.10 | 出發攻略 UX：先顯示框架 + 簽證資料修正（印尼落地簽/泰國60天+DTV）+ 外交部連結 |
 | v1.11 | Code Audit：TS 21錯→0、清 console.log、刪死碼 |
 | v1.12 | 效能優化：圖片 fetchPriority/decoding/lazy + TileLayer keepBuffer 1→3 |
+| v1.13 | 簡體修正：DB 60筆批次更新 + Nominatim namedetails + region 傳遞邏輯 |
 
 ---
 
