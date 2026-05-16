@@ -782,6 +782,8 @@ const App: React.FC = () => {
                                 src="https://i.meee.com.tw/Xo1WINx.jpg"
                                 alt="肥宅老司機"
                                 className="w-32 h-32 mx-auto rounded-full object-cover border-4 border-red-500 shadow-lg shadow-red-500/30"
+                                fetchPriority="high"
+                                decoding="async"
                             />
                         </div>
 

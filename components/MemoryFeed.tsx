@@ -160,6 +160,8 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
                         src="https://i.meee.com.tw/Xo1WINx.jpg"
                         alt="Travel Banner"
                         className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 opacity-90 group-hover:opacity-100"
+                        fetchPriority="high"
+                        decoding="async"
                     />
 
                     {/* 隨機探索提示 (Hover 時顯示更明顯) */}
@@ -218,6 +220,8 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
                         src="https://i.meee.com.tw/Xo1WINx.jpg"
                         alt="隨機探索"
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        loading="lazy"
+                        decoding="async"
                     />
                 </button>
             </div>
@@ -346,7 +350,7 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
                                                     {memory.isAnonymous ? (
                                                         <div className="w-full h-full bg-gray-300 flex items-center justify-center text-white"><Globe size={14} /></div>
                                                     ) : memory.authorAvatar ? (
-                                                        <img src={memory.authorAvatar} alt="avatar" className="w-full h-full object-cover" />
+                                                        <img src={memory.authorAvatar} alt="avatar" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                                                     ) : (
                                                         <div
                                                             className="w-full h-full flex items-center justify-center text-white text-xs font-bold"
@@ -413,7 +417,7 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
                                             <div className="mb-3">
                                                 {memory.photos.length === 1 ? (
                                                     <div className="relative w-full h-32 rounded-lg overflow-hidden border border-gray-200">
-                                                        <img src={memory.photos[0]} alt="memory" className="w-full h-full object-cover" loading="lazy" />
+                                                        <img src={memory.photos[0]} alt="memory" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                                                     </div>
                                                 ) : (
                                                     <div className="relative">
@@ -423,7 +427,7 @@ export const MemoryFeed: React.FC<MemoryFeedProps> = ({ memories, onFocusLocatio
                                                                     key={idx}
                                                                     className="relative w-28 h-28 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0"
                                                                 >
-                                                                    <img src={photo} alt={`memory-${idx + 1}`} className="w-full h-full object-cover" loading="lazy" />
+                                                                    <img src={photo} alt={`memory-${idx + 1}`} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                                                                     <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
                                                                         {idx + 1}/{memory.photos.length}
                                                                     </div>

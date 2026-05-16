@@ -383,7 +383,7 @@ const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, has
                                 className="w-8 h-8 rounded-full flex items-center justify-center text-xs text-white font-bold shadow-sm overflow-hidden"
                                 style={{ backgroundColor: memory.markerColor }}
                             >
-                                {memory.isAnonymous ? '?' : (memory.authorAvatar ? <img src={memory.authorAvatar} className="w-full h-full object-cover" /> : memory.author.charAt(0))}
+                                {memory.isAnonymous ? '?' : (memory.authorAvatar ? <img src={memory.authorAvatar} className="w-full h-full object-cover" loading="lazy" decoding="async" /> : memory.author.charAt(0))}
                             </div>
                             <div>
                                 <h3 className="font-bold text-gray-800 text-sm">
@@ -405,7 +405,7 @@ const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, has
                                         className="rounded-lg overflow-hidden border border-gray-200 shadow-sm cursor-pointer hover:opacity-90 transition-opacity"
                                         onClick={() => onImageClick?.(memory.photos, 0)}
                                     >
-                                        <img src={memory.photos[0]} className="w-full h-32 object-cover" alt="story" loading="lazy" />
+                                        <img src={memory.photos[0]} className="w-full h-32 object-cover" alt="story" loading="lazy" decoding="async" />
                                     </div>
                                 ) : (
                                     <div className="flex gap-2 overflow-x-auto pb-2">
@@ -415,7 +415,7 @@ const MemoryMarker = React.memo(({ memory, isRoutingMode, isSelectedInRoute, has
                                                 className="relative rounded-lg overflow-hidden border border-gray-200 shadow-sm flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity"
                                                 onClick={() => onImageClick?.(memory.photos, idx)}
                                             >
-                                                <img src={photo} className="w-24 h-24 object-cover" alt={`story-${idx + 1}`} loading="lazy" />
+                                                <img src={photo} className="w-24 h-24 object-cover" alt={`story-${idx + 1}`} loading="lazy" decoding="async" />
                                                 <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1 rounded">
                                                     {idx + 1}/{memory.photos.length}
                                                 </div>
@@ -604,7 +604,7 @@ export const AppMap: React.FC<MapContainerProps> = ({
                     maxZoom={20}
                     updateWhenZooming={false}
                     updateWhenIdle={true}
-                    keepBuffer={1}
+                    keepBuffer={3}
                 />
 
                 <MapEvents onClick={handleMapClick} isRouting={isRoutingMode} isDragging={isDraggablePinMode} />
