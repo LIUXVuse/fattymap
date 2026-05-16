@@ -1,7 +1,24 @@
 # HANDOVER — 肥宅老司機前進世界地圖
 
-> 上次更新：2026-05-14
-> 當前狀態：v1.11，換錢策略 UX 升級（台幣基準換算 + 1萬/5萬切換）
+> 上次更新：2026-05-16
+> 當前狀態：v1.11，程式碼品質全面健檢完成，TypeScript 零錯誤
+
+---
+
+## ✅ 本次完成（2026-05-16）
+
+- **全專案 Code Audit**：跑 `tsc --noEmit` + `npm run build` + 靜態掃描
+- **修 TypeScript 21 個錯誤**（全清零）：
+  - 移除未用 import：`MarkerColor`, `RegionInfo`, `MarkerIconType`（App.tsx）、`ImageIcon`, `MapIcon`（MemoryFeed）、`useRef`, `Trash2`（MemoryModal）、`getDocs`, `where`（firebase.ts）
+  - 刪未用元件：`DiscordIcon`（AboutOverlay）、`DraggablePin`（MapContainer）
+  - 刪未用函式：`getDefaultDate`、`getTransferUrl`（AboutOverlay）
+  - 刪未用 prop：`onDeleteCategory`、`uploadImage`（MemoryModal）
+  - 修死碼條件：`searchType !== 'flight-hack'`（永遠 true 的冗餘判斷）
+  - 移除 3 個不可達的 `case 'transfer':` switch 分支
+  - 修 `memory.videos` null 警告（加 `!`）
+- **清 console.log**：CurrencyExchangeCalculator × 3、mapService × 2、firebase × 3
+- **App.tsx**：geolocation error handler 改用 `console.error`
+- Build 結果：零 TS 錯誤，bundle 縮小 0.76 kB
 
 ---
 
